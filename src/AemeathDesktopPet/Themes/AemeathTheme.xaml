@@ -1,0 +1,74 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Aemeath Color Palette -->
+    <Color x:Key="PrimaryPinkColor">#F2A0B5</Color>
+    <Color x:Key="LemonYellowColor">#F5E06D</Color>
+    <Color x:Key="GoldenAmberColor">#D4A843</Color>
+    <Color x:Key="DigitalBlueColor">#5CB8E6</Color>
+    <Color x:Key="PureWhiteColor">#F5F0F0</Color>
+    <Color x:Key="HolographicBlueColor">#A8E0F0</Color>
+    <Color x:Key="FusionFlameColor">#FF5C8A</Color>
+    <Color x:Key="DarkAccentColor">#2D2D3D</Color>
+    <Color x:Key="DarkSlateColor">#1E1E2E</Color>
+    <Color x:Key="MidDarkColor">#2A2A4A</Color>
+    <Color x:Key="SeparatorColor">#3D3D5D</Color>
+
+    <SolidColorBrush x:Key="PrimaryPinkBrush" Color="{StaticResource PrimaryPinkColor}"/>
+    <SolidColorBrush x:Key="LemonYellowBrush" Color="{StaticResource LemonYellowColor}"/>
+    <SolidColorBrush x:Key="GoldenAmberBrush" Color="{StaticResource GoldenAmberColor}"/>
+    <SolidColorBrush x:Key="DigitalBlueBrush" Color="{StaticResource DigitalBlueColor}"/>
+    <SolidColorBrush x:Key="PureWhiteBrush" Color="{StaticResource PureWhiteColor}"/>
+    <SolidColorBrush x:Key="HolographicBlueBrush" Color="{StaticResource HolographicBlueColor}"/>
+    <SolidColorBrush x:Key="FusionFlameBrush" Color="{StaticResource FusionFlameColor}"/>
+    <SolidColorBrush x:Key="DarkAccentBrush" Color="{StaticResource DarkAccentColor}"/>
+    <SolidColorBrush x:Key="DarkSlateBrush" Color="{StaticResource DarkSlateColor}"/>
+    <SolidColorBrush x:Key="MidDarkBrush" Color="{StaticResource MidDarkColor}"/>
+    <SolidColorBrush x:Key="SeparatorBrush" Color="{StaticResource SeparatorColor}"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#E8E8F0"/>
+
+    <!-- TabControl Style: transparent background, no border -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- TabItem Style with full ControlTemplate to prevent WPF default white override -->
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="TabBorder"
+                            Background="#2A2A3A"
+                            Padding="10,4"
+                            Margin="0,0,2,0"
+                            CornerRadius="4,4,0,0"
+                            Cursor="Hand">
+                        <ContentPresenter x:Name="ContentSite"
+                                          ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="#3D3D5D"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="#333350"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="TabBorder" Property="Background" Value="#3D3D5D"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

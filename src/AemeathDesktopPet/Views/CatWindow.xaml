@@ -1,0 +1,26 @@
+<Window x:Class="AemeathDesktopPet.Views.CatWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Kuro"
+        Width="80" Height="80"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        SizeToContent="Manual">
+
+    <Grid>
+        <!-- Cat sprite (placeholder: Unicode cat or small image) -->
+        <TextBlock x:Name="CatGlyph"
+                   Text="&#x1F408;"
+                   FontSize="48"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Opacity="0.9"/>
+
+        <!-- When cat GIF sprites are available, switch to this: -->
+        <!-- <Image x:Name="CatSprite" Width="80" Height="80" Stretch="Uniform"/> -->
+    </Grid>
+</Window>
