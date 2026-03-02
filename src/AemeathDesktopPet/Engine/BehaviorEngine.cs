@@ -13,7 +13,7 @@ public class BehaviorEngine
     private static readonly Random _rng = new();
 
     private readonly DispatcherTimer _behaviorTimer;
-    private PetState _currentState = PetState.Idle;
+    internal PetState _currentState = PetState.Idle;
     private PetState _previousState = PetState.Idle;
     internal DateTime _stateEnteredAt = DateTime.UtcNow;
     internal double _stateDuration; // seconds before auto-transition

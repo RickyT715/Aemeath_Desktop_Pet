@@ -395,9 +395,10 @@ public class BehaviorEngineTests
         var seenStates = new HashSet<PetState>();
         engine.StateChanged += (state, _) => seenStates.Add(state);
 
-        // Run many transitions
+        // Run many transitions. Reset to Idle to avoid NoAutoTransition deadlock.
         for (int i = 0; i < 200; i++)
         {
+            engine._currentState = PetState.Idle;
             engine._stateEnteredAt = DateTime.UtcNow.AddSeconds(-100);
             engine._stateDuration = 0;
             engine.SimulateBehaviorTick();
@@ -417,9 +418,12 @@ public class BehaviorEngineTests
         var seenStates = new HashSet<PetState>();
         engine.StateChanged += (state, _) => seenStates.Add(state);
 
-        // Run many transitions — Sing has weight 5 so should appear in 500 tries
+        // Run many transitions — Sing has weight 5 so should appear in 500 tries.
+        // Reset state to Idle before each tick to avoid getting stuck in
+        // NoAutoTransition states (e.g., PlayGame) which block further transitions.
         for (int i = 0; i < 500; i++)
         {
+            engine._currentState = PetState.Idle;
             engine._stateEnteredAt = DateTime.UtcNow.AddSeconds(-100);
             engine._stateDuration = 0;
             engine.SimulateBehaviorTick();
