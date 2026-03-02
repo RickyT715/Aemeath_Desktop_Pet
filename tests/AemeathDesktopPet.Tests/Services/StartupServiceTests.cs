@@ -8,6 +8,19 @@ public class StartupServiceTests
     private const string RegistryKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string AppName = "AemeathDesktopPet";
 
+    /// <summary>
+    /// Returns true if the current process can resolve its own exe path.
+    /// On some CI runners (GitHub Actions), Environment.ProcessPath is null
+    /// and Process.MainModule is also null, so SetStartWithWindows(true)
+    /// silently skips writing the registry value.
+    /// </summary>
+    private static bool CanResolveProcessPath()
+    {
+        var exePath = Environment.ProcessPath
+                      ?? System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+        return !string.IsNullOrEmpty(exePath);
+    }
+
     private void CleanupRegistry()
     {
         using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath, writable: true);
@@ -17,6 +30,8 @@ public class StartupServiceTests
     [Fact]
     public void SetStartWithWindows_True_CreatesRegistryKey()
     {
+        if (!CanResolveProcessPath()) return; // CI: ProcessPath unavailable
+
         try
         {
             StartupService.SetStartWithWindows(true);
@@ -52,6 +67,8 @@ public class StartupServiceTests
     [Fact]
     public void IsStartWithWindows_ReflectsCurrentState()
     {
+        if (!CanResolveProcessPath()) return; // CI: ProcessPath unavailable
+
         try
         {
             StartupService.SetStartWithWindows(true);
