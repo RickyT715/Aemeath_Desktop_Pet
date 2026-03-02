@@ -650,19 +650,75 @@
                                       Content="Show 'Aemeath can see' indicator"
                                       Foreground="{StaticResource TextBrush}" Margin="0,0,0,8" IsChecked="True"/>
 
+                            <!-- Privacy Layers -->
+                            <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,0,0,8"/>
+                            <TextBlock Text="Privacy Layers" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource DigitalBlueBrush}" Margin="0,0,0,6"/>
+                            <CheckBox x:Name="EnableProtectedWindowCheck"
+                                      Content="Block when DRM-protected windows are visible"
+                                      Foreground="{StaticResource TextBrush}" Margin="0,0,0,4" IsChecked="True"/>
+                            <CheckBox x:Name="EnablePrivacyDownscaleCheck"
+                                      Content="Downscale screenshots to destroy text legibility"
+                                      Foreground="{StaticResource TextBrush}" Margin="0,0,0,4" IsChecked="True"
+                                      Checked="PrivacyDownscaleToggled" Unchecked="PrivacyDownscaleToggled"/>
+                            <StackPanel x:Name="DownscaleResolutionPanel" Orientation="Horizontal" Margin="20,0,0,4">
+                                <TextBlock Text="Max width:" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="DownscaleResolutionCombo" Width="100" HorizontalAlignment="Left">
+                                    <ComboBoxItem Content="320px" Tag="320"/>
+                                    <ComboBoxItem Content="480px" Tag="480"/>
+                                    <ComboBoxItem Content="640px" Tag="640"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <CheckBox x:Name="EnableResponsePiiScanCheck"
+                                      Content="Scan AI responses for PII and discard if found"
+                                      Foreground="{StaticResource TextBrush}" Margin="0,4,0,8" IsChecked="True"/>
+
+                            <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,0,0,8"/>
+
                             <TextBlock Text="Vision provider" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
-                            <ComboBox x:Name="VisionProviderCombo" Width="160" HorizontalAlignment="Left" Margin="0,0,0,8">
+                            <ComboBox x:Name="VisionProviderCombo" Width="200" HorizontalAlignment="Left" Margin="0,0,0,8"
+                                      SelectionChanged="VisionProviderCombo_SelectionChanged">
                                 <ComboBoxItem Content="Gemini Flash" Tag="gemini"/>
                                 <ComboBoxItem Content="Claude" Tag="claude"/>
+                                <ComboBoxItem Content="Ollama (Local)" Tag="ollama"/>
+                                <ComboBoxItem Content="Local + Cloud Hybrid" Tag="local_hybrid"/>
                             </ComboBox>
 
-                            <TextBlock Text="Vision API key" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <PasswordBox x:Name="VisionApiKeyBox" Width="240" Padding="4,3"
+                            <!-- Cloud API key (gemini/claude) -->
+                            <StackPanel x:Name="VisionApiKeyPanel">
+                                <TextBlock Text="Vision API key" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <PasswordBox x:Name="VisionApiKeyBox" Width="240" Padding="4,3"
+                                                 Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                                 BorderBrush="{StaticResource SeparatorBrush}"/>
+                                    <Button x:Name="ToggleVisionKeyBtn" Content="Show" Width="50" Margin="4,0,0,0"
+                                            Click="ToggleVisionApiKey_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Ollama settings (ollama / local_hybrid) -->
+                            <StackPanel x:Name="OllamaPanel" Visibility="Collapsed">
+                                <TextBlock Text="Ollama base URL" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="OllamaBaseUrlBox" Width="280" HorizontalAlignment="Left"
+                                         Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                         BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+                                <TextBlock Text="Ollama model name" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <TextBox x:Name="OllamaModelNameBox" Width="200" HorizontalAlignment="Left"
+                                         Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                         BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+                            </StackPanel>
+
+                            <!-- Hybrid cloud settings (local_hybrid only) -->
+                            <StackPanel x:Name="HybridCloudPanel" Visibility="Collapsed">
+                                <TextBlock Text="Hybrid cloud provider" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="HybridCloudProviderCombo" Width="160" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                    <ComboBoxItem Content="Gemini Flash" Tag="gemini"/>
+                                    <ComboBoxItem Content="Claude" Tag="claude"/>
+                                </ComboBox>
+                                <TextBlock Text="Hybrid cloud API key" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                                <PasswordBox x:Name="HybridCloudApiKeyBox" Width="240" Padding="4,3"
                                              Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
-                                             BorderBrush="{StaticResource SeparatorBrush}"/>
-                                <Button x:Name="ToggleVisionKeyBtn" Content="Show" Width="50" Margin="4,0,0,0"
-                                        Click="ToggleVisionApiKey_Click"/>
+                                             BorderBrush="{StaticResource SeparatorBrush}" Margin="0,0,0,8"/>
                             </StackPanel>
 
                             <TextBlock Text="Check interval (seconds)" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
@@ -686,7 +742,7 @@
                                     Click="ResetScreenPrompt_Click" Margin="0,0,0,8"/>
 
                             <TextBlock Text="Blacklisted apps (one per line)" Foreground="{StaticResource TextBrush}" Margin="0,4,0,4"/>
-                            <TextBox x:Name="ScreenBlacklistBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                            <TextBox x:Name="ScreenBlacklistBox" Height="80" TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
                                      BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,4"/>

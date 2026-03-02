@@ -40,6 +40,7 @@ English | [中文](README_CN.md)
 - [Configuration & Data Files](#configuration--data-files)
 - [Project Structure](#project-structure)
 - [Dependencies](#dependencies)
+- [Testing](#testing)
 - [Missing Assets & Stubbed Features](#missing-assets--stubbed-features)
 - [About Aemeath](#about-aemeath)
 
@@ -89,6 +90,8 @@ dotnet build src/AemeathDesktopPet/AemeathDesktopPet.csproj
 ```
 dotnet test tests/AemeathDesktopPet.Tests/
 ```
+
+See [Testing](#testing) for details on test categories and coverage.
 
 ### Publish (Self-Contained)
 
@@ -464,28 +467,41 @@ Aemeath can periodically capture screenshots of your screen and comment on what 
 #### How It Works
 
 1. A background timer captures a screenshot every 60 seconds (configurable)
-2. **Tier 1 privacy check**: If the foreground app is blacklisted (e.g., KeePass, banking sites), the screenshot is skipped
-3. **Change detection**: A perceptual hash compares the current screenshot with the previous one. If the screen hasn't changed meaningfully (Hamming distance < 10), the screenshot is skipped
-4. **Budget check**: If the monthly spending estimate exceeds the configured cap, screenshots are skipped
-5. The screenshot is sent to the configured vision AI (Gemini Flash or Claude) with a privacy-focused analysis prompt
-6. The AI generates a brief, in-character observation (1-2 sentences)
-7. The next idle chatter tick picks up the cached commentary and shows it as a speech bubble
+2. **Layer 0: Protected Window Check** — if any DRM-protected window is visible (`GetWindowDisplayAffinity`), skip (~0ms, toggleable)
+3. **Layer 1: App/Title Blacklist** — if the foreground app matches the blacklist (17 default entries covering password managers, banking, login pages across Chrome/Edge/Firefox), skip (~1ms)
+4. **Fullscreen skip** — if a fullscreen app is active, skip
+5. **Budget check** — if monthly spending exceeds the cap, skip
+6. **Layer 3: Privacy Downscale** — screenshot is downscaled to 480px (configurable) to destroy text legibility (~5ms, toggleable)
+7. **Perceptual hash dedup** — if the screen hasn't changed meaningfully (Hamming distance < 10), skip (~2ms)
+8. The screenshot is sent to the configured vision AI (Gemini Flash, Claude, Ollama, or Local+Cloud Hybrid)
+9. **Layer 7: Post-Response PII Scan** — regex+Luhn scan of the AI response; discard if credit cards, SSNs, emails, phones, or password keywords are detected (~1ms, toggleable)
+10. The next idle chatter tick picks up the cached commentary and shows it as a speech bubble
 
 #### Privacy Pipeline
 
-| Tier | Protection | Description |
-|------|-----------|-------------|
-| **Tier 1** | App Blacklist | Configurable list of apps/title patterns that block screenshots (e.g., `keepass.exe`, `chrome.exe:*bank*`) |
-| **Tier 3** | Privacy Prompt | The AI is explicitly instructed to never read or repeat specific text, numbers, names, passwords, or identifiable information |
+| Layer | Protection | Latency | Toggle |
+|-------|-----------|---------|--------|
+| **0** | OS Protected Window Check | ~0ms | On by default |
+| **1** | App/Title Blacklist (17 defaults) | ~1ms | Always on |
+| — | Fullscreen skip | ~0ms | Always on |
+| — | Budget cap | ~0ms | Always on |
+| **3** | Privacy Downscale (480px) | ~5ms | On by default |
+| — | Perceptual Hash Dedup | ~2ms | Always on |
+| — | Vision AI Analysis | varies | — |
+| **7** | Post-Response PII Scan | ~1ms | On by default |
 
 The analysis prompt instructs the AI to only comment on the **general activity** (e.g., "looks like you're coding" or "watching a video?"), never quoting specific on-screen content.
 
-#### Cost Estimates
+#### Vision Providers
 
-| Provider | Cost per 1,000 screenshots | Monthly (8hr/day, 1/min) |
-|----------|---------------------------|--------------------------|
-| **Gemini 2.5 Flash** | ~$0.04 | ~$0.38/month (with dedup) |
-| Claude Haiku 4.5 | ~$1.33 | ~$12/month |
+| Provider | Privacy | Cost | Requirements |
+|----------|---------|------|--------------|
+| **Gemini Flash** (default) | Cloud | ~$0.04/1K shots | API key |
+| Claude Haiku | Cloud | ~$1.33/1K shots | API key |
+| **Ollama (Local)** | Fully local | $0 | Ollama running locally with a vision model (e.g., `qwen2.5vl:3b`) |
+| **Local + Cloud Hybrid** | Pixels stay local | ~$0.005/1K shots | Ollama + cloud API key (text-only cloud call) |
+
+The hybrid provider sends raw screenshots only to the local Ollama model, which generates a text description. That text (no pixels) is then sent to a cloud model for personality commentary.
 
 Default provider is Gemini Flash for cost efficiency. A configurable monthly budget cap (default: $5) prevents runaway spending.
 
@@ -495,11 +511,38 @@ When screen awareness is active, a small badge appears near Aemeath: **"👁 Aem
 
 #### Setup
 
-1. Open **Settings** > **Screen** tab
-2. Check "Enable screen awareness"
-3. Select a vision provider (Gemini Flash recommended)
-4. Enter the vision API key
-5. Optionally adjust interval, budget cap, and blacklist
+**Gemini Flash (recommended — cheap cloud):**
+1. Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+2. Open **Settings** > **Screen** tab > Enable screen awareness
+3. Select **Gemini Flash** as the vision provider
+4. Paste the API key
+
+**Claude (higher quality cloud):**
+1. Get an API key from [Anthropic Console](https://console.anthropic.com/)
+2. Select **Claude** as the vision provider and paste the key
+
+**Ollama (fully local — no data leaves your device):**
+1. Install [Ollama](https://ollama.com/) and pull a vision model:
+   ```
+   ollama pull qwen2.5vl:3b
+   ```
+2. Select **Ollama (Local)** as the vision provider
+3. Verify the base URL (default: `http://localhost:11434`) and model name match your setup
+4. No API key needed — cost is $0
+
+**Local + Cloud Hybrid (pixels stay local):**
+1. Install Ollama with a vision model (same as above)
+2. Select **Local + Cloud Hybrid** as the vision provider
+3. Configure Ollama settings (URL + model)
+4. Select a cloud provider (Gemini or Claude) for the text-only commentary step
+5. Enter the cloud API key
+
+With hybrid mode, raw screenshots are only processed by the local Ollama model. Only a text description (no pixels) is sent to the cloud for personality-flavored commentary.
+
+**Privacy layers** (all on by default):
+- **DRM protection**: Automatically skips capture when protected windows (e.g., DRM video) are visible
+- **Privacy downscale**: Resizes screenshots to 480px (configurable: 320/480/640) to make text unreadable
+- **PII scan**: Discards AI responses containing credit card numbers, SSNs, emails, phone numbers, or password keywords
 
 ### Black Cat Companion
 
@@ -860,12 +903,19 @@ API keys are stored locally in `config.json`. Without a key, chat falls back to 
 |---------|---------|-------------|
 | Enable screen awareness | Off | Periodic screenshot analysis for contextual comments |
 | Show indicator | On | Display "👁 Aemeath can see" badge when active |
-| Vision provider | Gemini Flash | Gemini Flash (cheap) or Claude (higher quality) |
-| Vision API key | (empty) | API key for the vision provider |
+| Block DRM-protected windows | On | Skip capture when `GetWindowDisplayAffinity` detects protected content |
+| Privacy downscale | On (480px) | Downscale screenshots to destroy text legibility (320/480/640px) |
+| Post-response PII scan | On | Discard AI responses containing credit cards, SSNs, emails, phones, passwords |
+| Vision provider | Gemini Flash | Gemini Flash, Claude, Ollama (local), or Local+Cloud Hybrid |
+| Vision API key | (empty) | API key for cloud vision providers |
+| Ollama base URL | localhost:11434 | Ollama server address (for Ollama / Hybrid) |
+| Ollama model name | qwen2.5vl:3b | Vision model to use with Ollama |
+| Hybrid cloud provider | Gemini | Cloud provider for text-only step in hybrid mode |
+| Hybrid cloud API key | (empty) | API key for hybrid cloud text-only calls |
 | Check interval | 60s | How often to capture (30/60/120 seconds) |
 | Monthly budget cap | $5.00 | Spending limit for cloud vision API calls |
 | Analysis prompt | (default) | Customizable prompt for the vision AI. Reset button available |
-| Blacklisted apps | (4 defaults) | Apps/title patterns that block screenshots (one per line) |
+| Blacklisted apps | (17 defaults) | Apps/title patterns that block screenshots (one per line) |
 
 ---
 
@@ -1053,10 +1103,10 @@ AemeathDesktopPet/
 │       ├── Aemeath/                # 8 character GIF animations
 │       └── Seal/                   # Seal transformation sprite
 │
-├── tests/AemeathDesktopPet.Tests/  # 532 tests across 37 classes
-│   ├── Models/                    # 8 test classes
+├── tests/AemeathDesktopPet.Tests/  # 618 tests across 41 classes
+│   ├── Models/                    # 10 test classes
 │   ├── Engine/                    # 8 test classes
-│   ├── Services/                  # 15 test classes
+│   ├── Services/                  # 20 test classes (unit + integration + E2E)
 │   ├── ViewModels/                # 2 test classes
 │   └── Interop/                   # 1 test class
 │
@@ -1075,6 +1125,72 @@ AemeathDesktopPet/
 | [Edge_tts_sharp](https://www.nuget.org/packages/Edge_tts_sharp) | 1.1.7 | Free Edge TTS via WebSocket |
 | [Microsoft.Data.Sqlite](https://www.nuget.org/packages/Microsoft.Data.Sqlite) | 8.0.0 | Read-only SQLite access for activity monitor |
 | [xUnit](https://xunit.net/) | 2.6.6 | Unit testing (test project only) |
+
+---
+
+## Testing
+
+The project has a comprehensive test suite covering unit tests, integration tests, and end-to-end tests.
+
+### Running Tests
+
+```bash
+# Run all tests
+dotnet test tests/AemeathDesktopPet.Tests/
+
+# Run a specific test class
+dotnet test tests/AemeathDesktopPet.Tests/ --filter "FullyQualifiedName~PiiScannerTests"
+
+# Run with verbose output
+dotnet test tests/AemeathDesktopPet.Tests/ -v normal
+```
+
+### Test Categories
+
+| Category | Classes | Tests | What's Tested |
+|----------|---------|-------|---------------|
+| **Models** | 10 | ~80 | Config defaults, stat calculations, state enums, serialization |
+| **Engine** | 8 | ~130 | Animation, behavior FSM, physics, particles, glitch, time awareness |
+| **Services** | 18+ | ~270 | All services including AI, TTS, screen awareness, PII scanner, config persistence |
+| **ViewModels** | 2 | ~50 | PetViewModel orchestration, ChatViewModel streaming |
+| **Interop** | 1 | ~18 | Win32 API wrappers |
+| **Integration** | 1 | ~15 | Config roundtrip, privacy pipeline flow, HTTP provider simulation |
+| **E2E** | 1 | ~15 | Full screen awareness pipeline, provider routing, PII filtering |
+
+### Unit Tests
+
+Unit tests cover individual classes in isolation:
+
+- **PiiScannerTests** — Credit card detection (Luhn validation), SSN, email, phone, password keywords, clean text, null/empty edge cases
+- **ScreenAwarenessServiceTests** — Provider config checks, blacklist matching, perceptual hash, budget tracking, Ollama/Gemini/Claude response parsing, config defaults
+- **AppConfigTests** — Default values for all new privacy layer properties, expanded blacklist verification
+
+### Integration Tests
+
+Integration tests verify components working together with realistic scenarios:
+
+- **Config persistence roundtrip** — Save/load all new `ScreenAwarenessConfig` properties through `ConfigService`
+- **Mock HTTP pipeline** — Simulated Ollama, Gemini, and Claude API responses through `ScreenAwarenessService` with injected `HttpClient`
+- **Provider routing** — Correct API endpoint selection based on provider config
+
+### E2E Tests
+
+End-to-end tests exercise the full privacy pipeline from config through to output:
+
+- **Full pipeline flow** — Config → provider check → privacy layers → vision analysis → PII scan → commentary output
+- **Privacy layer toggles** — Each layer independently tested on/off
+- **PII filtering** — AI responses containing PII are correctly discarded
+- **All provider paths** — Gemini, Claude, Ollama, and hybrid provider routing verified
+
+### Manual Integration Test
+
+A separate console app for live TTS testing:
+
+```bash
+dotnet run --project tests/TtsIntegrationTest/
+```
+
+Tests Edge TTS, GPT-SoVITS, and ElevenLabs providers with real audio output.
 
 ---
 
@@ -1100,7 +1216,7 @@ AemeathDesktopPet/
 - **Edge_tts_sharp** — Free Edge TTS synthesis
 - **Microsoft.Data.Sqlite** — Read-only SQLite access for activity monitor integration
 - **System.Text.Json** — Configuration and persistence
-- **xUnit** — 532 unit tests across 37 test classes (5 categories)
+- **xUnit** — 618 tests across 41 test classes (unit, integration, E2E)
 
 ---
 

@@ -95,13 +95,23 @@ public partial class SettingsWindow : Window
         // Screen Awareness
         EnableScreenCheck.IsChecked = c.ScreenAwareness.Enabled;
         ShowScreenIndicatorCheck.IsChecked = c.ScreenAwareness.ShowScreenWatchIndicator;
+        EnableProtectedWindowCheck.IsChecked = c.ScreenAwareness.EnableProtectedWindowCheck;
+        EnablePrivacyDownscaleCheck.IsChecked = c.ScreenAwareness.EnablePrivacyDownscale;
+        SelectComboByTag(DownscaleResolutionCombo, c.ScreenAwareness.PrivacyDownscaleMaxWidth.ToString());
+        EnableResponsePiiScanCheck.IsChecked = c.ScreenAwareness.EnableResponsePiiScan;
         SelectComboByTag(VisionProviderCombo, c.ScreenAwareness.VisionProvider);
         VisionApiKeyBox.Password = c.ScreenAwareness.VisionApiKey;
+        OllamaBaseUrlBox.Text = c.ScreenAwareness.OllamaBaseUrl;
+        OllamaModelNameBox.Text = c.ScreenAwareness.OllamaModelName;
+        SelectComboByTag(HybridCloudProviderCombo, c.ScreenAwareness.HybridCloudProvider);
+        HybridCloudApiKeyBox.Password = c.ScreenAwareness.HybridCloudApiKey;
         SelectComboByTag(ScreenIntervalCombo, c.ScreenAwareness.IntervalSeconds.ToString());
         ScreenBudgetBox.Text = c.ScreenAwareness.MonthlyBudgetCap.ToString("F2");
         ScreenPromptBox.Text = c.ScreenAwareness.AnalysisPrompt;
         ScreenBlacklistBox.Text = string.Join("\n", c.ScreenAwareness.BlacklistedApps);
         UpdateScreenAwarenessPanel();
+        UpdateVisionProviderPanels();
+        UpdateDownscalePanel();
 
         // Voice (TTS)
         EnableTtsCheck.IsChecked = c.Tts.Enabled;
@@ -402,8 +412,18 @@ public partial class SettingsWindow : Window
         // Screen Awareness
         c.ScreenAwareness.Enabled = EnableScreenCheck.IsChecked == true;
         c.ScreenAwareness.ShowScreenWatchIndicator = ShowScreenIndicatorCheck.IsChecked == true;
+        c.ScreenAwareness.EnableProtectedWindowCheck = EnableProtectedWindowCheck.IsChecked == true;
+        c.ScreenAwareness.EnablePrivacyDownscale = EnablePrivacyDownscaleCheck.IsChecked == true;
+        if (DownscaleResolutionCombo.SelectedItem is ComboBoxItem dsItem && dsItem.Tag is string dsTag
+            && int.TryParse(dsTag, out int dsWidth))
+            c.ScreenAwareness.PrivacyDownscaleMaxWidth = dsWidth;
+        c.ScreenAwareness.EnableResponsePiiScan = EnableResponsePiiScanCheck.IsChecked == true;
         c.ScreenAwareness.VisionProvider = GetComboTag(VisionProviderCombo, "gemini");
         c.ScreenAwareness.VisionApiKey = VisionApiKeyBox.Password;
+        c.ScreenAwareness.OllamaBaseUrl = OllamaBaseUrlBox.Text;
+        c.ScreenAwareness.OllamaModelName = OllamaModelNameBox.Text;
+        c.ScreenAwareness.HybridCloudProvider = GetComboTag(HybridCloudProviderCombo, "gemini");
+        c.ScreenAwareness.HybridCloudApiKey = HybridCloudApiKeyBox.Password;
         if (ScreenIntervalCombo.SelectedItem is ComboBoxItem intervalItem && intervalItem.Tag is string intervalTag
             && int.TryParse(intervalTag, out int interval))
             c.ScreenAwareness.IntervalSeconds = interval;
@@ -699,6 +719,43 @@ public partial class SettingsWindow : Window
     {
         _visionApiKeyVisible = !_visionApiKeyVisible;
         ToggleVisionKeyBtn.Content = _visionApiKeyVisible ? "Hide" : "Show";
+    }
+
+    private void VisionProviderCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateVisionProviderPanels();
+    }
+
+    private void UpdateVisionProviderPanels()
+    {
+        if (VisionApiKeyPanel == null || OllamaPanel == null || HybridCloudPanel == null) return;
+
+        var provider = GetComboTag(VisionProviderCombo, "gemini");
+
+        // Cloud key panel: visible for gemini/claude
+        VisionApiKeyPanel.Visibility = provider is "gemini" or "claude"
+            ? Visibility.Visible : Visibility.Collapsed;
+
+        // Ollama panel: visible for ollama/local_hybrid
+        OllamaPanel.Visibility = provider is "ollama" or "local_hybrid"
+            ? Visibility.Visible : Visibility.Collapsed;
+
+        // Hybrid cloud panel: visible for local_hybrid only
+        HybridCloudPanel.Visibility = provider == "local_hybrid"
+            ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void PrivacyDownscaleToggled(object sender, RoutedEventArgs e)
+    {
+        UpdateDownscalePanel();
+    }
+
+    private void UpdateDownscalePanel()
+    {
+        if (DownscaleResolutionPanel == null) return;
+        bool enabled = EnablePrivacyDownscaleCheck.IsChecked == true;
+        DownscaleResolutionPanel.IsEnabled = enabled;
+        DownscaleResolutionPanel.Opacity = enabled ? 1.0 : 0.5;
     }
 
     private void ResetScreenPrompt_Click(object sender, RoutedEventArgs e)

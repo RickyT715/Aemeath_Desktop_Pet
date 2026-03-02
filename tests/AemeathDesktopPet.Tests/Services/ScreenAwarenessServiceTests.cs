@@ -122,6 +122,55 @@ public class ScreenAwarenessServiceTests
         Assert.True(ScreenAwarenessService.MatchGlob("anything", "*"));
     }
 
+    // --- Enhanced Blacklist Defaults ---
+
+    [Fact]
+    public void DefaultBlacklist_Has16Entries()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.True(config.BlacklistedApps.Count >= 16);
+    }
+
+    [Fact]
+    public void DefaultBlacklist_ContainsPasswordManagers()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Contains("keepass.exe", config.BlacklistedApps);
+        Assert.Contains("1password.exe", config.BlacklistedApps);
+        Assert.Contains("bitwarden.exe", config.BlacklistedApps);
+        Assert.Contains("lastpass.exe", config.BlacklistedApps);
+    }
+
+    [Fact]
+    public void DefaultBlacklist_ContainsBrowserLoginPatterns()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Contains("chrome.exe:*login*", config.BlacklistedApps);
+        Assert.Contains("msedge.exe:*login*", config.BlacklistedApps);
+        Assert.Contains("firefox.exe:*login*", config.BlacklistedApps);
+    }
+
+    [Fact]
+    public void DefaultBlacklist_ContainsBrowserPasswordPatterns()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Contains("chrome.exe:*password*", config.BlacklistedApps);
+        Assert.Contains("msedge.exe:*password*", config.BlacklistedApps);
+        Assert.Contains("firefox.exe:*password*", config.BlacklistedApps);
+    }
+
+    [Fact]
+    public void MatchGlob_LoginPattern()
+    {
+        Assert.True(ScreenAwarenessService.MatchGlob("Login - Google Accounts", "*login*"));
+    }
+
+    [Fact]
+    public void MatchGlob_PasswordPattern()
+    {
+        Assert.True(ScreenAwarenessService.MatchGlob("Change Password - Settings", "*password*"));
+    }
+
     // --- Perceptual Hash ---
 
     [Fact]
@@ -227,6 +276,136 @@ public class ScreenAwarenessServiceTests
         var svc = CreateService(config);
         svc.Start();
         svc.Dispose();
+    }
+
+    // --- Provider Configuration Check ---
+
+    [Fact]
+    public void IsProviderConfigured_Gemini_NeedsApiKey()
+    {
+        var config = new ScreenAwarenessConfig { VisionProvider = "gemini", VisionApiKey = "" };
+        Assert.False(ScreenAwarenessService.IsProviderConfigured(config));
+
+        config.VisionApiKey = "test-key";
+        Assert.True(ScreenAwarenessService.IsProviderConfigured(config));
+    }
+
+    [Fact]
+    public void IsProviderConfigured_Claude_NeedsApiKey()
+    {
+        var config = new ScreenAwarenessConfig { VisionProvider = "claude", VisionApiKey = "" };
+        Assert.False(ScreenAwarenessService.IsProviderConfigured(config));
+
+        config.VisionApiKey = "test-key";
+        Assert.True(ScreenAwarenessService.IsProviderConfigured(config));
+    }
+
+    [Fact]
+    public void IsProviderConfigured_Ollama_NoKeyNeeded()
+    {
+        var config = new ScreenAwarenessConfig { VisionProvider = "ollama", VisionApiKey = "" };
+        Assert.True(ScreenAwarenessService.IsProviderConfigured(config));
+    }
+
+    [Fact]
+    public void IsProviderConfigured_LocalHybrid_NeedsHybridCloudKey()
+    {
+        var config = new ScreenAwarenessConfig { VisionProvider = "local_hybrid", HybridCloudApiKey = "" };
+        Assert.False(ScreenAwarenessService.IsProviderConfigured(config));
+
+        config.HybridCloudApiKey = "test-key";
+        Assert.True(ScreenAwarenessService.IsProviderConfigured(config));
+    }
+
+    // --- Config Defaults ---
+
+    [Fact]
+    public void ConfigDefaults_PrivacyLayersEnabledByDefault()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.True(config.EnableProtectedWindowCheck);
+        Assert.True(config.EnablePrivacyDownscale);
+        Assert.True(config.EnableResponsePiiScan);
+    }
+
+    [Fact]
+    public void ConfigDefaults_DownscaleWidth_Is480()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Equal(480, config.PrivacyDownscaleMaxWidth);
+    }
+
+    [Fact]
+    public void ConfigDefaults_OllamaSettings()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Equal("http://localhost:11434", config.OllamaBaseUrl);
+        Assert.Equal("qwen2.5vl:3b", config.OllamaModelName);
+    }
+
+    [Fact]
+    public void ConfigDefaults_HybridSettings()
+    {
+        var config = new ScreenAwarenessConfig();
+        Assert.Equal("gemini", config.HybridCloudProvider);
+        Assert.Equal("", config.HybridCloudApiKey);
+    }
+
+    // --- Ollama Response Parsing ---
+
+    [Fact]
+    public void ExtractOllamaContent_ValidResponse_ReturnsContent()
+    {
+        var json = """{"message":{"role":"assistant","content":"You seem to be coding!"},"done":true}""";
+        Assert.Equal("You seem to be coding!", ScreenAwarenessService.ExtractOllamaContent(json));
+    }
+
+    [Fact]
+    public void ExtractOllamaContent_EmptyContent_ReturnsEmpty()
+    {
+        var json = """{"message":{"role":"assistant","content":""},"done":true}""";
+        Assert.Equal("", ScreenAwarenessService.ExtractOllamaContent(json));
+    }
+
+    [Fact]
+    public void ExtractOllamaContent_MalformedJson_ReturnsNull()
+    {
+        Assert.Null(ScreenAwarenessService.ExtractOllamaContent("{bad json}"));
+    }
+
+    [Fact]
+    public void ExtractOllamaContent_MissingMessage_ReturnsNull()
+    {
+        var json = """{"done":true}""";
+        Assert.Null(ScreenAwarenessService.ExtractOllamaContent(json));
+    }
+
+    // --- Gemini/Claude Response Parsing ---
+
+    [Fact]
+    public void ExtractGeminiContent_ValidResponse_ReturnsText()
+    {
+        var json = """{"candidates":[{"content":{"parts":[{"text":"Looks like coding!"}]}}]}""";
+        Assert.Equal("Looks like coding!", ScreenAwarenessService.ExtractGeminiContent(json));
+    }
+
+    [Fact]
+    public void ExtractGeminiContent_MalformedJson_ReturnsNull()
+    {
+        Assert.Null(ScreenAwarenessService.ExtractGeminiContent("not json"));
+    }
+
+    [Fact]
+    public void ExtractClaudeContent_ValidResponse_ReturnsText()
+    {
+        var json = """{"content":[{"type":"text","text":"Nice code!"}]}""";
+        Assert.Equal("Nice code!", ScreenAwarenessService.ExtractClaudeContent(json));
+    }
+
+    [Fact]
+    public void ExtractClaudeContent_MalformedJson_ReturnsNull()
+    {
+        Assert.Null(ScreenAwarenessService.ExtractClaudeContent("not json"));
     }
 
     // --- Helper ---

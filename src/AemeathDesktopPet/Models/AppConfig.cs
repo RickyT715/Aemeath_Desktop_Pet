@@ -112,7 +112,12 @@ public class ScreenAwarenessConfig
     public string LocalModelName { get; set; } = "phi3-vision";
     public List<string> BlacklistedApps { get; set; } = new()
     {
-        "chrome.exe:*bank*", "keepass.exe", "1password.exe", "signal.exe"
+        "keepass.exe", "1password.exe", "bitwarden.exe", "lastpass.exe",
+        "signal.exe", "authy.exe",
+        "chrome.exe:*bank*", "chrome.exe:*login*", "chrome.exe:*password*",
+        "chrome.exe:*account*", "chrome.exe:*paypal*",
+        "msedge.exe:*bank*", "msedge.exe:*login*", "msedge.exe:*password*",
+        "firefox.exe:*bank*", "firefox.exe:*login*", "firefox.exe:*password*"
     };
     public bool BlurTaskbar { get; set; } = true;
     public bool BlurAddressBar { get; set; } = true;
@@ -120,6 +125,20 @@ public class ScreenAwarenessConfig
     public bool ShowScreenWatchIndicator { get; set; } = true;
     public string AnalysisPrompt { get; set; } =
         "[Screen Awareness] Look at this screenshot and make a brief, natural observation (1-2 sentences) about what the user seems to be doing. Be casual and in-character. NEVER read or repeat specific text, numbers, names, passwords, or identifiable information visible on screen. Just comment on the general activity.";
+
+    // Privacy layers
+    public bool EnableProtectedWindowCheck { get; set; } = true;
+    public bool EnablePrivacyDownscale { get; set; } = true;
+    public int PrivacyDownscaleMaxWidth { get; set; } = 480;
+    public bool EnableResponsePiiScan { get; set; } = true;
+
+    // Ollama (local vision)
+    public string OllamaBaseUrl { get; set; } = "http://localhost:11434";
+    public string OllamaModelName { get; set; } = "qwen2.5vl:3b";
+
+    // Local + Cloud Hybrid
+    public string HybridCloudProvider { get; set; } = "gemini";
+    public string HybridCloudApiKey { get; set; } = "";
 }
 
 public class ActivityMonitorConfig

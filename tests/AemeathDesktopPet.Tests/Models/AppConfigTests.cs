@@ -105,11 +105,67 @@ public class AppConfigTests
         var sa = new ScreenAwarenessConfig();
 
         Assert.NotNull(sa.BlacklistedApps);
-        Assert.Equal(4, sa.BlacklistedApps.Count);
+        Assert.Equal(17, sa.BlacklistedApps.Count);
         Assert.Contains("keepass.exe", sa.BlacklistedApps);
         Assert.Contains("1password.exe", sa.BlacklistedApps);
+        Assert.Contains("bitwarden.exe", sa.BlacklistedApps);
+        Assert.Contains("lastpass.exe", sa.BlacklistedApps);
         Assert.Contains("signal.exe", sa.BlacklistedApps);
         Assert.Contains("chrome.exe:*bank*", sa.BlacklistedApps);
+        Assert.Contains("msedge.exe:*bank*", sa.BlacklistedApps);
+        Assert.Contains("firefox.exe:*bank*", sa.BlacklistedApps);
+    }
+
+    [Fact]
+    public void ScreenAwarenessConfig_PrivacyLayerDefaults()
+    {
+        var sa = new ScreenAwarenessConfig();
+
+        Assert.True(sa.EnableProtectedWindowCheck);
+        Assert.True(sa.EnablePrivacyDownscale);
+        Assert.Equal(480, sa.PrivacyDownscaleMaxWidth);
+        Assert.True(sa.EnableResponsePiiScan);
+    }
+
+    [Fact]
+    public void ScreenAwarenessConfig_OllamaDefaults()
+    {
+        var sa = new ScreenAwarenessConfig();
+
+        Assert.Equal("http://localhost:11434", sa.OllamaBaseUrl);
+        Assert.Equal("qwen2.5vl:3b", sa.OllamaModelName);
+    }
+
+    [Fact]
+    public void ScreenAwarenessConfig_HybridDefaults()
+    {
+        var sa = new ScreenAwarenessConfig();
+
+        Assert.Equal("gemini", sa.HybridCloudProvider);
+        Assert.Equal("", sa.HybridCloudApiKey);
+    }
+
+    [Fact]
+    public void ScreenAwarenessConfig_MutablePrivacyProperties()
+    {
+        var sa = new ScreenAwarenessConfig();
+        sa.EnableProtectedWindowCheck = false;
+        sa.EnablePrivacyDownscale = false;
+        sa.PrivacyDownscaleMaxWidth = 320;
+        sa.EnableResponsePiiScan = false;
+        sa.OllamaBaseUrl = "http://myserver:11434";
+        sa.OllamaModelName = "llava:7b";
+        sa.HybridCloudProvider = "claude";
+        sa.HybridCloudApiKey = "hybrid-key";
+
+        Assert.False(sa.EnableProtectedWindowCheck);
+        Assert.False(sa.EnablePrivacyDownscale);
+        Assert.Equal(320, sa.PrivacyDownscaleMaxWidth);
+        Assert.False(sa.EnableResponsePiiScan);
+        Assert.Equal("http://myserver:11434", sa.OllamaBaseUrl);
+        Assert.Equal("llava:7b", sa.OllamaModelName);
+        Assert.Equal("claude", sa.HybridCloudProvider);
+        Assert.Equal("hybrid-key", sa.HybridCloudApiKey);
     }
 
     [Fact]

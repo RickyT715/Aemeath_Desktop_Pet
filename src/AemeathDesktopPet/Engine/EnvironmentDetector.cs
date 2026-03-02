@@ -75,6 +75,32 @@ public class EnvironmentDetector
     }
 
     /// <summary>
+    /// Checks if any visible window has a non-zero display affinity (DRM-protected content).
+    /// </summary>
+    public bool HasProtectedWindowVisible()
+    {
+        bool found = false;
+        var shellWnd = Win32Api.GetShellWindow();
+        var desktopWnd = Win32Api.GetDesktopWindow();
+
+        Win32Api.EnumWindows((hwnd, _) =>
+        {
+            if (hwnd == shellWnd || hwnd == desktopWnd) return true;
+            if (!Win32Api.IsWindowVisible(hwnd)) return true;
+            if (Win32Api.IsWindowCloaked(hwnd)) return true;
+
+            if (Win32Api.GetWindowDisplayAffinity(hwnd, out uint affinity) && affinity != 0)
+            {
+                found = true;
+                return false; // stop enumeration
+            }
+            return true;
+        }, IntPtr.Zero);
+
+        return found;
+    }
+
+    /// <summary>
     /// Enumerates all visible, non-cloaked windows and returns their bounds.
     /// </summary>
     public List<(IntPtr hwnd, Rect bounds, string title)> GetVisibleWindows()

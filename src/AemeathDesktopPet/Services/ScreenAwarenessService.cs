@@ -13,7 +13,9 @@ namespace AemeathDesktopPet.Services;
 /// <summary>
 /// Screen awareness service — periodically captures screenshots, analyzes via vision AI,
 /// and caches commentary for idle chatter consumption.
-/// Implements Tier 1 (app blacklist) + Tier 3 (cloud vision with privacy prompt).
+/// Privacy pipeline: Layer 0 (protected windows) → Layer 1 (app blacklist) → fullscreen skip →
+/// budget check → Layer 3 (privacy downscale) → perceptual hash dedup → vision analysis →
+/// Layer 7 (PII scan).
 /// </summary>
 public class ScreenAwarenessService : IScreenAwarenessService
 {
@@ -98,12 +100,25 @@ public class ScreenAwarenessService : IScreenAwarenessService
     {
         if (!IsEnabled) return null;
         var config = _getConfig();
-        if (string.IsNullOrWhiteSpace(config.VisionApiKey)) return null;
+        if (!IsProviderConfigured(config)) return null;
 
         try
         {
-            var screenshot = ScreenCaptureService.CaptureAndDownscale(768);
-            return await AnalyzeScreenshot(screenshot, config);
+            // Layer 0: Protected window check
+            if (config.EnableProtectedWindowCheck && _environment.HasProtectedWindowVisible())
+                return null;
+
+            // Layer 3: Privacy downscale
+            int captureWidth = config.EnablePrivacyDownscale ? config.PrivacyDownscaleMaxWidth : 768;
+            var screenshot = ScreenCaptureService.CaptureAndDownscale(captureWidth);
+
+            var commentary = await AnalyzeScreenshot(screenshot, config);
+
+            // Layer 7: PII scan
+            if (config.EnableResponsePiiScan && PiiScanner.ContainsPii(commentary))
+                return null;
+
+            return commentary;
         }
         catch
         {
@@ -123,19 +138,43 @@ public class ScreenAwarenessService : IScreenAwarenessService
             catch (OperationCanceledException) { break; }
 
             if (!IsEnabled) continue;
-            if (string.IsNullOrWhiteSpace(config.VisionApiKey)) continue;
-            if (_environment.IsFullscreenAppActive()) continue;
+            if (!IsProviderConfigured(config)) continue;
+
+            // Layer 0: Protected window check
+            if (config.EnableProtectedWindowCheck)
+            {
+                try
+                {
+                    if (_environment.HasProtectedWindowVisible()) continue;
+                }
+                catch { /* ignore Win32 errors */ }
+            }
+
+            // Layer 1: App/title blacklist (existing)
             if (IsBlacklisted(config)) continue;
+
+            // Fullscreen skip (existing)
+            if (_environment.IsFullscreenAppActive()) continue;
+
+            // Budget check (existing)
             if (IsOverBudget(config)) continue;
 
             try
             {
-                var screenshot = ScreenCaptureService.CaptureAndDownscale(768);
+                // Layer 3: Privacy downscale (configurable resolution)
+                int captureWidth = config.EnablePrivacyDownscale ? config.PrivacyDownscaleMaxWidth : 768;
+                var screenshot = ScreenCaptureService.CaptureAndDownscale(captureWidth);
+
+                // Perceptual hash dedup (existing)
                 if (!HasScreenChanged(screenshot)) continue;
 
                 var commentary = await AnalyzeScreenshot(screenshot, config);
                 if (!string.IsNullOrEmpty(commentary))
                 {
+                    // Layer 7: PII scan
+                    if (config.EnableResponsePiiScan && PiiScanner.ContainsPii(commentary))
+                        continue;
+
                     _lastCommentary = commentary;
                     TrackCost(screenshot.Length, config);
                 }
@@ -145,6 +184,24 @@ public class ScreenAwarenessService : IScreenAwarenessService
                 // Silently skip on any error — will retry next interval
             }
         }
+    }
+
+    // --- Provider Configuration Check ---
+
+    internal static bool IsProviderConfigured(ScreenAwarenessConfig config)
+    {
+        // Ollama and local_hybrid don't need VisionApiKey
+        if (config.VisionProvider is "ollama")
+            return true;
+
+        if (config.VisionProvider is "local_hybrid")
+        {
+            // Hybrid needs a cloud API key for the text-only step
+            return !string.IsNullOrWhiteSpace(config.HybridCloudApiKey);
+        }
+
+        // Cloud providers (gemini, claude) need VisionApiKey
+        return !string.IsNullOrWhiteSpace(config.VisionApiKey);
     }
 
     // --- Tier 1: App Blacklist ---
@@ -292,9 +349,13 @@ public class ScreenAwarenessService : IScreenAwarenessService
         // Rough cost estimate: ~443 tokens per 768px JPEG screenshot
         // Gemini Flash: $0.10/1M input tokens → ~$0.000044/screenshot
         // Claude Haiku: $1.00/1M input → ~$0.000443/screenshot
+        // Ollama: $0 (local)
+        // Local hybrid: ~$0.000005 (text-only cloud call)
         double costPerShot = config.VisionProvider switch
         {
             "gemini" => 0.000044,
+            "ollama" => 0.0,
+            "local_hybrid" => 0.000005,
             _ => 0.00133 // Claude Haiku estimate
         };
 
@@ -320,6 +381,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
         return config.VisionProvider switch
         {
             "gemini" => await AnalyzeWithGemini(screenshot, systemPrompt, analysisPrompt, config.VisionApiKey),
+            "ollama" => await AnalyzeWithOllama(screenshot, systemPrompt, analysisPrompt, config),
+            "local_hybrid" => await AnalyzeWithLocalHybrid(screenshot, systemPrompt, analysisPrompt, config),
             _ => await AnalyzeWithClaude(screenshot, systemPrompt, analysisPrompt, config.VisionApiKey),
         };
     }
@@ -417,7 +480,133 @@ public class ScreenAwarenessService : IScreenAwarenessService
         return ExtractClaudeContent(responseBody);
     }
 
-    private static string? ExtractGeminiContent(string json)
+    // --- Ollama (Local Vision) ---
+
+    private async Task<string?> AnalyzeWithOllama(byte[] screenshot, string systemPrompt, string analysisPrompt, ScreenAwarenessConfig config)
+    {
+        var base64 = Convert.ToBase64String(screenshot);
+        var payload = new
+        {
+            model = config.OllamaModelName,
+            messages = new object[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = analysisPrompt, images = new[] { base64 } }
+            },
+            stream = false
+        };
+
+        var json = JsonSerializer.Serialize(payload, JsonOpts);
+        var url = $"{config.OllamaBaseUrl.TrimEnd('/')}/api/chat";
+
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        var response = await _http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return ExtractOllamaContent(responseBody);
+    }
+
+    // --- Local + Cloud Hybrid ---
+
+    private async Task<string?> AnalyzeWithLocalHybrid(byte[] screenshot, string systemPrompt, string analysisPrompt, ScreenAwarenessConfig config)
+    {
+        // Step 1: Local Ollama generates a text description (raw pixels never leave device)
+        var localDescription = await AnalyzeWithOllama(
+            screenshot, "You are a screen content describer. Describe what you see in 2-3 sentences. Do not include any personal information, passwords, or specific text visible on screen.",
+            "Describe the general activity shown in this screenshot.", config);
+
+        if (string.IsNullOrEmpty(localDescription)) return null;
+
+        // Step 2: Text-only cloud call for personality commentary (no image sent)
+        var textPrompt = $"{analysisPrompt}\n\nContext from screen observation: {localDescription}";
+
+        return config.HybridCloudProvider switch
+        {
+            "claude" => await AnalyzeTextWithClaude(systemPrompt, textPrompt, config.HybridCloudApiKey),
+            _ => await AnalyzeTextWithGemini(systemPrompt, textPrompt, config.HybridCloudApiKey),
+        };
+    }
+
+    // Text-only cloud calls (no image) for hybrid mode
+
+    internal async Task<string?> AnalyzeTextWithGemini(string systemPrompt, string textPrompt, string apiKey)
+    {
+        var payload = new
+        {
+            systemInstruction = new { parts = new object[] { new { text = systemPrompt } } },
+            contents = new[]
+            {
+                new
+                {
+                    role = "user",
+                    parts = new object[]
+                    {
+                        new { text = textPrompt }
+                    }
+                }
+            },
+            generationConfig = new
+            {
+                maxOutputTokens = 100,
+                temperature = 0.8,
+            }
+        };
+
+        var json = JsonSerializer.Serialize(payload, JsonOpts);
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+
+        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        var response = await _http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return ExtractGeminiContent(responseBody);
+    }
+
+    internal async Task<string?> AnalyzeTextWithClaude(string systemPrompt, string textPrompt, string apiKey)
+    {
+        var payload = new
+        {
+            model = "claude-haiku-4-5-20251001",
+            max_tokens = 100,
+            system = systemPrompt,
+            messages = new[]
+            {
+                new
+                {
+                    role = "user",
+                    content = textPrompt
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(payload, JsonOpts);
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages")
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("x-api-key", apiKey);
+        request.Headers.Add("anthropic-version", "2023-06-01");
+
+        var response = await _http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        return ExtractClaudeContent(responseBody);
+    }
+
+    // --- Response Parsing ---
+
+    internal static string? ExtractGeminiContent(string json)
     {
         try
         {
@@ -435,7 +624,7 @@ public class ScreenAwarenessService : IScreenAwarenessService
         return null;
     }
 
-    private static string? ExtractClaudeContent(string json)
+    internal static string? ExtractClaudeContent(string json)
     {
         try
         {
@@ -443,6 +632,18 @@ public class ScreenAwarenessService : IScreenAwarenessService
             var content = doc.RootElement.GetProperty("content");
             if (content.GetArrayLength() > 0)
                 return content[0].GetProperty("text").GetString();
+        }
+        catch { }
+        return null;
+    }
+
+    internal static string? ExtractOllamaContent(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var message = doc.RootElement.GetProperty("message");
+            return message.GetProperty("content").GetString();
         }
         catch { }
         return null;
