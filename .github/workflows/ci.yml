@@ -42,7 +42,7 @@ jobs:
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@v5
-        if: success()
+        if: success() && hashFiles('**/TestResults/**/coverage.cobertura.xml') != ''
         with:
           reports: '**/TestResults/**/coverage.cobertura.xml'
           targetdir: CoverageReport
@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
-        if: success()
+        if: success() && hashFiles('CoverageReport/**') != ''
         with:
           name: coverage-report
           path: CoverageReport/
