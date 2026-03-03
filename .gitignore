@@ -28,6 +28,15 @@ Desktop.ini
 *.key
 appsettings.*.json
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+.mypy_cache/
+.pytest_cache/
+
 # Misc
 nul
 *.tmp
