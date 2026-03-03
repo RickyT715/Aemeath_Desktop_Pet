@@ -369,3 +369,185 @@
 - [ ] No Z-order flickering
 - [ ] Graceful offline mode
 - [ ] Battery mode detection (reduce activity)
+
+---
+
+## AI Architecture Overhaul
+
+### AO-1: CI/CD + Code Quality Foundation
+
+#### AO-1.1 Code Quality Files
+- [x] `.editorconfig` — C# naming, indentation, formatting, Python section
+- [x] `Directory.Build.props` — shared MSBuild: `EnableNETAnalyzers`, `AnalysisLevel=latest-recommended`, `Deterministic`, conditional `ContinuousIntegrationBuild`
+- [x] Simplify both `.csproj` by removing duplicated props (TargetFramework, UseWPF, Nullable, ImplicitUsings)
+
+#### AO-1.2 Enhanced CI Workflow
+- [x] Concurrency group (cancel in-progress)
+- [x] `dotnet format --verify-no-changes` step
+- [x] Code coverage: `--collect:"XPlat Code Coverage"` + `ReportGenerator` + `CodeCoverageSummary`
+- [x] Coverage artifact upload
+- [x] Python pytest job (python-backend with Python 3.12)
+
+#### AO-1.3 Release Workflow
+- [x] `.github/workflows/release.yml` — trigger on `v*.*.*` tags
+- [x] `dotnet publish` self-contained single-file win-x64
+- [x] `softprops/action-gh-release@v2` with artifact upload
+
+#### AO-1.4 README Badges
+- [x] Build, .NET, Python, Platform, License badges
+
+---
+
+### AO-2: Python FastAPI Sidecar Backend
+
+#### AO-2.1 Python Project Skeleton
+- [x] `python-backend/pyproject.toml` + `requirements.txt`
+- [x] `aemeath_agent/main.py` — FastAPI app, lifespan, `READY:{port}` stdout signal
+- [x] `aemeath_agent/config.py` — Pydantic Settings (`AEMEATH_` env prefix)
+- [x] `aemeath_agent/api/models.py` — Pydantic request/response schemas
+- [x] `aemeath_agent/api/sse.py` — SSE event formatting helpers
+- [x] `aemeath_agent/api/routes_health.py` — `GET /health`
+- [x] `aemeath_agent/api/routes_config.py` — `POST /config/sync`
+- [x] `aemeath_agent/api/routes_agent.py` — `POST /agent/stream` (SSE), `POST /agent/invoke`
+- [x] `aemeath_agent/api/routes_stt.py` — `POST /stt/transcribe`
+- [x] `aemeath_agent/api/routes_vision.py` — `POST /vision/analyze`
+- [x] `aemeath_agent/api/routes_rag.py` — `POST /rag/ingest`, `POST /rag/query`, `GET /rag/status`
+
+#### AO-2.2 C# BackendProcessManager
+- [x] `Services/BackendProcessManager.cs` — auto-detect bundled exe vs dev mode
+- [x] Watch stdout for `READY:{port}` signal
+- [x] Health poll with exponential backoff (max 10s)
+- [x] Crash recovery: `Process.Exited` → 3 retries with 5s delay
+- [x] Events: `BackendReady`, `BackendCrashed`
+
+#### AO-2.3 C# InternalApiServer
+- [x] `Services/InternalApiServer.cs` using `HttpListener` on port 18901
+- [x] `GET /internal/stats` — pet stats JSON
+- [x] `GET /internal/screen` — screenshot base64
+- [x] `POST /internal/music/control` — play/stop/next
+- [x] `GET /internal/pet/state` — FSM state, pomodoro mode
+
+#### AO-2.4 LangGraph Agent Core
+- [x] `agent/graph.py` — `create_aemeath_agent()` with `create_react_agent`, model selection, 9 tools
+- [x] `agent/prompts.py` — ported from C# `ChatPromptBuilder`, CHARACTER_PROMPT + TOOL_INSTRUCTIONS
+- [x] `agent/checkpointer.py` — `AsyncSqliteSaver` at `%LOCALAPPDATA%`
+- [x] `agent/memory_store.py` — LangGraph Store wrapper
+
+#### AO-2.5 C# BackendAgentService
+- [x] `Services/BackendAgentService.cs` implementing `IChatService`
+- [x] `StreamMessageAsync()` — POST `/agent/stream`, SSE parsing (token/tool_call/tool_result/done)
+- [x] `SendMessageAsync()` — POST `/agent/invoke`
+- [x] Three-tier fallback: Python → Direct API → Offline
+
+#### AO-2.6 Agent Tools (9+1 tools)
+- [x] `tools/web_search.py` — Tavily search
+- [x] `tools/weather.py` — OpenWeatherMap
+- [x] `tools/todo.py` — SQLite CRUD
+- [x] `tools/screen_reader.py` — calls C# `/internal/screen`
+- [x] `tools/music_control.py` — calls C# `/internal/music/control`
+- [x] `tools/pet_stats.py` — calls C# `/internal/stats`
+- [x] `tools/rag_retrieval.py` — ChromaDB search
+- [x] `tools/system_info.py` — psutil system info
+- [x] `tools/save_memory.py` — LangGraph Store write
+- [x] `tools/__init__.py` — `get_all_tools()` factory
+
+#### AO-2.7 STT + Vision Migration
+- [x] `stt/whisper_provider.py` + `stt/gemini_provider.py`
+- [x] `vision/analyzer.py` (dispatcher), `gemini_vision.py`, `claude_vision.py`, `ollama_vision.py`, `hybrid_vision.py`
+- [x] `Services/BackendSttService.cs` — `ISpeechToTextService` via Python
+- [x] `Services/BackendVisionService.cs` — vision analysis via Python
+
+#### AO-2.8 PetViewModel Integration
+- [x] `PetViewModel.cs` — BackendProcessManager + InternalApiServer fields
+- [x] `Initialize()` — start internal API, spawn Python in background
+- [x] `CreateChatService()` — three-tier fallback (Backend → Direct API → Offline)
+- [x] `Shutdown()` — stop Python, stop internal API
+
+#### AO-2.9 Config + Settings UI
+- [x] `AppConfig.cs` — `BackendConfig` (Enabled, Mode, Port, PythonPath, TavilyApiKey, etc.)
+- [x] `SettingsWindow.xaml/.cs` — Backend tab with toggle, mode, ports, tool API keys, status indicator
+
+#### AO-2.10 PyInstaller Build
+- [x] `scripts/build_exe.py` — single-folder dist packaging
+
+---
+
+### AO-3: RAG Module
+
+#### AO-3.1 Document Ingestion
+- [x] `rag/ingestion.py` — `PyPDFLoader`, `Docx2txtLoader`, `TextLoader`, `DirectoryLoader`
+- [x] `RecursiveCharacterTextSplitter` (1000 chars, 200 overlap)
+
+#### AO-3.2 Embedding + Vector Store
+- [x] `rag/vectorstore.py` — `gemini-embedding-001` (free), `all-MiniLM-L6-v2` offline fallback
+- [x] ChromaDB persistent at `data/chromadb/`
+
+#### AO-3.3 Hybrid Search + Reranking
+- [x] `rag/retriever.py` — `EnsembleRetriever` (BM25 0.4 + semantic 0.6)
+- [x] `CrossEncoderReranker` with `cross-encoder/ms-marco-MiniLM-L-6-v2` (retrieve 20 → top 5)
+
+#### AO-3.4 RAG API
+- [x] `POST /rag/ingest`, `POST /rag/query`, `GET /rag/status` routes
+
+#### AO-3.5 RAG Agent Tool
+- [x] `tools/rag_retrieval.py` — agent decides when to search knowledge base
+
+---
+
+### AO-4: MCP Integration
+
+#### AO-4.1 MCP Client
+- [x] `Services/McpClientService.cs` — JSON-RPC 2.0 over stdio (raw protocol, no SDK client)
+- [x] `ConnectAsync` — launch process, send `initialize` + `notifications/initialized`
+- [x] `ListToolsAsync` — `tools/list` request
+- [x] `CallToolAsync` — `tools/call` request with parameter forwarding
+
+#### AO-4.2 MCP Server
+- [x] `Services/McpServer/AemeathPetTools.cs` — `[McpServerToolType]` with 4 tools
+- [x] `GetPetStatus` — mood, energy, affection, lifetime stats
+- [x] `FeedPet` — boost mood (1-100)
+- [x] `PlayAnimation` — wave, laugh, sing, fly, sleep, happy, sigh
+- [x] `SendMessage` — send message to pet chat
+- [x] `ModelContextProtocol` NuGet 0.9.0-preview.2 (server SDK)
+
+#### AO-4.3 Config + UI
+- [x] `AppConfig.cs` — `McpConfig` (Enabled, ExposeAsServer, Servers list with `McpServerDefinition`)
+- [x] `SettingsWindow.xaml/.cs` — MCP tab for server management (add/remove/connect)
+
+---
+
+### AO-5: Testing + Documentation
+
+#### AO-5.1 Python Tests (pytest)
+- [x] `tests/test_health.py` — health endpoint (status ok, version, uptime)
+- [x] `tests/test_config.py` — Settings defaults, empty keys, factory
+- [x] `tests/test_models.py` — all Pydantic schemas
+- [x] `tests/test_sse.py` — SSE event formatting
+- [x] `tests/test_prompts.py` — system prompt builder with context injection
+- [x] `tests/test_tools.py` — system_info, todo CRUD
+- [x] `tests/test_bridge.py` — WpfBridgeClient default/custom URL, offline behavior
+- [x] `tests/test_vision.py` — unknown provider validation
+- [x] `tests/test_rag.py` — splitter config, text splitting, supported formats
+
+#### AO-5.2 C# Tests for New Services
+- [x] `BackendProcessManagerTests.cs` — port config, IsReady, LastError, dispose, events
+- [x] `InternalApiServerTests.cs` — constructor, dispose idempotent
+- [x] `BackendAgentServiceTests.cs` — IsAvailable, offline fallback, streaming
+- [x] `BackendSttServiceTests.cs` — IsAvailable, offline transcription
+- [x] `BackendVisionServiceTests.cs` — IsAvailable, offline analysis
+- [x] `BackendConfigTests.cs` — default values for BackendConfig, McpConfig, McpServerDefinition
+- [x] `McpClientServiceTests.cs` — empty init, IsConnected, dispose, disconnect, list/call nonexistent
+
+#### AO-5.3 CI Update
+- [x] `ci.yml` — pytest job for Python backend tests
+- [x] Coverage collection and reporting for C# tests
+
+#### AO-5.4 README Updates
+- [x] Architecture section with Mermaid C4 diagram
+- [x] Three-tier fallback documentation
+- [x] Python AI Backend section (tools table, RAG module, dev mode)
+- [x] MCP Integration section (exposed tools, consuming external servers)
+- [x] Badges (Build, .NET, Python, Platform, License)
+
+#### AO-5.5 CHECKLIST.md Update
+- [x] All AI Architecture Overhaul items documented and checked off
