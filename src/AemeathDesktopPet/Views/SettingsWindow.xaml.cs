@@ -14,6 +14,8 @@ public partial class SettingsWindow : Window
     private bool _geminiApiKeyVisible;
     private List<GptSovitsProfile> _sovitsProfiles = new();
     private bool _suppressProfileComboEvent;
+    private List<McpServerDefinition> _mcpServers = new();
+    private bool _suppressMcpEvent;
 
     public SettingsWindow(ConfigService config, MusicService music)
     {
@@ -79,6 +81,8 @@ public partial class SettingsWindow : Window
         SelectComboByTag(AiProviderCombo, c.AiProvider);
         ApiKeyBox.Password = c.ApiKey;
         GeminiApiKeyBox.Password = c.GeminiApiKey;
+        ProxyBaseUrlBox.Text = c.ProxyBaseUrl;
+        SelectComboByTag(ProxyModelCombo, c.ProxyModel);
         UpdateAiProviderPanels();
         EnableSingingBubblesCheck.IsChecked = c.EnableSinging;
 
@@ -148,6 +152,32 @@ public partial class SettingsWindow : Window
         AutoMuteFullscreenCheck.IsChecked = c.Tts.AutoMuteFullscreen;
         UpdateTtsPanel();
         UpdateTtsProviderPanels();
+
+        // Backend
+        EnableBackendCheck.IsChecked = c.Backend.Enabled;
+        SelectComboByTag(BackendModeCombo, c.Backend.Mode);
+        BackendPortBox.Text = c.Backend.Port.ToString();
+        InternalPortBox.Text = c.Backend.InternalPort.ToString();
+        PythonPathBox.Text = c.Backend.PythonPath;
+        TavilyApiKeyBox.Password = c.Backend.TavilyApiKey;
+        WeatherApiKeyBox.Password = c.Backend.OpenWeatherMapApiKey;
+        MaxRetriesBox.Text = c.Backend.MaxRetries.ToString();
+        UpdateBackendPanel();
+
+        // MCP
+        EnableMcpClientCheck.IsChecked = c.Mcp.Enabled;
+        EnableMcpServerCheck.IsChecked = c.Mcp.ExposeAsServer;
+        _mcpServers = c.Mcp.Servers
+            .Select(s => new McpServerDefinition
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Command = s.Command,
+                Arguments = s.Arguments,
+                TransportType = s.TransportType,
+                Enabled = s.Enabled
+            }).ToList();
+        PopulateMcpServerList();
     }
 
     private void SelectComboByTag(ComboBox combo, string value)
@@ -240,13 +270,13 @@ public partial class SettingsWindow : Window
 
     private void UpdateAiProviderPanels()
     {
-        if (ClaudeKeyPanel == null || GeminiKeyPanel == null) return;
+        if (ClaudeKeyPanel == null || GeminiKeyPanel == null || ProxyPanel == null) return;
 
         var provider = GetComboTag(AiProviderCombo, "claude");
-        bool isClaude = provider == "claude";
 
-        ClaudeKeyPanel.Opacity = isClaude ? 1.0 : 0.6;
-        GeminiKeyPanel.Opacity = isClaude ? 0.6 : 1.0;
+        ClaudeKeyPanel.Opacity = provider == "claude" ? 1.0 : 0.6;
+        GeminiKeyPanel.Opacity = provider == "gemini" ? 1.0 : 0.6;
+        ProxyPanel.Opacity = provider == "proxy" ? 1.0 : 0.6;
     }
 
     private void VoiceInputToggled(object sender, RoutedEventArgs e)
@@ -407,6 +437,8 @@ public partial class SettingsWindow : Window
         c.AiProvider = GetComboTag(AiProviderCombo, "claude");
         c.ApiKey = ApiKeyBox.Password;
         c.GeminiApiKey = GeminiApiKeyBox.Password;
+        c.ProxyBaseUrl = ProxyBaseUrlBox.Text;
+        c.ProxyModel = GetComboTag(ProxyModelCombo, "claude-sonnet-4-5-20250929");
         c.EnableSinging = EnableSingingBubblesCheck.IsChecked == true;
 
         // Screen Awareness
@@ -463,6 +495,25 @@ public partial class SettingsWindow : Window
         c.VoiceInput.Language = GetComboTag(SttLanguageCombo, "en");
         c.VoiceInput.IncludeScreenshot = VoiceIncludeScreenshotCheck.IsChecked == true;
         c.VoiceInput.Hotkey = HotkeyBox.Text;
+
+        // Backend
+        c.Backend.Enabled = EnableBackendCheck.IsChecked == true;
+        c.Backend.Mode = GetComboTag(BackendModeCombo, "auto");
+        if (int.TryParse(BackendPortBox.Text, out int backendPort))
+            c.Backend.Port = backendPort;
+        if (int.TryParse(InternalPortBox.Text, out int internalPort))
+            c.Backend.InternalPort = internalPort;
+        c.Backend.PythonPath = PythonPathBox.Text;
+        c.Backend.TavilyApiKey = TavilyApiKeyBox.Password;
+        c.Backend.OpenWeatherMapApiKey = WeatherApiKeyBox.Password;
+        if (int.TryParse(MaxRetriesBox.Text, out int maxRetries))
+            c.Backend.MaxRetries = maxRetries;
+
+        // MCP
+        c.Mcp.Enabled = EnableMcpClientCheck.IsChecked == true;
+        c.Mcp.ExposeAsServer = EnableMcpServerCheck.IsChecked == true;
+        SaveCurrentMcpServerEdits();
+        c.Mcp.Servers = _mcpServers;
 
         _config.Save();
         _music.SetMusicFolder(c.MusicFolderPath);
@@ -776,6 +827,142 @@ public partial class SettingsWindow : Window
     {
         var path = BrowseForFile("Executable or batch|*.exe;*.bat|All files|*.*");
         if (path != null) TodoPathBox.Text = path;
+    }
+
+    // --- Backend ---
+
+    private void BackendToggled(object sender, RoutedEventArgs e)
+    {
+        UpdateBackendPanel();
+    }
+
+    private void UpdateBackendPanel()
+    {
+        if (BackendPanel == null) return;
+        bool enabled = EnableBackendCheck.IsChecked == true;
+        BackendPanel.IsEnabled = enabled;
+        BackendPanel.Opacity = enabled ? 1.0 : 0.5;
+    }
+
+    private void BrowsePythonPath_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Select Python executable",
+            Filter = "Python|python.exe;python3.exe|All files|*.*",
+            CheckFileExists = false
+        };
+        if (dialog.ShowDialog(this) == true)
+            PythonPathBox.Text = dialog.FileName;
+    }
+
+    // --- MCP ---
+
+    private void PopulateMcpServerList()
+    {
+        _suppressMcpEvent = true;
+        McpServerListBox.Items.Clear();
+
+        foreach (var server in _mcpServers)
+        {
+            var prefix = server.Enabled ? "" : "[off] ";
+            McpServerListBox.Items.Add($"{prefix}{server.Name}");
+        }
+
+        _suppressMcpEvent = false;
+        UpdateMcpServerEditor();
+    }
+
+    private void McpServerList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressMcpEvent) return;
+        SaveCurrentMcpServerEdits();
+        UpdateMcpServerEditor();
+    }
+
+    private void UpdateMcpServerEditor()
+    {
+        if (McpServerEditor == null) return;
+
+        var server = GetSelectedMcpServer();
+        if (server == null)
+        {
+            McpServerEditor.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        McpServerEditor.Visibility = Visibility.Visible;
+        McpServerNameBox.Text = server.Name;
+        McpServerCommandBox.Text = server.Command;
+        McpServerArgsBox.Text = server.Arguments;
+        SelectComboByTag(McpTransportCombo, server.TransportType);
+        McpServerEnabledCheck.IsChecked = server.Enabled;
+    }
+
+    private McpServerDefinition? GetSelectedMcpServer()
+    {
+        int idx = McpServerListBox.SelectedIndex;
+        if (idx < 0 || idx >= _mcpServers.Count) return null;
+        return _mcpServers[idx];
+    }
+
+    private void SaveCurrentMcpServerEdits()
+    {
+        var server = GetSelectedMcpServer();
+        if (server == null || McpServerNameBox == null) return;
+
+        var newName = McpServerNameBox.Text.Trim();
+        if (!string.IsNullOrEmpty(newName))
+            server.Name = newName;
+
+        server.Command = McpServerCommandBox.Text;
+        server.Arguments = McpServerArgsBox.Text;
+        server.TransportType = GetComboTag(McpTransportCombo, "stdio");
+        server.Enabled = McpServerEnabledCheck.IsChecked == true;
+
+        // Refresh display name
+        int idx = McpServerListBox.SelectedIndex;
+        if (idx >= 0 && idx < McpServerListBox.Items.Count)
+        {
+            var prefix = server.Enabled ? "" : "[off] ";
+            McpServerListBox.Items[idx] = $"{prefix}{server.Name}";
+        }
+    }
+
+    private void McpAddServer_Click(object sender, RoutedEventArgs e)
+    {
+        int n = 1;
+        string name;
+        do
+        {
+            name = $"Server {n++}";
+        } while (_mcpServers.Any(s => s.Name == name));
+
+        var server = new McpServerDefinition
+        {
+            Id = Guid.NewGuid().ToString("N")[..8],
+            Name = name
+        };
+        _mcpServers.Add(server);
+        PopulateMcpServerList();
+        McpServerListBox.SelectedIndex = _mcpServers.Count - 1;
+    }
+
+    private void McpRemoveServer_Click(object sender, RoutedEventArgs e)
+    {
+        var server = GetSelectedMcpServer();
+        if (server == null) return;
+
+        var result = MessageBox.Show(
+            $"Remove server \"{server.Name}\"?",
+            "Remove MCP Server",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes) return;
+
+        _mcpServers.Remove(server);
+        PopulateMcpServerList();
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)

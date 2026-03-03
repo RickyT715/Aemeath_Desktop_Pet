@@ -306,6 +306,7 @@
                                       SelectionChanged="AiProviderCombo_SelectionChanged">
                                 <ComboBoxItem Content="Claude (Anthropic)" Tag="claude"/>
                                 <ComboBoxItem Content="Gemini (Google)" Tag="gemini"/>
+                                <ComboBoxItem Content="Claude Code Proxy" Tag="proxy"/>
                             </ComboBox>
                         </StackPanel>
 
@@ -339,6 +340,24 @@
                             </DockPanel>
                             <TextBlock Text="Get your key at aistudio.google.com. Leave empty for offline mode."
                                        Foreground="#888" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- Claude Code Proxy -->
+                        <StackPanel x:Name="ProxyPanel" Margin="0,0,0,10">
+                            <TextBlock Text="Proxy Base URL" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="ProxyBaseUrlBox"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3"/>
+                            <TextBlock Text="Default: http://localhost:42069. The proxy must be running."
+                                       Foreground="#888" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="Model" Foreground="{StaticResource TextBrush}" Margin="0,8,0,4"/>
+                            <ComboBox x:Name="ProxyModelCombo" Width="240" HorizontalAlignment="Left">
+                                <ComboBoxItem Content="Claude Sonnet 4.5" Tag="claude-sonnet-4-5-20250929"/>
+                                <ComboBoxItem Content="Claude Sonnet 4" Tag="claude-sonnet-4-20250514"/>
+                                <ComboBoxItem Content="Claude Opus 4" Tag="claude-opus-4-20250514"/>
+                                <ComboBoxItem Content="Claude Haiku 3.5" Tag="claude-3-5-haiku-20241022"/>
+                            </ComboBox>
                         </StackPanel>
 
                         <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,4,0,12"/>
@@ -748,6 +767,141 @@
                                      BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,4"/>
                             <TextBlock Text="Format: process.exe or process.exe:*title pattern*"
                                        Foreground="#777" FontSize="10" Margin="0,0,0,8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Backend Tab -->
+            <TabItem Header="Backend">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="AI Backend" FontWeight="Bold" FontSize="16"
+                                   Foreground="{StaticResource PrimaryPinkBrush}" Margin="0,0,0,12"/>
+                        <TextBlock Text="The Python backend provides agentic AI with tools, RAG memory, and advanced capabilities."
+                                   Foreground="#888" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                        <CheckBox x:Name="EnableBackendCheck"
+                                  Content="Enable AI Backend"
+                                  Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"
+                                  Checked="BackendToggled" Unchecked="BackendToggled"/>
+
+                        <StackPanel x:Name="BackendPanel">
+                            <TextBlock Text="Mode" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="BackendModeCombo" Width="160" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                <ComboBoxItem Content="Auto-detect" Tag="auto"/>
+                                <ComboBoxItem Content="Bundled (exe)" Tag="bundled"/>
+                                <ComboBoxItem Content="Developer (python)" Tag="dev"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Backend port" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="BackendPortBox" Width="80" HorizontalAlignment="Left"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Internal API port" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="InternalPortBox" Width="80" HorizontalAlignment="Left"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Python path (dev mode)" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <DockPanel Margin="0,0,0,8">
+                                <Button DockPanel.Dock="Right" Content="Browse..." Click="BrowsePythonPath_Click"
+                                        Padding="12,4" Margin="8,0,0,0"/>
+                                <TextBox x:Name="PythonPathBox"
+                                         Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                         BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3"/>
+                            </DockPanel>
+
+                            <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,4,0,12"/>
+                            <TextBlock Text="API Keys (for backend tools)" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource DigitalBlueBrush}" Margin="0,0,0,6"/>
+
+                            <TextBlock Text="Tavily API key (web search)" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <PasswordBox x:Name="TavilyApiKeyBox" Width="280" Padding="4,3"
+                                         Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                         BorderBrush="{StaticResource SeparatorBrush}" Margin="0,0,0,8" HorizontalAlignment="Left"/>
+
+                            <TextBlock Text="OpenWeatherMap API key" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <PasswordBox x:Name="WeatherApiKeyBox" Width="280" Padding="4,3"
+                                         Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                         BorderBrush="{StaticResource SeparatorBrush}" Margin="0,0,0,8" HorizontalAlignment="Left"/>
+
+                            <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,4,0,12"/>
+
+                            <TextBlock Text="Max crash retries" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="MaxRetriesBox" Width="60" HorizontalAlignment="Left"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,4,0,12"/>
+                            <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13"
+                                       Foreground="{StaticResource DigitalBlueBrush}" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="BackendStatusLabel" Text="Not started"
+                                       Foreground="#888" FontSize="12" Margin="0,0,0,8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- MCP Tab -->
+            <TabItem Header="MCP">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="MCP (Model Context Protocol)" FontWeight="Bold" FontSize="16"
+                                   Foreground="{StaticResource PrimaryPinkBrush}" Margin="0,0,0,12"/>
+                        <TextBlock Text="Connect to external MCP servers for additional tools and expose Aemeath as an MCP server."
+                                   Foreground="#888" FontSize="11" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                        <CheckBox x:Name="EnableMcpClientCheck"
+                                  Content="Enable MCP client (connect to external servers)"
+                                  Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"/>
+
+                        <CheckBox x:Name="EnableMcpServerCheck"
+                                  Content="Expose Aemeath as MCP server"
+                                  Foreground="{StaticResource TextBrush}" Margin="0,0,0,12"/>
+
+                        <Rectangle Height="1" Fill="{StaticResource SeparatorBrush}" Margin="0,4,0,12"/>
+                        <TextBlock Text="MCP Servers" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource DigitalBlueBrush}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Configure external MCP servers to connect to."
+                                   Foreground="#888" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+
+                        <ListBox x:Name="McpServerListBox" Height="100" Margin="0,0,0,8"
+                                 Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                 BorderBrush="{StaticResource SeparatorBrush}"
+                                 SelectionChanged="McpServerList_SelectionChanged"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Button Content="Add Server" Padding="12,4" Margin="0,0,8,0" Click="McpAddServer_Click"/>
+                            <Button Content="Remove" Padding="12,4" Click="McpRemoveServer_Click"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="McpServerEditor" Visibility="Collapsed">
+                            <TextBlock Text="Server name" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="McpServerNameBox" Width="240" HorizontalAlignment="Left"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Command" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="McpServerCommandBox"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Arguments" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="McpServerArgsBox"
+                                     Background="{StaticResource MidDarkBrush}" Foreground="{StaticResource TextBrush}"
+                                     BorderBrush="{StaticResource SeparatorBrush}" Padding="4,3" Margin="0,0,0,8"/>
+
+                            <TextBlock Text="Transport type" Foreground="{StaticResource TextBrush}" Margin="0,0,0,4"/>
+                            <ComboBox x:Name="McpTransportCombo" Width="120" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                <ComboBoxItem Content="stdio" Tag="stdio"/>
+                                <ComboBoxItem Content="SSE" Tag="sse"/>
+                            </ComboBox>
+
+                            <CheckBox x:Name="McpServerEnabledCheck"
+                                      Content="Enabled"
+                                      Foreground="{StaticResource TextBrush}" Margin="0,0,0,8"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

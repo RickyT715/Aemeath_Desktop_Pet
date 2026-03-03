@@ -2,7 +2,11 @@
 
 A desktop pet application featuring **Aemeath** (爱弥斯) from Wuthering Waves. She flies around your screen, reacts to your mouse, chats with you, and keeps you company while you work — accompanied by her black cat and paper planes.
 
-![.NET 8](https://img.shields.io/badge/.NET-8.0-purple) ![WPF](https://img.shields.io/badge/WPF-Windows-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+![Build](https://github.com/RickyC0626-archive/aemeath-desktop-pet/actions/workflows/ci.yml/badge.svg)
+![.NET 8](https://img.shields.io/badge/.NET-8.0-purple?logo=dotnet)
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
+![Platform](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 English | [中文](README_CN.md)
 
@@ -38,6 +42,9 @@ English | [中文](README_CN.md)
 - [Settings Panel](#settings-panel)
 - [Sprites](#sprites)
 - [Configuration & Data Files](#configuration--data-files)
+- [Architecture](#architecture)
+- [Python AI Backend](#python-ai-backend)
+- [MCP Integration](#mcp-integration)
 - [Project Structure](#project-structure)
 - [Dependencies](#dependencies)
 - [Testing](#testing)
@@ -52,6 +59,7 @@ English | [中文](README_CN.md)
 
 - **Windows 10/11** (x64)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (for building) or [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (for running published builds)
+- [Python 3.12+](https://python.org) (for AI backend — optional, falls back to direct API calls)
 
 ### Install .NET 8 SDK
 
@@ -232,7 +240,7 @@ Right-click Aemeath > **"How's Aemeath?"** to see gradient progress bars for eac
 
 ### AI Chat
 
-Double-click Aemeath or use the context menu to open the chat window. Two AI providers are supported:
+Double-click Aemeath or use the context menu to open the chat window. Three AI providers are supported:
 
 #### Claude (Anthropic)
 
@@ -247,6 +255,18 @@ Double-click Aemeath or use the context menu to open the chat window. Two AI pro
 2. Open **Settings** > **AI** tab
 3. Select **Gemini** as the provider
 4. Enter your API key
+
+#### Claude Code Proxy
+
+Use a local [claude-code-proxy](https://github.com/nicekid1/Claude-Code-Proxy) to route requests through Claude MAX subscription OAuth tokens — no API key needed.
+
+1. Install and start the proxy (`npm start` — runs on `http://localhost:42069` by default)
+2. Open **Settings** > **AI** tab
+3. Select **Claude Code Proxy** as the provider
+4. (Optional) Adjust the Proxy Base URL if your proxy runs on a different port
+5. (Optional) Select a model (Sonnet 4.5, Sonnet 4, Opus 4, or Haiku 3.5)
+
+The proxy exposes the standard Anthropic Messages API with SSE streaming. No API key is required — the proxy handles OAuth authentication transparently.
 
 #### Offline Fallback
 
@@ -862,11 +882,13 @@ Browse to select a folder. Aemeath will scan it for audio files and play a rando
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| AI Provider | Claude | Choose between Claude (Anthropic) or Gemini (Google) |
+| AI Provider | Claude | Choose between Claude (Anthropic), Gemini (Google), or Claude Code Proxy |
 | Claude API Key | (empty) | Your Anthropic API key |
 | Gemini API Key | (empty) | Your Google AI Studio API key |
+| Proxy Base URL | `http://localhost:42069` | Base URL for the Claude Code Proxy (only when Proxy selected) |
+| Proxy Model | Claude Sonnet 4.5 | Model to use via proxy: Sonnet 4.5, Sonnet 4, Opus 4, or Haiku 3.5 |
 
-API keys are stored locally in `config.json`. Without a key, chat falls back to offline scripted responses.
+API keys are stored locally in `config.json`. The proxy provider requires no API key — the proxy handles authentication. Without a key or proxy, chat falls back to offline scripted responses.
 
 ### Tab 5: Voice
 
@@ -916,6 +938,99 @@ API keys are stored locally in `config.json`. Without a key, chat falls back to 
 | Monthly budget cap | $5.00 | Spending limit for cloud vision API calls |
 | Analysis prompt | (default) | Customizable prompt for the vision AI. Reset button available |
 | Blacklisted apps | (17 defaults) | Apps/title patterns that block screenshots (one per line) |
+
+---
+
+## Architecture
+
+Aemeath uses a **polyglot microservice architecture** — a C# WPF frontend communicates with a Python FastAPI AI backend over REST + SSE.
+
+```mermaid
+C4Container
+    title Aemeath Desktop Pet — Container Architecture
+
+    Person(user, "User", "Interacts with desktop pet")
+
+    Container_Boundary(app, "Aemeath Application") {
+        Container(wpf, "WPF Frontend", "C#, .NET 8", "Pet UI, animations, physics, screen capture")
+        Container(python, "AI Backend", "Python, FastAPI", "LangGraph agent, RAG, tools, STT, vision")
+        Container(mcp_server, "MCP Server", "C#, .NET 8", "Exposes pet tools to external AI apps")
+        ContainerDb(sqlite, "Local Storage", "SQLite + JSON", "Chat memory, todos, vector DB, config")
+    }
+
+    System_Ext(llm, "LLM Providers", "Claude / Gemini / Proxy APIs")
+    System_Ext(mcp_ext, "External MCP Servers", "Weather, filesystem tools")
+    System_Ext(claude_desktop, "Claude Desktop / VS Code", "External MCP clients")
+
+    Rel(user, wpf, "Interacts with pet")
+    Rel(wpf, python, "REST + SSE", "localhost:18900")
+    Rel(python, llm, "HTTPS/SSE", "Streaming completions")
+    Rel(python, mcp_ext, "stdio", "External tool access")
+    Rel(python, sqlite, "Read/write")
+    Rel(wpf, sqlite, "Config, state")
+    Rel(claude_desktop, mcp_server, "stdio", "Control pet externally")
+```
+
+### Three-Tier Fallback
+
+| Tier | Provider | When Used |
+|------|----------|-----------|
+| 1 | **Python Backend Agent** (LangGraph + tools + memory) | Backend is running and healthy |
+| 2 | **Direct C# API** (ClaudeApiService / GeminiApiService / ProxyApiService) | Backend unavailable, API key or proxy present |
+| 3 | **Offline Responses** (OfflineResponses.cs) | No API keys configured |
+
+---
+
+## Python AI Backend
+
+The Python sidecar (`python-backend/`) provides the AI agent powered by LangGraph, with 9 tools:
+
+| Tool | Description |
+|------|-------------|
+| `search_web` | Tavily internet search |
+| `get_weather` | OpenWeatherMap current weather |
+| `manage_todo` | SQLite-backed todo list CRUD |
+| `read_screen` | Analyze screen via WPF bridge |
+| `control_music` | Play/stop/next music |
+| `get_pet_stats` | Query pet mood/energy/affection |
+| `rag_retrieve` | Hybrid BM25+semantic document search |
+| `get_system_info` | CPU, memory, disk, battery via psutil |
+| `save_memory` | Persist facts across sessions |
+
+### RAG Module
+
+- **Ingestion**: PDF, DOCX, TXT, Markdown, Python, CSV
+- **Chunking**: RecursiveCharacterTextSplitter (1000 chars, 200 overlap)
+- **Embeddings**: Gemini Embedding (free API) with local fallback (`all-MiniLM-L6-v2`)
+- **Vector Store**: ChromaDB (persistent, local)
+- **Retrieval**: Hybrid BM25 (0.4) + semantic (0.6), cross-encoder reranking (top 5 from 20)
+
+### Running the Backend (Dev Mode)
+
+```bash
+cd python-backend
+pip install -r requirements.txt
+python -m aemeath_agent.main
+```
+
+---
+
+## MCP Integration
+
+Aemeath is both an **MCP client** (consuming external tool servers) and an **MCP server** (exposing pet tools).
+
+### Exposed MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_pet_status` | Current mood, energy, affection |
+| `boost_mood` | Increase pet mood (1-100) |
+| `play_animation` | Trigger wave, laugh, sing, fly, sleep |
+| `send_message` | Send chat message to the pet |
+
+### Consuming External MCP Servers
+
+Add servers in **Settings > MCP** tab. Supports stdio transport for local servers.
 
 ---
 
@@ -969,6 +1084,8 @@ All data is stored in `%LOCALAPPDATA%\AemeathDesktopPet\`:
   "aiProvider": "claude",
   "claudeApiKey": "",
   "geminiApiKey": "",
+  "proxyBaseUrl": "http://localhost:42069",
+  "proxyModel": "claude-sonnet-4-5-20250929",
   "tts": {
     "enabled": false,
     "provider": "edgetts",
@@ -1060,6 +1177,7 @@ AemeathDesktopPet/
 │   │   ├── JsonPersistenceService.cs  # Stats + messages JSON storage
 │   │   ├── ClaudeApiService.cs     # Claude API with SSE streaming
 │   │   ├── GeminiApiService.cs     # Gemini API with streaming
+│   │   ├── ProxyApiService.cs      # Claude Code Proxy API (no API key needed)
 │   │   ├── ChatPromptBuilder.cs    # Shared system prompt for AI chat
 │   │   ├── IChatService.cs         # Chat provider interface
 │   │   ├── ITtsService.cs          # TTS service interface
@@ -1103,10 +1221,10 @@ AemeathDesktopPet/
 │       ├── Aemeath/                # 8 character GIF animations
 │       └── Seal/                   # Seal transformation sprite
 │
-├── tests/AemeathDesktopPet.Tests/  # 618 tests across 41 classes
+├── tests/AemeathDesktopPet.Tests/  # 791 tests across 42+ classes
 │   ├── Models/                    # 10 test classes
 │   ├── Engine/                    # 8 test classes
-│   ├── Services/                  # 20 test classes (unit + integration + E2E)
+│   ├── Services/                  # 21 test classes (unit + integration + E2E)
 │   ├── ViewModels/                # 2 test classes
 │   └── Interop/                   # 1 test class
 │
@@ -1151,7 +1269,7 @@ dotnet test tests/AemeathDesktopPet.Tests/ -v normal
 |----------|---------|-------|---------------|
 | **Models** | 10 | ~80 | Config defaults, stat calculations, state enums, serialization |
 | **Engine** | 8 | ~130 | Animation, behavior FSM, physics, particles, glitch, time awareness |
-| **Services** | 18+ | ~270 | All services including AI, TTS, screen awareness, PII scanner, config persistence |
+| **Services** | 21+ | ~310 | All services including AI (Claude, Gemini, Proxy), TTS, screen awareness, PII scanner, config persistence |
 | **ViewModels** | 2 | ~50 | PetViewModel orchestration, ChatViewModel streaming |
 | **Interop** | 1 | ~18 | Win32 API wrappers |
 | **Integration** | 1 | ~15 | Config roundtrip, privacy pipeline flow, HTTP provider simulation |
@@ -1216,7 +1334,7 @@ Tests Edge TTS, GPT-SoVITS, and ElevenLabs providers with real audio output.
 - **Edge_tts_sharp** — Free Edge TTS synthesis
 - **Microsoft.Data.Sqlite** — Read-only SQLite access for activity monitor integration
 - **System.Text.Json** — Configuration and persistence
-- **xUnit** — 618 tests across 41 test classes (unit, integration, E2E)
+- **xUnit** — 791 C# tests + 157 Python tests across 42+ test classes (unit, integration, E2E)
 
 ---
 

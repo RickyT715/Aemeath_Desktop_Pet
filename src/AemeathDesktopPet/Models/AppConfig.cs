@@ -18,9 +18,13 @@ public class AppConfig
     public bool CloseToTray { get; set; } = true;
     public string Theme { get; set; } = "default";
 
-    // AI Provider: "claude" or "gemini"
+    // AI Provider: "claude", "gemini", or "proxy"
     public string AiProvider { get; set; } = "claude";
     public string GeminiApiKey { get; set; } = "";
+
+    // Claude Code Proxy
+    public string ProxyBaseUrl { get; set; } = "http://localhost:42069";
+    public string ProxyModel { get; set; } = "claude-sonnet-4-5-20250929";
 
     // Music
     public string MusicFolderPath { get; set; } = "";
@@ -36,6 +40,8 @@ public class AppConfig
     public ActivityMonitorConfig ActivityMonitor { get; set; } = new();
     public SpeechFrequencyConfig SpeechFrequency { get; set; } = new();
     public CompanionAppsConfig CompanionApps { get; set; } = new();
+    public BackendConfig Backend { get; set; } = new();
+    public McpConfig Mcp { get; set; } = new();
 }
 
 public class TtsConfig
@@ -207,4 +213,33 @@ public class CompanionAppsConfig
     public string MonitorPath { get; set; } = @"D:\Study\Project\Computer_and_Chrome_Monitor_with_AI_Analysis\run.bat";
     public bool LaunchTodoList { get; set; } = false;
     public string TodoListPath { get; set; } = @"D:\Study\Project\To_Do_List\run.bat";
+}
+
+public class BackendConfig
+{
+    public bool Enabled { get; set; } = true;
+    public string Mode { get; set; } = "auto"; // "auto", "bundled", "dev"
+    public int Port { get; set; } = 18900;
+    public int InternalPort { get; set; } = 18901;
+    public string PythonPath { get; set; } = "python";
+    public string TavilyApiKey { get; set; } = "";
+    public string OpenWeatherMapApiKey { get; set; } = "";
+    public int MaxRetries { get; set; } = 3;
+}
+
+public class McpConfig
+{
+    public bool Enabled { get; set; } = false;
+    public bool ExposeAsServer { get; set; } = false;
+    public List<McpServerDefinition> Servers { get; set; } = new();
+}
+
+public class McpServerDefinition
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Command { get; set; } = "";
+    public string Arguments { get; set; } = "";
+    public string TransportType { get; set; } = "stdio";
+    public bool Enabled { get; set; } = true;
 }

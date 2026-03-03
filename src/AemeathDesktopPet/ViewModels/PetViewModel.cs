@@ -47,6 +47,10 @@ public class PetViewModel : INotifyPropertyChanged
     // Activity monitor
     private readonly ActivityMonitorService _activityMonitor;
 
+    // Backend integration
+    private BackendProcessManager? _backendManager;
+    private InternalApiServer? _internalApi;
+
     // Bindable properties
     private BitmapSource? _currentFrame;
     private double _petX;
@@ -106,6 +110,7 @@ public class PetViewModel : INotifyPropertyChanged
     public IScreenAwarenessService ScreenAwareness => _screenAwareness;
     public BehaviorEngine Behavior => _behavior;
     public AemeathStats CurrentStats => _stats.Stats;
+    public BackendProcessManager? BackendManager => _backendManager;
 
     public PetViewModel()
     {
@@ -213,6 +218,27 @@ public class PetViewModel : INotifyPropertyChanged
 
         if (_screenAwareness.IsEnabled)
             _screenAwareness.Start();
+
+        // Start backend if enabled
+        if (_config.Config.Backend.Enabled)
+        {
+            _internalApi = new InternalApiServer(
+                _config.Config.Backend.InternalPort,
+                _stats,
+                _music,
+                _behavior,
+                _pomodoroIntegration);
+            _internalApi.StartAsync();
+
+            _backendManager = new BackendProcessManager(_config.Config.Backend);
+            _backendManager.BackendReady += (_, _) =>
+            {
+                // Recreate chat service to use backend agent
+                _chat = CreateChatService();
+                _stt = CreateSttService();
+            };
+            _ = _backendManager.StartAsync();
+        }
     }
 
     public void Shutdown()
@@ -236,6 +262,14 @@ public class PetViewModel : INotifyPropertyChanged
         _globalHotkey.Dispose();
         _voiceInput.Dispose();
         _pomodoroIntegration?.Dispose();
+
+        // Stop backend
+        if (_backendManager != null)
+        {
+            _backendManager.StopAsync().GetAwaiter().GetResult();
+            _backendManager.Dispose();
+        }
+        _internalApi?.Dispose();
     }
 
     /// <summary>
@@ -275,13 +309,35 @@ public class PetViewModel : INotifyPropertyChanged
         {
             _globalHotkey.Stop();
         }
+
+        // Sync config to backend if running
+        if (_backendManager is { IsReady: true })
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+                    var json = System.Text.Json.JsonSerializer.Serialize(new { status = "sync" });
+                    await http.PostAsync(
+                        $"http://localhost:{_backendManager.Port}/config/sync",
+                        new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+                }
+                catch { /* Backend may not be ready */ }
+            });
+        }
     }
 
     private IChatService CreateChatService()
     {
+        // Three-tier fallback: Backend agent > Cloud API > Offline
+        if (_backendManager is { IsReady: true })
+            return new BackendAgentService(_backendManager, () => _stats.Stats);
+
         return _config.Config.AiProvider switch
         {
             "gemini" => new GeminiApiService(() => _config.Config, () => _stats.Stats),
+            "proxy" => new ProxyApiService(() => _config.Config, () => _stats.Stats),
             _ => new ClaudeApiService(() => _config.Config, () => _stats.Stats),
         };
     }
@@ -290,6 +346,10 @@ public class PetViewModel : INotifyPropertyChanged
     {
         var vi = _config.Config.VoiceInput;
         if (!vi.Enabled) return null;
+
+        // If backend is ready, use its STT endpoint
+        if (_backendManager is { IsReady: true })
+            return new BackendSttService(_backendManager);
 
         return vi.SttProvider switch
         {
