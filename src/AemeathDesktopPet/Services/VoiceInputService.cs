@@ -23,7 +23,8 @@ public class VoiceInputService : IDisposable
 
     public void StartRecording()
     {
-        if (_isRecording) return;
+        if (_isRecording)
+            return;
 
         _buffer = new MemoryStream();
         _waveIn = new WaveInEvent
@@ -79,7 +80,8 @@ public class VoiceInputService : IDisposable
         {
             short sample = (short)(e.Buffer[i] | (e.Buffer[i + 1] << 8));
             float abs = Math.Abs(sample / 32768f);
-            if (abs > max) max = abs;
+            if (abs > max)
+                max = abs;
         }
         AudioLevelChanged?.Invoke(max);
     }

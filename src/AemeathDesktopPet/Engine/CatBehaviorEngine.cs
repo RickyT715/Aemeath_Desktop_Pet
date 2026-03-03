@@ -109,7 +109,8 @@ public class CatBehaviorEngine
 
     public void OnAemeathDragged()
     {
-        if (_currentState == CatState.CatNap) return;
+        if (_currentState == CatState.CatNap)
+            return;
         TransitionTo(CatState.CatWatch, 3.0);
     }
 
@@ -149,7 +150,8 @@ public class CatBehaviorEngine
             return;
         }
 
-        if (elapsed < _stateDuration) return;
+        if (elapsed < _stateDuration)
+            return;
 
         PickNextState();
     }

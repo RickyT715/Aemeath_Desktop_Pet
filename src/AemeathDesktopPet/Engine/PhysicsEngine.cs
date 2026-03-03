@@ -156,8 +156,10 @@ public class PhysicsEngine
     /// </summary>
     internal void SimulateTick(double dt)
     {
-        if (IsDragging) return;
-        if (dt <= 0) return;
+        if (IsDragging)
+            return;
+        if (dt <= 0)
+            return;
 
         bool moved = false;
 

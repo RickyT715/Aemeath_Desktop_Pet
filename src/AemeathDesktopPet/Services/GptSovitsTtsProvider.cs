@@ -34,7 +34,8 @@ internal class GptSovitsTtsProvider : ITtsProvider
 
     public async Task<byte[]?> SynthesizeAsync(string text, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
 
         var config = _getConfig();
         var baseUrl = config.GptsovitsUrl.TrimEnd('/');

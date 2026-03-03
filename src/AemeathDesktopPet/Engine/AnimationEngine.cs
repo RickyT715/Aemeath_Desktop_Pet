@@ -49,7 +49,8 @@ public class AnimationEngine
     public void PreloadAll()
     {
         var ameathDir = Path.Combine(_spritesDir, "Aemeath");
-        if (!Directory.Exists(ameathDir)) return;
+        if (!Directory.Exists(ameathDir))
+            return;
 
         foreach (var gif in Directory.EnumerateFiles(ameathDir, "*.gif"))
         {
@@ -117,7 +118,8 @@ public class AnimationEngine
 
     private void OnTimerTick(object? sender, EventArgs e)
     {
-        if (_currentFrames is null) return;
+        if (_currentFrames is null)
+            return;
 
         _currentFrameIndex++;
 

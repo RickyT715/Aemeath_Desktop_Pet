@@ -34,7 +34,8 @@ internal class OpenAiTtsProvider : ITtsProvider
 
     public async Task<byte[]?> SynthesizeAsync(string text, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
 
         var config = _getConfig();
         var model = string.IsNullOrWhiteSpace(config.OpenAiTtsModel)

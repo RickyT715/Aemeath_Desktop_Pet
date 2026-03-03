@@ -121,7 +121,8 @@ public class WindowEdgeManager
                 bool found = false;
                 foreach (var (_, _, title) in windows)
                 {
-                    if (title == NearbyWindowTitle) { found = true; break; }
+                    if (title == NearbyWindowTitle)
+                    { found = true; break; }
                 }
                 if (!found)
                 {

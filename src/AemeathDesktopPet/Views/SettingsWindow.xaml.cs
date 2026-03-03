@@ -270,7 +270,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateAiProviderPanels()
     {
-        if (ClaudeKeyPanel == null || GeminiKeyPanel == null || ProxyPanel == null) return;
+        if (ClaudeKeyPanel == null || GeminiKeyPanel == null || ProxyPanel == null)
+            return;
 
         var provider = GetComboTag(AiProviderCombo, "claude");
 
@@ -286,7 +287,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateVoiceInputPanel()
     {
-        if (VoiceInputPanel == null) return;
+        if (VoiceInputPanel == null)
+            return;
         bool enabled = EnableVoiceInputCheck.IsChecked == true;
         VoiceInputPanel.IsEnabled = enabled;
         VoiceInputPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -299,7 +301,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateSttProviderPanels()
     {
-        if (WhisperKeyPanel == null || GeminiSttNote == null) return;
+        if (WhisperKeyPanel == null || GeminiSttNote == null)
+            return;
         var provider = GetComboTag(SttProviderCombo, "whisper");
         bool isWhisper = provider == "whisper";
         WhisperKeyPanel.Visibility = isWhisper ? Visibility.Visible : Visibility.Collapsed;
@@ -313,7 +316,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateTtsPanel()
     {
-        if (TtsPanel == null) return;
+        if (TtsPanel == null)
+            return;
         bool enabled = EnableTtsCheck.IsChecked == true;
         TtsPanel.IsEnabled = enabled;
         TtsPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -327,7 +331,8 @@ public partial class SettingsWindow : Window
     private void UpdateTtsProviderPanels()
     {
         if (EdgeTtsPanel == null || SovitsPanel == null || ElevenLabsPanel == null
-            || FishAudioPanel == null || OpenAiTtsPanel == null) return;
+            || FishAudioPanel == null || OpenAiTtsPanel == null)
+            return;
 
         var provider = GetComboTag(TtsProviderCombo, "edgetts");
         EdgeTtsPanel.Visibility = provider == "edgetts" ? Visibility.Visible : Visibility.Collapsed;
@@ -548,14 +553,16 @@ public partial class SettingsWindow : Window
 
     private void SovitsProfileCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressProfileComboEvent) return;
+        if (_suppressProfileComboEvent)
+            return;
         SaveCurrentProfileEdits();
         UpdateSovitsProfileEditor();
     }
 
     private void UpdateSovitsProfileEditor()
     {
-        if (SovitsProfileEditor == null) return;
+        if (SovitsProfileEditor == null)
+            return;
 
         var profile = GetSelectedSovitsProfile();
         if (profile == null)
@@ -582,7 +589,8 @@ public partial class SettingsWindow : Window
     private GptSovitsProfile? GetSelectedSovitsProfile()
     {
         var name = GetSelectedSovitsProfileName();
-        if (string.IsNullOrEmpty(name)) return null;
+        if (string.IsNullOrEmpty(name))
+            return null;
         return _sovitsProfiles.FirstOrDefault(p => p.Name == name);
     }
 
@@ -596,7 +604,8 @@ public partial class SettingsWindow : Window
     private void SaveCurrentProfileEdits()
     {
         var profile = GetSelectedSovitsProfile();
-        if (profile == null) return;
+        if (profile == null)
+            return;
 
         var newName = SovitsProfileNameBox.Text.Trim();
         if (!string.IsNullOrEmpty(newName) && newName != profile.Name)
@@ -635,7 +644,8 @@ public partial class SettingsWindow : Window
     private void SovitsDeleteProfile_Click(object sender, RoutedEventArgs e)
     {
         var profile = GetSelectedSovitsProfile();
-        if (profile == null) return;
+        if (profile == null)
+            return;
 
         var result = MessageBox.Show(
             $"Delete profile \"{profile.Name}\"?",
@@ -643,7 +653,8 @@ public partial class SettingsWindow : Window
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageBoxResult.Yes)
+            return;
 
         _sovitsProfiles.Remove(profile);
         PopulateSovitsProfileCombo("");
@@ -664,19 +675,22 @@ public partial class SettingsWindow : Window
     private void BrowseGptWeights_Click(object sender, RoutedEventArgs e)
     {
         var path = BrowseForFile("GPT weights|*.ckpt|All files|*.*");
-        if (path != null) SovitsGptWeightsBox.Text = path;
+        if (path != null)
+            SovitsGptWeightsBox.Text = path;
     }
 
     private void BrowseSovitsWeights_Click(object sender, RoutedEventArgs e)
     {
         var path = BrowseForFile("SoVITS weights|*.pth|All files|*.*");
-        if (path != null) SovitsSovitsWeightsBox.Text = path;
+        if (path != null)
+            SovitsSovitsWeightsBox.Text = path;
     }
 
     private void BrowseRefAudio_Click(object sender, RoutedEventArgs e)
     {
         var path = BrowseForFile("Audio files|*.wav;*.mp3;*.flac;*.ogg|All files|*.*");
-        if (path != null) SovitsRefAudioBox.Text = path;
+        if (path != null)
+            SovitsRefAudioBox.Text = path;
     }
 
     private string? BrowseForFile(string filter)
@@ -698,7 +712,8 @@ public partial class SettingsWindow : Window
 
     private void UpdatePomodoroPromptsPanel()
     {
-        if (PomodoroPromptsPanel == null) return;
+        if (PomodoroPromptsPanel == null)
+            return;
         bool enabled = EnablePomodoroIntegrationCheck.IsChecked == true;
         PomodoroPromptsPanel.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -722,7 +737,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateActivityMonitorPanel()
     {
-        if (ActivityMonitorPanel == null) return;
+        if (ActivityMonitorPanel == null)
+            return;
         bool enabled = EnableActivityMonitorCheck.IsChecked == true;
         ActivityMonitorPanel.IsEnabled = enabled;
         ActivityMonitorPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -760,7 +776,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateScreenAwarenessPanel()
     {
-        if (ScreenAwarenessPanel == null) return;
+        if (ScreenAwarenessPanel == null)
+            return;
         bool enabled = EnableScreenCheck.IsChecked == true;
         ScreenAwarenessPanel.IsEnabled = enabled;
         ScreenAwarenessPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -779,7 +796,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateVisionProviderPanels()
     {
-        if (VisionApiKeyPanel == null || OllamaPanel == null || HybridCloudPanel == null) return;
+        if (VisionApiKeyPanel == null || OllamaPanel == null || HybridCloudPanel == null)
+            return;
 
         var provider = GetComboTag(VisionProviderCombo, "gemini");
 
@@ -803,7 +821,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateDownscalePanel()
     {
-        if (DownscaleResolutionPanel == null) return;
+        if (DownscaleResolutionPanel == null)
+            return;
         bool enabled = EnablePrivacyDownscaleCheck.IsChecked == true;
         DownscaleResolutionPanel.IsEnabled = enabled;
         DownscaleResolutionPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -820,13 +839,15 @@ public partial class SettingsWindow : Window
     private void BrowseMonitorPath_Click(object sender, RoutedEventArgs e)
     {
         var path = BrowseForFile("Executable or batch|*.exe;*.bat|All files|*.*");
-        if (path != null) MonitorPathBox.Text = path;
+        if (path != null)
+            MonitorPathBox.Text = path;
     }
 
     private void BrowseTodoPath_Click(object sender, RoutedEventArgs e)
     {
         var path = BrowseForFile("Executable or batch|*.exe;*.bat|All files|*.*");
-        if (path != null) TodoPathBox.Text = path;
+        if (path != null)
+            TodoPathBox.Text = path;
     }
 
     // --- Backend ---
@@ -838,7 +859,8 @@ public partial class SettingsWindow : Window
 
     private void UpdateBackendPanel()
     {
-        if (BackendPanel == null) return;
+        if (BackendPanel == null)
+            return;
         bool enabled = EnableBackendCheck.IsChecked == true;
         BackendPanel.IsEnabled = enabled;
         BackendPanel.Opacity = enabled ? 1.0 : 0.5;
@@ -875,14 +897,16 @@ public partial class SettingsWindow : Window
 
     private void McpServerList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressMcpEvent) return;
+        if (_suppressMcpEvent)
+            return;
         SaveCurrentMcpServerEdits();
         UpdateMcpServerEditor();
     }
 
     private void UpdateMcpServerEditor()
     {
-        if (McpServerEditor == null) return;
+        if (McpServerEditor == null)
+            return;
 
         var server = GetSelectedMcpServer();
         if (server == null)
@@ -902,14 +926,16 @@ public partial class SettingsWindow : Window
     private McpServerDefinition? GetSelectedMcpServer()
     {
         int idx = McpServerListBox.SelectedIndex;
-        if (idx < 0 || idx >= _mcpServers.Count) return null;
+        if (idx < 0 || idx >= _mcpServers.Count)
+            return null;
         return _mcpServers[idx];
     }
 
     private void SaveCurrentMcpServerEdits()
     {
         var server = GetSelectedMcpServer();
-        if (server == null || McpServerNameBox == null) return;
+        if (server == null || McpServerNameBox == null)
+            return;
 
         var newName = McpServerNameBox.Text.Trim();
         if (!string.IsNullOrEmpty(newName))
@@ -951,7 +977,8 @@ public partial class SettingsWindow : Window
     private void McpRemoveServer_Click(object sender, RoutedEventArgs e)
     {
         var server = GetSelectedMcpServer();
-        if (server == null) return;
+        if (server == null)
+            return;
 
         var result = MessageBox.Show(
             $"Remove server \"{server.Name}\"?",
@@ -959,7 +986,8 @@ public partial class SettingsWindow : Window
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageBoxResult.Yes)
+            return;
 
         _mcpServers.Remove(server);
         PopulateMcpServerList();

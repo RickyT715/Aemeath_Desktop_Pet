@@ -345,7 +345,8 @@ public class PetViewModel : INotifyPropertyChanged
     private ISpeechToTextService? CreateSttService()
     {
         var vi = _config.Config.VoiceInput;
-        if (!vi.Enabled) return null;
+        if (!vi.Enabled)
+            return null;
 
         // If backend is ready, use its STT endpoint
         if (_backendManager is { IsReady: true })
@@ -362,7 +363,8 @@ public class PetViewModel : INotifyPropertyChanged
 
     public void OnLeftClick()
     {
-        if (_isDragging) return;
+        if (_isDragging)
+            return;
         _behavior.ForceState(PetState.Wave, 1.5);
         _stats.OnPetted();
         _particles.Emit(ParticleType.Heart, PetX + SpriteSize / 2, PetY, 2);
@@ -370,7 +372,8 @@ public class PetViewModel : INotifyPropertyChanged
 
     public void OnPetHappy()
     {
-        if (_isDragging) return;
+        if (_isDragging)
+            return;
         _behavior.ForceState(PetState.PetHappy, 1.5);
         _stats.OnPetted();
         _particles.Emit(ParticleType.Sparkle, PetX + SpriteSize / 2, PetY, 3);
@@ -390,15 +393,18 @@ public class PetViewModel : INotifyPropertyChanged
 
     public void OnDragMove(double newX, double newY)
     {
-        if (!_isDragging) return;
+        if (!_isDragging)
+            return;
 
         double minX = _physics.ScreenBounds.Left;
         double maxX = _physics.ScreenBounds.Right - SpriteSize;
         double minY = _physics.ScreenBounds.Top;
         double maxY = _physics.ScreenBounds.Bottom - SpriteSize;
 
-        if (maxX >= minX) newX = Math.Clamp(newX, minX, maxX);
-        if (maxY >= minY) newY = Math.Clamp(newY, minY, maxY);
+        if (maxX >= minX)
+            newX = Math.Clamp(newX, minX, maxX);
+        if (maxY >= minY)
+            newY = Math.Clamp(newY, minY, maxY);
 
         _physics.X = newX;
         _physics.Y = newY;
@@ -408,7 +414,8 @@ public class PetViewModel : INotifyPropertyChanged
 
     public void OnDragEnd()
     {
-        if (!_isDragging) return;
+        if (!_isDragging)
+            return;
         _isDragging = false;
         _physics.EndDrag();
         _behavior.ForceState(PetState.Idle);
@@ -446,7 +453,8 @@ public class PetViewModel : INotifyPropertyChanged
 
     public void OnCallCat()
     {
-        if (!_config.Config.EnableBlackCat) return;
+        if (!_config.Config.EnableBlackCat)
+            return;
         _catBehavior.OnAemeathMoved(PetX, PetY);
     }
 

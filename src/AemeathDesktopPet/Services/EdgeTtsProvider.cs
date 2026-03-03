@@ -1,6 +1,6 @@
+using AemeathDesktopPet.Models;
 using Edge_tts_sharp;
 using Edge_tts_sharp.Model;
-using AemeathDesktopPet.Models;
 
 namespace AemeathDesktopPet.Services;
 
@@ -22,7 +22,8 @@ internal class EdgeTtsProvider : ITtsProvider
 
     public async Task<byte[]?> SynthesizeAsync(string text, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
 
         var config = _getConfig();
         var voiceName = config.EdgeTtsVoice;
@@ -41,7 +42,8 @@ internal class EdgeTtsProvider : ITtsProvider
             if (voice == null && voices.Count > 0)
                 voice = voices[0];
 
-            if (voice == null) return null;
+            if (voice == null)
+                return null;
 
             var option = new PlayOption
             {

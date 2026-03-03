@@ -106,12 +106,15 @@ public class BackendAgentService : IChatService
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
-                    if (line is null) break;
+                    if (line is null)
+                        break;
 
-                    if (!line.StartsWith("data: ")) continue;
+                    if (!line.StartsWith("data: "))
+                        continue;
 
                     var data = line["data: ".Length..];
-                    if (data == "[DONE]") break;
+                    if (data == "[DONE]")
+                        break;
 
                     try
                     {
@@ -131,12 +134,13 @@ public class BackendAgentService : IChatService
                                 break;
                             case "done":
                                 goto done;
-                            // "tool_result" — skip
+                                // "tool_result" — skip
                         }
                     }
                     catch { /* skip malformed SSE events */ }
                 }
-                done:;
+            done:
+                ;
             }
             catch
             {

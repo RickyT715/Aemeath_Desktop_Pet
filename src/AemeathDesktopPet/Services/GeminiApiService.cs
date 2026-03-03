@@ -115,12 +115,14 @@ public class GeminiApiService : IChatService
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
-                    if (line is null) break;
+                    if (line is null)
+                        break;
 
                     if (line.StartsWith("data: "))
                     {
                         var data = line["data: ".Length..];
-                        if (data == "[DONE]") break;
+                        if (data == "[DONE]")
+                            break;
 
                         try
                         {

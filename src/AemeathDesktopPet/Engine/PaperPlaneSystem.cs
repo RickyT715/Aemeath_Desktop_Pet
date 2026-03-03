@@ -123,7 +123,8 @@ public class PaperPlaneSystem
 
     private void OnUpdateTick(object? sender, EventArgs e)
     {
-        if (_planes.Count == 0) return;
+        if (_planes.Count == 0)
+            return;
 
         double dt = 0.033; // ~30 FPS
         bool changed = false;
@@ -163,7 +164,8 @@ public class PaperPlaneSystem
 
     private void OnAmbientSpawnTick(object? sender, EventArgs e)
     {
-        if (!EnableAmbient) return;
+        if (!EnableAmbient)
+            return;
 
         // Randomize next spawn: 3-8 minutes
         _ambientSpawnTimer.Interval = TimeSpan.FromMinutes(3 + _rng.NextDouble() * 5);

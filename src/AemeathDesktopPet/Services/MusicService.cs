@@ -63,7 +63,8 @@ public class MusicService
     /// </summary>
     public void PlayRandom()
     {
-        if (_songFiles.Length == 0) return;
+        if (_songFiles.Length == 0)
+            return;
         var song = _songFiles[_rng.Next(_songFiles.Length)];
         Play(song);
     }

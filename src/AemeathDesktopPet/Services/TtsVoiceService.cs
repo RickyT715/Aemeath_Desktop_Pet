@@ -55,10 +55,12 @@ public class TtsVoiceService : ITtsService, IDisposable
 
     public async Task SpeakAsync(string text)
     {
-        if (_disposed || string.IsNullOrWhiteSpace(text)) return;
+        if (_disposed || string.IsNullOrWhiteSpace(text))
+            return;
 
         var config = _getConfig();
-        if (!config.Enabled) return;
+        if (!config.Enabled)
+            return;
 
         // Auto-mute: skip if fullscreen app is active
         if (config.AutoMuteFullscreen && _environment.IsFullscreenAppActive())
@@ -74,7 +76,8 @@ public class TtsVoiceService : ITtsService, IDisposable
         _cts?.Cancel();
 
         // Clear the queue
-        while (_queue.TryDequeue(out _)) { }
+        while (_queue.TryDequeue(out _))
+        { }
 
         // Stop audio playback
         StopPlayback();
@@ -107,7 +110,8 @@ public class TtsVoiceService : ITtsService, IDisposable
 
     private async Task SynthesizeAndPlayAsync(string text)
     {
-        if (_provider == null || !_provider.IsAvailable) return;
+        if (_provider == null || !_provider.IsAvailable)
+            return;
 
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
@@ -220,7 +224,8 @@ public class TtsVoiceService : ITtsService, IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
 
         Stop();

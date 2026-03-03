@@ -235,7 +235,8 @@ internal static class Win32Api
     public static string GetWindowTitle(IntPtr hwnd)
     {
         int length = GetWindowTextLength(hwnd);
-        if (length == 0) return string.Empty;
+        if (length == 0)
+            return string.Empty;
         var buffer = new char[length + 1];
         GetWindowText(hwnd, buffer, buffer.Length);
         return new string(buffer, 0, length);

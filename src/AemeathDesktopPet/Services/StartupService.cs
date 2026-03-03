@@ -10,7 +10,8 @@ public static class StartupService
     public static void SetStartWithWindows(bool enabled)
     {
         using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath, writable: true);
-        if (key == null) return;
+        if (key == null)
+            return;
 
         if (enabled)
         {

@@ -63,7 +63,7 @@ public class McpClientServiceTests
     public void ConnectedServerIds_EmptyInitially_ExplicitCount()
     {
         using var service = new McpClientService();
-        Assert.Equal(0, service.ConnectedServerIds.Count);
+        Assert.Empty(service.ConnectedServerIds);
     }
 
     [Fact]

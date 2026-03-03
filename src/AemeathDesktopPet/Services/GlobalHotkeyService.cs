@@ -30,7 +30,8 @@ public class GlobalHotkeyService : IDisposable
         _targetModifiers = ModifierKeys.None;
         _targetKey = Key.F2;
 
-        if (string.IsNullOrWhiteSpace(hotkeyString)) return;
+        if (string.IsNullOrWhiteSpace(hotkeyString))
+            return;
 
         var parts = hotkeyString.Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         foreach (var part in parts)
@@ -60,7 +61,8 @@ public class GlobalHotkeyService : IDisposable
 
     public void Start()
     {
-        if (_hookId != IntPtr.Zero) return;
+        if (_hookId != IntPtr.Zero)
+            return;
 
         _proc = HookCallback;
         using var process = Process.GetCurrentProcess();
@@ -117,7 +119,8 @@ public class GlobalHotkeyService : IDisposable
 
     private bool AreModifiersPressed()
     {
-        if (_targetModifiers == ModifierKeys.None) return true;
+        if (_targetModifiers == ModifierKeys.None)
+            return true;
 
         bool ctrl = (_targetModifiers & ModifierKeys.Control) == 0 ||
                     (Keyboard.Modifiers & ModifierKeys.Control) != 0;

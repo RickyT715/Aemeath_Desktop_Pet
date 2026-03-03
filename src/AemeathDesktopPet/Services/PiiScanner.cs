@@ -34,19 +34,24 @@ internal static class PiiScanner
     /// </summary>
     public static bool ContainsPii(string? text)
     {
-        if (string.IsNullOrEmpty(text)) return false;
+        if (string.IsNullOrEmpty(text))
+            return false;
 
         // Check password keywords first (cheapest)
-        if (PasswordKeywordRegex.IsMatch(text)) return true;
+        if (PasswordKeywordRegex.IsMatch(text))
+            return true;
 
         // Check email
-        if (EmailRegex.IsMatch(text)) return true;
+        if (EmailRegex.IsMatch(text))
+            return true;
 
         // Check SSN
-        if (SsnRegex.IsMatch(text)) return true;
+        if (SsnRegex.IsMatch(text))
+            return true;
 
         // Check phone
-        if (PhoneRegex.IsMatch(text)) return true;
+        if (PhoneRegex.IsMatch(text))
+            return true;
 
         // Check credit card (with Luhn validation to reduce false positives)
         foreach (Match match in CreditCardRegex.Matches(text))
@@ -65,19 +70,22 @@ internal static class PiiScanner
     /// </summary>
     internal static bool PassesLuhn(string digits)
     {
-        if (string.IsNullOrEmpty(digits)) return false;
+        if (string.IsNullOrEmpty(digits))
+            return false;
 
         int sum = 0;
         bool alternate = false;
         for (int i = digits.Length - 1; i >= 0; i--)
         {
             int n = digits[i] - '0';
-            if (n < 0 || n > 9) return false;
+            if (n < 0 || n > 9)
+                return false;
 
             if (alternate)
             {
                 n *= 2;
-                if (n > 9) n -= 9;
+                if (n > 9)
+                    n -= 9;
             }
             sum += n;
             alternate = !alternate;

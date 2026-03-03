@@ -174,7 +174,8 @@ public class McpClientService : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
 
         foreach (var conn in _connections.Values)
@@ -199,7 +200,9 @@ public class McpClientService : IDisposable
         {
             if (!Process.HasExited)
             {
-                try { Process.Kill(entireProcessTree: true); } catch { }
+                try
+                { Process.Kill(entireProcessTree: true); }
+                catch { }
             }
             Process.Dispose();
         }

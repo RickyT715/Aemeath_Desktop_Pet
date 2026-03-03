@@ -32,7 +32,8 @@ internal class ElevenLabsTtsProvider : ITtsProvider
 
     public async Task<byte[]?> SynthesizeAsync(string text, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
 
         var config = _getConfig();
         var voiceId = string.IsNullOrWhiteSpace(config.ElevenLabsVoiceId)

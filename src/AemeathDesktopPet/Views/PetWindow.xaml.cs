@@ -343,7 +343,8 @@ public partial class PetWindow : Window
     private void SetupGlobalHotkey()
     {
         var vi = _vm.Config.Config.VoiceInput;
-        if (!vi.Enabled) return;
+        if (!vi.Enabled)
+            return;
 
         _vm.GlobalHotkey.Configure(vi.Hotkey);
         _vm.GlobalHotkey.HotkeyPressed += () =>
@@ -400,7 +401,8 @@ public partial class PetWindow : Window
 
     private string AppendActivitySummary(string prompt, DateTime from)
     {
-        if (!_vm.ActivityMonitor.IsAvailable) return prompt;
+        if (!_vm.ActivityMonitor.IsAvailable)
+            return prompt;
         var summary = _vm.ActivityMonitor.GetActivitySummary(from, DateTime.Now);
         if (!string.IsNullOrEmpty(summary))
             prompt += "\n\n" + summary;
@@ -413,7 +415,8 @@ public partial class PetWindow : Window
     private void SetupPomodoroIntegration()
     {
         var pomo = _vm.PomodoroIntegration;
-        if (pomo == null) return;
+        if (pomo == null)
+            return;
 
         pomo.WorkStarted += async (taskTitle, duration) =>
         {
@@ -590,13 +593,16 @@ public partial class PetWindow : Window
     private ActivityContext ResolveActivityContext()
     {
         var pomo = _vm.PomodoroIntegration;
-        if (pomo is { IsWorkMode: true }) return ActivityContext.PomodoroWork;
-        if (pomo is { IsBreakMode: true }) return ActivityContext.PomodoroBreak;
+        if (pomo is { IsWorkMode: true })
+            return ActivityContext.PomodoroWork;
+        if (pomo is { IsBreakMode: true })
+            return ActivityContext.PomodoroBreak;
 
         if (_vm.ActivityMonitor.IsAvailable)
         {
             var detected = _vm.ActivityMonitor.DetectActivityContext();
-            if (detected != ActivityContext.Default) return detected;
+            if (detected != ActivityContext.Default)
+                return detected;
         }
 
         return ActivityContext.Default;

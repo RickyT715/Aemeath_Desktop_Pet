@@ -105,7 +105,8 @@ public class ChatViewModel : INotifyPropertyChanged
     /// </summary>
     public async Task SendMessageAsync()
     {
-        if (!CanSend) return;
+        if (!CanSend)
+            return;
 
         var userText = InputText.Trim();
         InputText = "";
@@ -113,7 +114,8 @@ public class ChatViewModel : INotifyPropertyChanged
         byte[]? screenshot = null;
         if (_includeScreenshot)
         {
-            try { screenshot = ScreenCaptureService.CaptureAndDownscale(); }
+            try
+            { screenshot = ScreenCaptureService.CaptureAndDownscale(); }
             catch { /* ignore capture failures */ }
         }
 
@@ -125,7 +127,8 @@ public class ChatViewModel : INotifyPropertyChanged
     /// </summary>
     public void StartRecording()
     {
-        if (_voiceInput == null || IsRecording) return;
+        if (_voiceInput == null || IsRecording)
+            return;
 
         _voiceInput.StartRecording();
         IsRecording = true;
@@ -137,7 +140,8 @@ public class ChatViewModel : INotifyPropertyChanged
     /// </summary>
     public async Task StopRecordingAndSendAsync()
     {
-        if (_voiceInput == null || !IsRecording) return;
+        if (_voiceInput == null || !IsRecording)
+            return;
 
         var audioData = _voiceInput.StopRecording();
         IsRecording = false;
@@ -172,7 +176,8 @@ public class ChatViewModel : INotifyPropertyChanged
             byte[]? screenshot = null;
             if (_includeScreenshot)
             {
-                try { screenshot = ScreenCaptureService.CaptureAndDownscale(); }
+                try
+                { screenshot = ScreenCaptureService.CaptureAndDownscale(); }
                 catch { /* ignore capture failures */ }
             }
 

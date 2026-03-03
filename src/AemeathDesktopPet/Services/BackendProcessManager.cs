@@ -55,7 +55,9 @@ public class BackendProcessManager : IDisposable
             }
             catch
             {
-                try { _process.Kill(entireProcessTree: true); } catch { }
+                try
+                { _process.Kill(entireProcessTree: true); }
+                catch { }
             }
         }
 
@@ -149,7 +151,8 @@ public class BackendProcessManager : IDisposable
             while (!process.HasExited && _cts is { IsCancellationRequested: false })
             {
                 var line = await process.StandardOutput.ReadLineAsync();
-                if (line == null) break;
+                if (line == null)
+                    break;
 
                 if (line.StartsWith("READY:"))
                 {
@@ -167,7 +170,8 @@ public class BackendProcessManager : IDisposable
 
         foreach (var delay in delays)
         {
-            if (_cts is { IsCancellationRequested: true }) return;
+            if (_cts is { IsCancellationRequested: true })
+                return;
 
             try
             {
@@ -203,7 +207,8 @@ public class BackendProcessManager : IDisposable
         var exitCode = _process?.ExitCode ?? -1;
         LastError = $"Backend process exited with code {exitCode}";
 
-        if (_cts is { IsCancellationRequested: true }) return;
+        if (_cts is { IsCancellationRequested: true })
+            return;
 
         if (_crashCount <= _config.MaxRetries)
         {
@@ -226,14 +231,17 @@ public class BackendProcessManager : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _cts?.Cancel();
         _cts?.Dispose();
 
         if (_process is { HasExited: false })
         {
-            try { _process.Kill(entireProcessTree: true); } catch { }
+            try
+            { _process.Kill(entireProcessTree: true); }
+            catch { }
         }
         _process?.Dispose();
         _http.Dispose();

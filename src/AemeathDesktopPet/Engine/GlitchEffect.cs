@@ -70,7 +70,8 @@ public class GlitchEffect
     /// </summary>
     public void TriggerGlitch()
     {
-        if (_isGlitching || !IsEnabled) return;
+        if (_isGlitching || !IsEnabled)
+            return;
 
         _isGlitching = true;
         // 300-800ms duration at 50ms per frame = 6-16 frames
@@ -84,7 +85,8 @@ public class GlitchEffect
 
     private void OnTriggerTick(object? sender, EventArgs e)
     {
-        if (_isGlitching || !IsEnabled) return;
+        if (_isGlitching || !IsEnabled)
+            return;
 
         // Randomize next check interval (5-10s)
         _triggerTimer.Interval = TimeSpan.FromSeconds(5 + _rng.NextDouble() * 5);

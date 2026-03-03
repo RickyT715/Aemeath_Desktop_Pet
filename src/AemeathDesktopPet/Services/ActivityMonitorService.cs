@@ -29,7 +29,8 @@ public class ActivityMonitorService
 
     public string GetActivitySummary(DateTime from, DateTime to)
     {
-        if (!IsAvailable) return "";
+        if (!IsAvailable)
+            return "";
 
         try
         {
@@ -51,7 +52,8 @@ public class ActivityMonitorService
             // Query chrome_sessions
             QueryChromeSessions(conn, from, to, entries);
 
-            if (entries.Count == 0) return "";
+            if (entries.Count == 0)
+                return "";
 
             // Group by label and sum duration
             var grouped = entries
@@ -66,9 +68,11 @@ public class ActivityMonitorService
             {
                 var (label, totalSeconds) = grouped[i];
                 int mins = (int)Math.Round(totalSeconds / 60.0);
-                if (mins < 1) mins = 1;
+                if (mins < 1)
+                    mins = 1;
 
-                if (i > 0) sb.Append(", ");
+                if (i > 0)
+                    sb.Append(", ");
                 sb.Append($"{mins} min in {label}");
             }
             sb.Append('.');
@@ -161,7 +165,8 @@ public class ActivityMonitorService
 
     public string GetCameraSummary(DateTime from, DateTime to)
     {
-        if (!IsAvailable) return "";
+        if (!IsAvailable)
+            return "";
 
         try
         {
@@ -227,7 +232,8 @@ public class ActivityMonitorService
                 totalMindWandering += reader.IsDBNull(5) ? 0 : (int)reader.GetDouble(5);
             }
 
-            if (count == 0) return "";
+            if (count == 0)
+                return "";
 
             var avgAttention = totalAttention / count;
             var avgScreenRatio = totalScreenRatio / count;
@@ -309,10 +315,12 @@ public class ActivityMonitorService
 
     public ActivityContext DetectActivityContext()
     {
-        if (!IsAvailable) return ActivityContext.Default;
+        if (!IsAvailable)
+            return ActivityContext.Default;
 
         var now = DateTime.Now;
-        if (now < _cacheExpiry) return _cachedContext;
+        if (now < _cacheExpiry)
+            return _cachedContext;
 
         try
         {
@@ -409,25 +417,33 @@ public class ActivityMonitorService
 
         foreach (var (name, secs) in processes)
         {
-            if (GamingProcesses.Contains(name)) gamingScore += secs;
-            if (StudyProcesses.Contains(name)) studyScore += secs;
+            if (GamingProcesses.Contains(name))
+                gamingScore += secs;
+            if (StudyProcesses.Contains(name))
+                studyScore += secs;
         }
 
         foreach (var (name, secs) in domains)
         {
-            if (GamingDomains.Contains(name)) gamingScore += secs;
-            if (VideoDomains.Contains(name)) videoScore += secs;
-            if (StudyDomains.Contains(name)) studyScore += secs;
+            if (GamingDomains.Contains(name))
+                gamingScore += secs;
+            if (VideoDomains.Contains(name))
+                videoScore += secs;
+            if (StudyDomains.Contains(name))
+                studyScore += secs;
         }
 
         const double threshold = 30;
 
         // Pick highest above threshold
         double maxScore = Math.Max(gamingScore, Math.Max(videoScore, studyScore));
-        if (maxScore < threshold) return ActivityContext.Default;
+        if (maxScore < threshold)
+            return ActivityContext.Default;
 
-        if (gamingScore == maxScore) return ActivityContext.Gaming;
-        if (videoScore == maxScore) return ActivityContext.WatchingVideos;
+        if (gamingScore == maxScore)
+            return ActivityContext.Gaming;
+        if (videoScore == maxScore)
+            return ActivityContext.WatchingVideos;
         return ActivityContext.StudyingCoding;
     }
 

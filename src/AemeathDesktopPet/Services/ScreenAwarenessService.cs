@@ -76,7 +76,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
 
     public void Start()
     {
-        if (_timerTask != null) return;
+        if (_timerTask != null)
+            return;
         _cts = new CancellationTokenSource();
         _timerTask = TimerLoop(_cts.Token);
     }
@@ -84,7 +85,9 @@ public class ScreenAwarenessService : IScreenAwarenessService
     public void Stop()
     {
         _cts?.Cancel();
-        try { _timerTask?.Wait(); } catch { }
+        try
+        { _timerTask?.Wait(); }
+        catch { }
         _cts?.Dispose();
         _cts = null;
         _timerTask = null;
@@ -98,9 +101,11 @@ public class ScreenAwarenessService : IScreenAwarenessService
 
     public async Task<string?> CaptureAndCommentAsync()
     {
-        if (!IsEnabled) return null;
+        if (!IsEnabled)
+            return null;
         var config = _getConfig();
-        if (!IsProviderConfigured(config)) return null;
+        if (!IsProviderConfigured(config))
+            return null;
 
         try
         {
@@ -137,27 +142,33 @@ public class ScreenAwarenessService : IScreenAwarenessService
             }
             catch (OperationCanceledException) { break; }
 
-            if (!IsEnabled) continue;
-            if (!IsProviderConfigured(config)) continue;
+            if (!IsEnabled)
+                continue;
+            if (!IsProviderConfigured(config))
+                continue;
 
             // Layer 0: Protected window check
             if (config.EnableProtectedWindowCheck)
             {
                 try
                 {
-                    if (_environment.HasProtectedWindowVisible()) continue;
+                    if (_environment.HasProtectedWindowVisible())
+                        continue;
                 }
                 catch { /* ignore Win32 errors */ }
             }
 
             // Layer 1: App/title blacklist (existing)
-            if (IsBlacklisted(config)) continue;
+            if (IsBlacklisted(config))
+                continue;
 
             // Fullscreen skip (existing)
-            if (_environment.IsFullscreenAppActive()) continue;
+            if (_environment.IsFullscreenAppActive())
+                continue;
 
             // Budget check (existing)
-            if (IsOverBudget(config)) continue;
+            if (IsOverBudget(config))
+                continue;
 
             try
             {
@@ -166,7 +177,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
                 var screenshot = ScreenCaptureService.CaptureAndDownscale(captureWidth);
 
                 // Perceptual hash dedup (existing)
-                if (!HasScreenChanged(screenshot)) continue;
+                if (!HasScreenChanged(screenshot))
+                    continue;
 
                 var commentary = await AnalyzeScreenshot(screenshot, config);
                 if (!string.IsNullOrEmpty(commentary))
@@ -209,7 +221,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
     internal bool IsBlacklisted(ScreenAwarenessConfig config)
     {
         var (processName, title) = _environment.GetForegroundAppInfo();
-        if (string.IsNullOrEmpty(processName)) return false;
+        if (string.IsNullOrEmpty(processName))
+            return false;
 
         foreach (var entry in config.BlacklistedApps)
         {
@@ -220,14 +233,17 @@ public class ScreenAwarenessService : IScreenAwarenessService
             bool processMatch = string.Equals(processName + ".exe", appPattern, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(processName, appPattern, StringComparison.OrdinalIgnoreCase);
 
-            if (!processMatch) continue;
+            if (!processMatch)
+                continue;
 
             // If no title pattern, block all windows of this process
-            if (parts.Length < 2) return true;
+            if (parts.Length < 2)
+                return true;
 
             // Match title pattern (glob with * wildcards)
             var titlePattern = parts[1].Trim();
-            if (MatchGlob(title, titlePattern)) return true;
+            if (MatchGlob(title, titlePattern))
+                return true;
         }
 
         return false;
@@ -236,7 +252,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
     internal static bool MatchGlob(string input, string pattern)
     {
         // Simple glob: * matches any sequence of characters
-        if (pattern == "*") return true;
+        if (pattern == "*")
+            return true;
 
         var parts = pattern.Split('*');
         int pos = 0;
@@ -244,13 +261,16 @@ public class ScreenAwarenessService : IScreenAwarenessService
         for (int i = 0; i < parts.Length; i++)
         {
             var part = parts[i];
-            if (string.IsNullOrEmpty(part)) continue;
+            if (string.IsNullOrEmpty(part))
+                continue;
 
             int idx = input.IndexOf(part, pos, StringComparison.OrdinalIgnoreCase);
-            if (idx < 0) return false;
+            if (idx < 0)
+                return false;
 
             // First segment must match at start (unless pattern starts with *)
-            if (i == 0 && !pattern.StartsWith("*") && idx != 0) return false;
+            if (i == 0 && !pattern.StartsWith("*") && idx != 0)
+                return false;
 
             pos = idx + part.Length;
         }
@@ -520,7 +540,8 @@ public class ScreenAwarenessService : IScreenAwarenessService
             screenshot, "You are a screen content describer. Describe what you see in 2-3 sentences. Do not include any personal information, passwords, or specific text visible on screen.",
             "Describe the general activity shown in this screenshot.", config);
 
-        if (string.IsNullOrEmpty(localDescription)) return null;
+        if (string.IsNullOrEmpty(localDescription))
+            return null;
 
         // Step 2: Text-only cloud call for personality commentary (no image sent)
         var textPrompt = $"{analysisPrompt}\n\nContext from screen observation: {localDescription}";

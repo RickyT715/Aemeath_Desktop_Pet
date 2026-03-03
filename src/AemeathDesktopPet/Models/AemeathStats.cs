@@ -34,7 +34,8 @@ public class AemeathStats
     public void ApplyOfflineDecay(DateTime lastSeen)
     {
         double hoursAway = Math.Max(0, (DateTime.UtcNow - lastSeen).TotalHours);
-        if (hoursAway < 0.1) return; // less than 6 minutes, skip
+        if (hoursAway < 0.1)
+            return; // less than 6 minutes, skip
 
         Mood = ApplyDecay(Mood, hoursAway, fastRate: 5, slowRate: 2, fastHours: 4, floor: 30);
         Energy = ApplyDecay(Energy, hoursAway, fastRate: 3, slowRate: 1, fastHours: 6, floor: 20);

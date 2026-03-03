@@ -63,7 +63,8 @@ public class JsonPersistenceService
 
     private T? LoadJson<T>(string path) where T : class
     {
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         try
         {
             var json = File.ReadAllText(path);

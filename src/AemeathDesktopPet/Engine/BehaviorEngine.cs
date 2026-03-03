@@ -39,37 +39,37 @@ public class BehaviorEngine
     private static readonly Dictionary<PetState, AnimationInfo> StateAnimations = new()
     {
         // Core states (Phase 1)
-        [PetState.Idle]          = new("normal", Loop: true),
-        [PetState.FlyRight]      = new("normal_flying", Loop: true),
-        [PetState.FlyLeft]       = new("normal_flying", Loop: true, Mirror: true),
-        [PetState.Fall]          = new("normal", Loop: true),
-        [PetState.Drag]          = new("normal", Loop: true),
-        [PetState.Thrown]        = new("normal", Loop: true),
-        [PetState.Landing]       = new("happy_jumping", Loop: false),
-        [PetState.Wave]          = new("happy_hand_waving", Loop: false),
-        [PetState.Laugh]         = new("laugh", Loop: true),
-        [PetState.Sigh]          = new("sign", Loop: true),
-        [PetState.PetHappy]      = new("happy_jumping", Loop: false),
+        [PetState.Idle] = new("normal", Loop: true),
+        [PetState.FlyRight] = new("normal_flying", Loop: true),
+        [PetState.FlyLeft] = new("normal_flying", Loop: true, Mirror: true),
+        [PetState.Fall] = new("normal", Loop: true),
+        [PetState.Drag] = new("normal", Loop: true),
+        [PetState.Thrown] = new("normal", Loop: true),
+        [PetState.Landing] = new("happy_jumping", Loop: false),
+        [PetState.Wave] = new("happy_hand_waving", Loop: false),
+        [PetState.Laugh] = new("laugh", Loop: true),
+        [PetState.Sigh] = new("sign", Loop: true),
+        [PetState.PetHappy] = new("happy_jumping", Loop: false),
 
         // Personality states (Phase 4)
-        [PetState.Sing]          = new("listening_music", Loop: true, Fps: 25),
-        [PetState.PlayGame]      = new("normal", Loop: true),          // placeholder
-        [PetState.PaperPlane]    = new("happy_hand_waving", Loop: false), // one-shot throw
-        [PetState.Glitch]        = new("normal", Loop: true),          // glitch overlay handles visuals
-        [PetState.Sleep]         = new("sign", Loop: true),            // closest to drowsy
-        [PetState.LookAtUser]    = new("normal", Loop: true),          // placeholder
-        [PetState.Chat]          = new("laugh", Loop: true),           // mouth movement
-        [PetState.CatLap]        = new("normal", Loop: true),          // placeholder
-        [PetState.PetCat]        = new("happy_jumping", Loop: false),  // one-shot
+        [PetState.Sing] = new("listening_music", Loop: true, Fps: 25),
+        [PetState.PlayGame] = new("normal", Loop: true),          // placeholder
+        [PetState.PaperPlane] = new("happy_hand_waving", Loop: false), // one-shot throw
+        [PetState.Glitch] = new("normal", Loop: true),          // glitch overlay handles visuals
+        [PetState.Sleep] = new("sign", Loop: true),            // closest to drowsy
+        [PetState.LookAtUser] = new("normal", Loop: true),          // placeholder
+        [PetState.Chat] = new("laugh", Loop: true),           // mouth movement
+        [PetState.CatLap] = new("normal", Loop: true),          // placeholder
+        [PetState.PetCat] = new("happy_jumping", Loop: false),  // one-shot
 
         // Window edge states (Phase 2b)
-        [PetState.PeekEdge]      = new("normal", Loop: true),          // position-based
-        [PetState.LieOnWindow]   = new("normal", Loop: true),          // position-based
-        [PetState.HideTaskbar]   = new("normal", Loop: true),          // position-based
-        [PetState.ClingEdge]     = new("normal", Loop: true),          // position-based
+        [PetState.PeekEdge] = new("normal", Loop: true),          // position-based
+        [PetState.LieOnWindow] = new("normal", Loop: true),          // position-based
+        [PetState.HideTaskbar] = new("normal", Loop: true),          // position-based
+        [PetState.ClingEdge] = new("normal", Loop: true),          // position-based
 
         // Voice & screen states (Phase 5b/5c)
-        [PetState.Speaking]      = new("laugh", Loop: true),           // mouth movement
+        [PetState.Speaking] = new("laugh", Loop: true),           // mouth movement
         [PetState.ScreenComment] = new("laugh", Loop: true),           // mouth movement
     };
 
@@ -208,26 +208,33 @@ public class BehaviorEngine
 
                 case PetState.Sigh:
                     // Higher when mood is low
-                    if (_mood < 50) weight = (int)(baseWeight * 2);
-                    if (_mood > 70) weight = 1;
+                    if (_mood < 50)
+                        weight = (int)(baseWeight * 2);
+                    if (_mood > 70)
+                        weight = 1;
                     break;
 
                 case PetState.Laugh:
                     // Higher when mood is high
-                    if (_mood > 70) weight = (int)(baseWeight * 1.5);
-                    if (_mood < 30) weight = 1;
+                    if (_mood > 70)
+                        weight = (int)(baseWeight * 1.5);
+                    if (_mood < 30)
+                        weight = 1;
                     break;
 
                 case PetState.PlayGame:
                     // Needs energy
-                    if (_energy < 20) weight = 0;
+                    if (_energy < 20)
+                        weight = 0;
                     break;
 
                 case PetState.Sing:
                     // Needs some energy and decent mood
-                    if (_energy < 15 || _mood < 20) weight = 0;
+                    if (_energy < 15 || _mood < 20)
+                        weight = 0;
                     // Suppress during pomodoro work or when no music folder
-                    if (SuppressSinging) weight = 0;
+                    if (SuppressSinging)
+                        weight = 0;
                     break;
             }
 

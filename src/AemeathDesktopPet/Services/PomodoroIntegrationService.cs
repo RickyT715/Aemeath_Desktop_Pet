@@ -107,7 +107,8 @@ public class PomodoroIntegrationService : IDisposable
                 break;
             }
 
-            if (line == null) break; // client disconnected
+            if (line == null)
+                break; // client disconnected
 
             try
             {

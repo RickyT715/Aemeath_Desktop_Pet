@@ -36,13 +36,17 @@ public class EnvironmentDetector
     public bool IsFullscreenAppActive()
     {
         var foreground = Win32Api.GetForegroundWindow();
-        if (foreground == IntPtr.Zero) return false;
+        if (foreground == IntPtr.Zero)
+            return false;
 
         // Skip shell and desktop windows
-        if (foreground == Win32Api.GetShellWindow()) return false;
-        if (foreground == Win32Api.GetDesktopWindow()) return false;
+        if (foreground == Win32Api.GetShellWindow())
+            return false;
+        if (foreground == Win32Api.GetDesktopWindow())
+            return false;
 
-        if (!Win32Api.GetWindowRect(foreground, out var rect)) return false;
+        if (!Win32Api.GetWindowRect(foreground, out var rect))
+            return false;
 
         var screenW = SystemParameters.PrimaryScreenWidth;
         var screenH = SystemParameters.PrimaryScreenHeight;
@@ -58,7 +62,8 @@ public class EnvironmentDetector
     public (string processName, string title) GetForegroundAppInfo()
     {
         var hwnd = Win32Api.GetForegroundWindow();
-        if (hwnd == IntPtr.Zero) return ("", "");
+        if (hwnd == IntPtr.Zero)
+            return ("", "");
 
         string title = Win32Api.GetWindowTitle(hwnd);
 
@@ -85,9 +90,12 @@ public class EnvironmentDetector
 
         Win32Api.EnumWindows((hwnd, _) =>
         {
-            if (hwnd == shellWnd || hwnd == desktopWnd) return true;
-            if (!Win32Api.IsWindowVisible(hwnd)) return true;
-            if (Win32Api.IsWindowCloaked(hwnd)) return true;
+            if (hwnd == shellWnd || hwnd == desktopWnd)
+                return true;
+            if (!Win32Api.IsWindowVisible(hwnd))
+                return true;
+            if (Win32Api.IsWindowCloaked(hwnd))
+                return true;
 
             if (Win32Api.GetWindowDisplayAffinity(hwnd, out uint affinity) && affinity != 0)
             {
@@ -111,9 +119,12 @@ public class EnvironmentDetector
 
         Win32Api.EnumWindows((hwnd, _) =>
         {
-            if (hwnd == shellWnd || hwnd == desktopWnd) return true;
-            if (!Win32Api.IsWindowVisible(hwnd)) return true;
-            if (Win32Api.IsWindowCloaked(hwnd)) return true;
+            if (hwnd == shellWnd || hwnd == desktopWnd)
+                return true;
+            if (!Win32Api.IsWindowVisible(hwnd))
+                return true;
+            if (Win32Api.IsWindowCloaked(hwnd))
+                return true;
 
             if (Win32Api.TryGetExtendedFrameBounds(hwnd, out var bounds))
             {

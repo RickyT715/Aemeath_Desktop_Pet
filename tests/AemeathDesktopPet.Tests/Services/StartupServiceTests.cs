@@ -19,7 +19,8 @@ public class StartupServiceTests
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath, writable: true);
-            if (key == null) return false;
+            if (key == null)
+                return false;
 
             // Try a real write/read/cleanup cycle with a test value
             const string testName = "AemeathDesktopPet_WriteTest";
@@ -47,7 +48,8 @@ public class StartupServiceTests
     [Fact]
     public void SetStartWithWindows_True_CreatesRegistryKey()
     {
-        if (!CanWriteRegistryStartup()) return; // Skip on environments without registry write access
+        if (!CanWriteRegistryStartup())
+            return; // Skip on environments without registry write access
 
         try
         {
@@ -66,7 +68,8 @@ public class StartupServiceTests
     [Fact]
     public void SetStartWithWindows_False_RemovesRegistryKey()
     {
-        if (!CanWriteRegistryStartup()) return; // Skip on environments without registry write access
+        if (!CanWriteRegistryStartup())
+            return; // Skip on environments without registry write access
 
         try
         {
@@ -86,7 +89,8 @@ public class StartupServiceTests
     [Fact]
     public void IsStartWithWindows_ReflectsCurrentState()
     {
-        if (!CanWriteRegistryStartup()) return; // Skip on environments without registry write access
+        if (!CanWriteRegistryStartup())
+            return; // Skip on environments without registry write access
 
         try
         {

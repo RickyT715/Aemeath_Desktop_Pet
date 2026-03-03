@@ -54,7 +54,8 @@ public class ParticleSystem
 
     private void OnTick(object? sender, EventArgs e)
     {
-        if (_particles.Count == 0) return;
+        if (_particles.Count == 0)
+            return;
 
         bool changed = false;
         for (int i = _particles.Count - 1; i >= 0; i--)
