@@ -6,6 +6,14 @@
 
 **Requirement source:** `REQUIREMENTS.md`
 
+**Future implementation checklist:**
+[`docs/plans/20260722-jarvis-assistant-tdd-checklist.md`](docs/plans/20260722-jarvis-assistant-tdd-checklist.md)
+
+This file remains the evidence ledger for the current working application. The linked future
+checklist is authoritative for the trusted-assistant migration, independent preservation Gate 0,
+test-driven step order, and per-commit CI gates. Planned work must not be checked off here until the
+production path and current requirement acceptance evidence actually change.
+
 This ledger replaces the former phase checklist, which marked many interfaces, engines, and placeholders as complete before they were connected to a user-visible runtime path. It preserves the useful milestone history while recording current evidence and remaining gaps.
 
 ## Status and Evidence Rules

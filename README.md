@@ -318,4 +318,16 @@ dotnet run --project tests/TtsIntegrationTest
 - [`aemeath_desktop_pet_design.md`](aemeath_desktop_pet_design.md) — historical design intent, not current implementation status
 - [`AGENTS.md`](AGENTS.md) — repository contribution guidance
 
+The following documents propose a future evolution into a trusted, Jarvis-like personal assistant.
+They are plans, not claims about the current implementation:
+
+- [`docs/research/jarvis_assistant_landscape.md`](docs/research/jarvis_assistant_landscape.md) — primary-source landscape review, recommendations, and critical reflection
+- [`docs/prd/jarvis_assistant_prd.md`](docs/prd/jarvis_assistant_prd.md) — product goals, user journeys, detailed requirements, success metrics, and release gates
+- [`docs/adr/ADR-0001-evolutionary-modular-assistant-architecture.md`](docs/adr/ADR-0001-evolutionary-modular-assistant-architecture.md) — rebuild-versus-evolution architecture decision
+- [`docs/adr/ADR-0002-test-driven-verification-and-exact-sha-delivery.md`](docs/adr/ADR-0002-test-driven-verification-and-exact-sha-delivery.md) — independent preservation testing, strict TDD, Windows test lanes, and exact-commit CI rules
+- [`docs/design/jarvis_assistant_design.md`](docs/design/jarvis_assistant_design.md) — target modules, contracts, data ownership, security, migration, and verification design
+- [`docs/ui-spec/jarvis_assistant_ui_spec.md`](docs/ui-spec/jarvis_assistant_ui_spec.md) — pet states, Command Center screens, approvals, privacy, accessibility, and visual rules
+- [`docs/plans/20260722-jarvis-assistant-evolution.md`](docs/plans/20260722-jarvis-assistant-evolution.md) — phased implementation, failure-mode, test, rollback, and pilot plan
+- [`docs/plans/20260722-jarvis-assistant-tdd-checklist.md`](docs/plans/20260722-jarvis-assistant-tdd-checklist.md) — authoritative test-first execution checklist with per-step push and exact-SHA CI evidence
+
 Older root-level design and asset-generation notes are useful historical context, but source code, manifests, and the documents above should be preferred for current behavior.
