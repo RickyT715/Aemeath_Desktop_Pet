@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.3-v1-invalidated-by-v2",
+  "invalidatedManifestId": "D0.3-v1",
+  "frozenArtifactPath": "docs/verification/manifests/D0.3-v1.yml",
+  "frozenArtifactSha256": "e7b0e5a89a1e5f6d89be11b5a8eefb06ec0d4b09011bec5eecf068f10714df7d",
+  "replacementManifestId": "D0.3-v2",
+  "invalidatedAt": "2026-07-22T10:35:00Z",
+  "reason": "Independent review found parent-level mappings, unstable ordinal test IDs, decorative schema checks, and a CI discovery-threshold contradiction.",
+  "reviewer": "independent-verification-reviewer-role"
+}

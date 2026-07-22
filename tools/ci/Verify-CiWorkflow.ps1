@@ -233,10 +233,22 @@ if (-not (Test-Path -LiteralPath $RequiredChecksPath -PathType Leaf)) {
 
             Assert-ContractNotMatch "single-instance job unexpectedly defines a matrix: $($job.id)" "(?m)^\s+matrix:\s*$" $jobBlock
 
-            if ($job.discovery.kind -ne "not-applicable" -or
-                [int]$job.discovery.minimumDiscoveredTests -ne 0 -or
-                [string]::IsNullOrWhiteSpace($job.discovery.rationale)) {
-                Add-ContractFailure "D0.2 job must explicitly justify zero test discovery: $($job.id)"
+            if ([string]::IsNullOrWhiteSpace($job.discovery.rationale)) {
+                Add-ContractFailure "required job must explain its discovery contract: $($job.id)"
+            } elseif ($job.discovery.kind -eq "not-applicable") {
+                if ([int]$job.discovery.minimumDiscoveredTests -ne 0) {
+                    Add-ContractFailure "non-test job must declare zero test discovery: $($job.id)"
+                }
+            } elseif ($job.discovery.kind -eq "powershell-probe") {
+                if ([int]$job.discovery.minimumDiscoveredTests -lt 1 -or
+                    [string]::IsNullOrWhiteSpace($job.discovery.command)) {
+                    Add-ContractFailure "PowerShell probe discovery contract is incomplete: $($job.id)"
+                } else {
+                    Assert-ContractMatch "PowerShell probe command is absent: $($job.id)" `
+                        ([regex]::Escape([string]$job.discovery.command)) $jobBlock
+                }
+            } else {
+                Add-ContractFailure "required job has an unsupported discovery kind: $($job.id)"
             }
 
             if ([string]::IsNullOrWhiteSpace($job.artifactPrefix)) {

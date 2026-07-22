@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/evidence-manifest-v1.schema.json",
+  "title": "Aemeath RED-GREEN-REFACTOR-VERIFY evidence manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "manifestType", "manifestId", "riskManifestId", "stepId", "phase",
+    "sourceSha", "startedAt", "completedAt", "command", "testIds", "lanes", "environment",
+    "expectedExit", "actualExit", "discovery", "oracle", "thresholds", "result",
+    "observations", "exclusions", "artifacts", "review"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "manifestType": { "const": "phase-evidence" },
+    "manifestId": { "type": "string", "minLength": 1 },
+    "riskManifestId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "phase": { "enum": ["RED", "GREEN", "REFACTOR", "VERIFY"] },
+    "sourceSha": { "$ref": "#/$defs/sha" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "command": { "type": "string", "minLength": 1 },
+    "testIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+    "lanes": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+    "environment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "os", "architecture", "runnerClass", "tools", "configuration", "seed"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "os": { "type": "string", "minLength": 1 },
+        "architecture": { "type": "string", "minLength": 1 },
+        "runnerClass": { "type": "string", "minLength": 1 },
+        "tools": { "type": "object", "minProperties": 1 },
+        "configuration": { "type": "string", "minLength": 1 },
+        "seed": { "type": ["integer", "null"] }
+      }
+    },
+    "expectedExit": { "type": "integer" },
+    "actualExit": { "type": "integer" },
+    "discovery": {
+      "type": "object", "additionalProperties": false,
+      "required": ["minimum", "actual", "executed", "passed", "failed", "skipped"],
+      "properties": {
+        "minimum": { "type": "integer", "minimum": 1 },
+        "actual": { "type": "integer", "minimum": 0 },
+        "executed": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "oracle": { "type": "string", "minLength": 1 },
+    "thresholds": {
+      "type": "object", "additionalProperties": false,
+      "required": ["failedAtIntendedOracle", "maximumUnexpectedSkips"],
+      "properties": {
+        "failedAtIntendedOracle": { "type": "boolean" },
+        "maximumUnexpectedSkips": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "result": { "enum": ["pass", "fail", "invalid"] },
+    "observations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "exclusions": { "type": "array", "items": { "type": "string" } },
+    "artifacts": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "sha256", "redacted", "category"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "redacted": { "type": "boolean" },
+          "category": { "enum": ["log", "test-result", "trace", "screenshot", "manifest", "other"] }
+        }
+      }
+    },
+    "review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reviewer", "timestamp", "decision", "thresholdDecision"],
+      "properties": {
+        "reviewer": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "decision": { "enum": ["approved", "rejected", "pending"] },
+        "thresholdDecision": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "nonEmptyUniqueStrings": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

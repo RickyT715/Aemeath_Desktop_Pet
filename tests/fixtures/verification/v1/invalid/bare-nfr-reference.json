@@ -1,0 +1,6 @@
+{
+  "mutation": "replace-id",
+  "target": "PRD:NFR-JA-001-01",
+  "value": "NFR-JA-001-01",
+  "expectedCode": "TRACE-BARE-NFR"
+}

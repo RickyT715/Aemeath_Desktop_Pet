@@ -1,0 +1,5 @@
+{
+  "mutation": "duplicate-entry",
+  "target": "PRD:AC-FR-001-01",
+  "expectedCode": "TRACE-DUPLICATE-ID"
+}

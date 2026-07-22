@@ -1,0 +1,6 @@
+{
+  "mutation": "replace-disposition",
+  "target": "CURRENT:FR-PET-001",
+  "value": "target",
+  "expectedCode": "TRACE-INVALID-DISPOSITION"
+}

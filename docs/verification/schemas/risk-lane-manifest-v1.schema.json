@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/risk-lane-manifest-v1.schema.json",
+  "title": "Aemeath pre-step risk and lane manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "manifestType", "manifestId", "revision", "previousManifestId",
+    "invalidationReason", "stepId", "status", "baselineSha", "scope", "requirementIds",
+    "dispositionIds", "boundaryIds", "risks", "lanes", "probes", "environments", "fixtures",
+    "services", "thresholds", "owners", "expectedArtifacts"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "manifestType": { "const": "risk-lane" },
+    "manifestId": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "previousManifestId": { "type": ["string", "null"] },
+    "invalidationReason": { "type": ["string", "null"] },
+    "stepId": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["draft", "frozen-before-red", "invalidated", "complete"] },
+    "baselineSha": { "$ref": "#/$defs/sha" },
+    "scope": { "type": "string", "minLength": 1 },
+    "requirementIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(CURRENT|PRD):[A-Z0-9-]+$" }
+    },
+    "dispositionIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(REQMAP-[A-Z0-9-]+|APP-[0-9]{3})$" }
+    },
+    "boundaryIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^PB-(00[1-9]|01[0-8])$" }
+    },
+    "risks": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "outcome", "laneIds", "probeIds"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "outcome": { "type": "string", "minLength": 1 },
+          "laneIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "probeIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+        }
+      }
+    },
+    "lanes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "required", "rationale", "riskIds", "probeIds", "environmentIds"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^V-[A-Z0-9-]+$" },
+          "required": { "type": "boolean" },
+          "rationale": { "type": "string", "minLength": 1 },
+          "riskIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "probeIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "environmentIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+        }
+      }
+    },
+    "probes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": [
+          "id", "command", "minimumDiscovery", "redOracle", "riskIds", "laneIds",
+          "requirementIds", "environmentIds", "fixtureIds", "thresholds"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "command": { "type": "string", "minLength": 1 },
+          "minimumDiscovery": { "type": "integer", "minimum": 1 },
+          "redOracle": { "type": "string", "minLength": 1 },
+          "riskIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "laneIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "requirementIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "environmentIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "fixtureIds": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "thresholds": { "type": "object", "minProperties": 1 }
+        }
+      }
+    },
+    "environments": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "os", "shell", "purpose"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^ENV-[A-Z0-9-]+$" },
+          "os": { "type": "string", "minLength": 1 },
+          "shell": { "type": "string", "minLength": 1 },
+          "purpose": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "fixtures": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "path", "sha256"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "services": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+    "thresholds": {
+      "type": "object",
+      "required": ["minimumDiscovery", "maximumUnexpectedSkips"],
+      "properties": {
+        "minimumDiscovery": { "type": "integer", "minimum": 1 },
+        "maximumUnexpectedSkips": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "owners": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["role", "accountability"],
+        "properties": {
+          "role": { "type": "string", "minLength": 1 },
+          "accountability": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "expectedArtifacts": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "nonEmptyUniqueStrings": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

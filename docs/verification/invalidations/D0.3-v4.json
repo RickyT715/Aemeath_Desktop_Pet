@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.3-v4-invalidated-by-v5",
+  "invalidatedManifestId": "D0.3-v4",
+  "frozenArtifactPath": "docs/verification/manifests/D0.3-v4.yml",
+  "frozenArtifactSha256": "686633384964721365efb45d564dc1093ad1d7a13a5ac77c4c1a4a4ebf334c2e",
+  "replacementManifestId": "D0.3-v5",
+  "invalidatedAt": "2026-07-22T11:29:39Z",
+  "reason": "Independent review found that revision 4 did not bind its RED evidence to exact manifest bytes and under-enforced phase budgets, child ownership, invalidation semantics, measured thresholds, and CI alignment.",
+  "reviewer": "independent-verification-reviewer-role"
+}

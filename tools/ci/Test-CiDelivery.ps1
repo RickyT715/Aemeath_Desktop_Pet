@@ -228,7 +228,7 @@ try {
     $mutatedManifest = Copy-Manifest
     $mutatedManifest.jobs[0].discovery.rationale = ""
     Assert-StaticMutationRejected -Name "unjustified zero discovery" -WorkflowContent $workflow `
-        -Manifest $mutatedManifest -ExpectedMessage "justify zero test discovery"
+        -Manifest $mutatedManifest -ExpectedMessage "explain its discovery contract"
 
     $mutatedManifest = Copy-Manifest
     $mutatedManifest.jobs[0].evidenceFiles = @()

@@ -77,6 +77,33 @@
           "minimumBytes": 20
         }
       ]
+    },
+    {
+      "id": "verification-contracts",
+      "name": "Verification Contracts",
+      "runner": "ubuntu-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 23,
+        "command": "./tools/verification/Test-VerificationContracts.ps1",
+        "rationale": "D0.3-v5 freezes at least 23 counted semantic probes covering trace semantics, regeneration, mutations, executable schemas, linked manifests, measured semantic negatives, and measured schema negatives."
+      },
+      "artifactPrefix": "verification-contracts-",
+      "artifactPath": "artifacts/ci/verification-contracts/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "verification-contract-tests.log",
+          "minimumBytes": 100
+        }
+      ]
     }
   ]
 }
