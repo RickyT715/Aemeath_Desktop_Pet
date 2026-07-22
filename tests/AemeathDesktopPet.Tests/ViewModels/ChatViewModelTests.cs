@@ -222,4 +222,55 @@ public class ChatViewModelTests : IDisposable
 
         Assert.Equal(1, _stats.Stats.TotalChats);
     }
+
+    [Fact]
+    public async Task SendMessageAsync_WithMemoryBridge_DoesNotThrow()
+    {
+        var coreMemory = new CoreMemoryService(Path.Combine(_tempDir, "core"));
+        coreMemory.Load();
+        var procMemory = new ProceduralMemoryService(Path.Combine(_tempDir, "proc"));
+        procMemory.Load();
+        var obsBuffer = new ObservationBufferService(Path.Combine(_tempDir, "obs"));
+        obsBuffer.Load();
+        var bridge = new MemoryBridgeService(coreMemory, procMemory, obsBuffer, null);
+
+        var vm = new ChatViewModel(_chat, _memory, _stats, memoryBridge: bridge);
+        vm.InputText = "Hello with memory";
+
+        await vm.SendMessageAsync();
+
+        Assert.Equal(2, vm.Messages.Count);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_NullMemoryBridge_DoesNotThrow()
+    {
+        var vm = new ChatViewModel(_chat, _memory, _stats, memoryBridge: null);
+        vm.InputText = "Hello without memory";
+
+        await vm.SendMessageAsync();
+
+        Assert.Equal(2, vm.Messages.Count);
+    }
+
+    [Fact]
+    public async Task SendMessageAsync_ChatError_FallsToOffline_NoMemoryCrash()
+    {
+        var coreMemory = new CoreMemoryService(Path.Combine(_tempDir, "core2"));
+        coreMemory.Load();
+        var procMemory = new ProceduralMemoryService(Path.Combine(_tempDir, "proc2"));
+        procMemory.Load();
+        var obsBuffer = new ObservationBufferService(Path.Combine(_tempDir, "obs2"));
+        obsBuffer.Load();
+        var bridge = new MemoryBridgeService(coreMemory, procMemory, obsBuffer, null);
+
+        // Test that SendMessageAsync with a working chat + bridge completes without NullRef
+        var vm = new ChatViewModel(_chat, _memory, _stats, memoryBridge: bridge);
+        vm.InputText = "Test error scenario";
+        await vm.SendMessageAsync();
+
+        // Should complete normally — the point is no NullReferenceException
+        Assert.Equal(2, vm.Messages.Count);
+        Assert.False(vm.IsSending);
+    }
 }

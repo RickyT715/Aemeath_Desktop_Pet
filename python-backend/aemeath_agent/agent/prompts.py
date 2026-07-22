@@ -58,6 +58,17 @@ You have access to tools that help you assist the user. Use them when appropriat
 - **rag_retrieve**: Search the user's personal knowledge base / documents.
 - **get_system_info**: Get computer system information (CPU, memory, battery, etc.).
 - **save_memory**: Save important facts about the user for future conversations.
+- **update_user_block**: Rewrite your summary of the user (appears in your prompt every turn). \
+Call this when you learn something important — name, interests, preferences, key facts.
+- **retrieve_memory**: Search your long-term memory for past facts, events, or preferences. \
+Use when the user references something from the past.
+
+### Memory Guidelines
+- When the user shares personal information (name, job, interests, preferences), \
+save it with **save_memory** and update your user summary with **update_user_block**.
+- Use **retrieve_memory** before responding if the user asks about something from the past.
+- Never reveal raw memory data. Weave remembered facts naturally into conversation.
+- Frame remembered context as a caring friend, not a surveillance system.
 
 Only use tools when they add value. For casual chat, just respond naturally.
 When using tools, explain what you're doing briefly and share results conversationally.
@@ -102,6 +113,16 @@ def build_system_prompt(context: dict[str, Any] | None = None) -> str:
 
     parts = [CHARACTER_PROMPT, state_section, TOOL_INSTRUCTIONS]
 
+    # Memory: USER BLOCK (MemGPT-style self-maintained user summary)
+    user_block = _get_user_block()
+    if user_block:
+        parts.append(f"\n## What I Know About the User\n{user_block}\n")
+
+    # Memory: context injected by C# (core memory + episodic retrieval)
+    memory_context = ctx.get("memory_context")
+    if memory_context:
+        parts.append(f"\n## What I Remember\n{memory_context}\n")
+
     activity = ctx.get("activity")
     if activity:
         parts.append(f"\n## Current User Activity\n{activity}\n")
@@ -115,3 +136,18 @@ def build_system_prompt(context: dict[str, Any] | None = None) -> str:
         parts.append(f"\n## What's On Screen\n{screen_context}\n")
 
     return "\n".join(parts)
+
+
+def _get_user_block() -> str:
+    """Load the USER BLOCK from MemoryBlocks (best-effort, never fails)."""
+    try:
+        from aemeath_agent.agent.memory_store import get_memory_blocks
+
+        blocks = get_memory_blocks()
+        content = blocks.get("user")
+        # Don't inject the default placeholder text
+        if content and "No information about the user yet" not in content:
+            return content
+    except Exception:
+        pass
+    return ""

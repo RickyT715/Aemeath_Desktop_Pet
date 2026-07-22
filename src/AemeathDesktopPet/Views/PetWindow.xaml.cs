@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using AemeathDesktopPet.Engine;
 using AemeathDesktopPet.Interop;
 using AemeathDesktopPet.Models;
+using AemeathDesktopPet.Services;
 using AemeathDesktopPet.ViewModels;
 
 namespace AemeathDesktopPet.Views;
@@ -17,6 +18,7 @@ public partial class PetWindow : Window
     private readonly PetViewModel _vm;
     private readonly DispatcherTimer _hoverTimer;
     private readonly DispatcherTimer _idleBubbleTimer;
+    private readonly DispatcherTimer _distillationTimer;
     private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon? _trayIcon;
 
     // Child windows
@@ -61,6 +63,13 @@ public partial class PetWindow : Window
             Interval = TimeSpan.FromSeconds(45)
         };
         _idleBubbleTimer.Tick += OnIdleBubbleTick;
+
+        // Observation distillation timer (every 30 minutes)
+        _distillationTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMinutes(30)
+        };
+        _distillationTimer.Tick += OnDistillationTick;
 
         // Bind position to window location
         _vm.PropertyChanged += (_, args) =>
@@ -126,6 +135,9 @@ public partial class PetWindow : Window
         // Suppress auto-singing when no music folder configured
         UpdateSuppressSinging();
 
+        // Start observation distillation timer
+        _distillationTimer.Start();
+
         // Screen awareness indicator
         UpdateScreenWatchBadge();
     }
@@ -133,6 +145,7 @@ public partial class PetWindow : Window
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         _idleBubbleTimer.Stop();
+        _distillationTimer.Stop();
         _catWindow?.Close();
         _chatWindow?.Close();
         _vm.Shutdown();
@@ -326,7 +339,8 @@ public partial class PetWindow : Window
         var chatVm = new ChatViewModel(
             _vm.Chat, _vm.Memory, _vm.Stats,
             _vm.Tts, _vm.VoiceInput, _vm.Stt,
-            () => _vm.Config.Config);
+            () => _vm.Config.Config,
+            _vm.MemoryBridge);
         _chatWindow = new ChatWindow(chatVm);
         _chatWindow.Closed += (_, _) =>
         {
@@ -422,6 +436,8 @@ public partial class PetWindow : Window
         {
             _workStartedTime = DateTime.Now;
             UpdateSuppressSinging();
+            _vm.ObservationBuffer.AddObservation("pomodoro",
+                $"Work session started: \"{taskTitle}\" ({duration} min)", "PomodoroWork");
             var prompt = BuildPomodoroPrompt(
                 _vm.Config.Config.PomodoroIntegration.WorkStartedPrompt,
                 taskTitle, duration);
@@ -435,6 +451,8 @@ public partial class PetWindow : Window
         pomo.WorkFinished += async (taskTitle) =>
         {
             UpdateSuppressSinging();
+            _vm.ObservationBuffer.AddObservation("pomodoro",
+                $"Work session finished: \"{taskTitle}\"", "PomodoroWork");
             var prompt = BuildPomodoroPrompt(
                 _vm.Config.Config.PomodoroIntegration.WorkFinishedPrompt,
                 taskTitle);
@@ -451,6 +469,8 @@ public partial class PetWindow : Window
         pomo.BreakStarted += async (breakType, duration) =>
         {
             UpdateSuppressSinging();
+            _vm.ObservationBuffer.AddObservation("pomodoro",
+                $"Break started: {breakType} ({duration} min)", "PomodoroBreak");
             var prompt = BuildPomodoroPrompt(
                 _vm.Config.Config.PomodoroIntegration.BreakStartedPrompt,
                 breakType: breakType == "long" ? "long" : "short",
@@ -466,6 +486,8 @@ public partial class PetWindow : Window
         pomo.BreakFinished += async () =>
         {
             UpdateSuppressSinging();
+            _vm.ObservationBuffer.AddObservation("pomodoro",
+                "Break finished", "PomodoroBreak");
             var prompt = BuildPomodoroPrompt(
                 _vm.Config.Config.PomodoroIntegration.BreakFinishedPrompt);
             prompt = AppendActivitySummary(prompt, DateTime.Now.AddMinutes(-5));
@@ -476,6 +498,8 @@ public partial class PetWindow : Window
 
         pomo.TaskAdded += async (taskTitle) =>
         {
+            _vm.ObservationBuffer.AddObservation("pomodoro",
+                $"Task added: \"{taskTitle}\"", "Default");
             var prompt = BuildPomodoroPrompt(
                 _vm.Config.Config.PomodoroIntegration.TaskAddedPrompt,
                 taskTitle);
@@ -500,6 +524,20 @@ public partial class PetWindow : Window
         var saConfig = _vm.Config.Config.ScreenAwareness;
         ScreenWatchBadge.Visibility = (saConfig.Enabled && saConfig.ShowScreenWatchIndicator)
             ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // --- Observation Distillation ---
+
+    private async void OnDistillationTick(object? sender, EventArgs e)
+    {
+        if (_vm.MemoryBridge == null)
+            return;
+
+        // Purge expired observations first
+        _vm.ObservationBuffer.PurgeExpired();
+
+        // Submit pending observations for distillation
+        await _vm.MemoryBridge.SubmitObservationsAsync();
     }
 
     // --- Cat Window ---
@@ -637,6 +675,9 @@ public partial class PetWindow : Window
         var screenComment = _vm.ScreenAwareness.ConsumeLatestCommentary();
         if (!string.IsNullOrEmpty(screenComment))
         {
+            // Log screen observation to buffer for memory distillation
+            _vm.ObservationBuffer.AddObservation("screen", screenComment, context.ToString());
+
             SpeechBubbleControl.ShowMessage(screenComment, 5.0);
             _lastSpeechTime = DateTime.Now;
             if (_vm.Config.Config.Tts.SpeakIdleChatter && _vm.Tts.IsAvailable)
@@ -651,6 +692,12 @@ public partial class PetWindow : Window
             var cameraSummary = _vm.ActivityMonitor.GetCameraSummary(_lastSpeechTime, DateTime.Now);
             if (!string.IsNullOrEmpty(activitySummary) || !string.IsNullOrEmpty(cameraSummary))
             {
+                // Log activity and camera observations to buffer
+                if (!string.IsNullOrEmpty(activitySummary))
+                    _vm.ObservationBuffer.AddObservation("activity", activitySummary, context.ToString());
+                if (!string.IsNullOrEmpty(cameraSummary))
+                    _vm.ObservationBuffer.AddObservation("camera", cameraSummary, context.ToString());
+
                 var activityContext = string.Join(" ", new[] { activitySummary, cameraSummary }.Where(s => !string.IsNullOrEmpty(s)));
                 var prompt = $"[Idle Chatter] You're Aemeath, commenting on what the user has been doing recently and how they seem. {activityContext} Say something short (1-2 sentences) — react to their activity or emotional state, make a casual observation, or ask a related question. Stay in character.";
                 var text = await GetPomodoroAiResponseAsync(prompt, OfflineResponses.IdleChatter);

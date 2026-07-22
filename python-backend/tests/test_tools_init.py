@@ -17,12 +17,12 @@ def test_get_all_tools_returns_list():
     assert isinstance(tools, list)
 
 
-def test_get_all_tools_has_9_tools():
+def test_get_all_tools_has_11_tools():
     settings = _make_settings()
     from aemeath_agent.tools import get_all_tools
 
     tools = get_all_tools(settings)
-    assert len(tools) == 9
+    assert len(tools) == 11
 
 
 def test_tool_names_correct():
@@ -41,6 +41,8 @@ def test_tool_names_correct():
         "rag_retrieve",
         "get_system_info",
         "save_memory",
+        "update_user_block",
+        "retrieve_memory",
     ]
     assert names == expected
 

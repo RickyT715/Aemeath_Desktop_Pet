@@ -20,6 +20,7 @@ public class ChatViewModel : INotifyPropertyChanged
     private readonly VoiceInputService? _voiceInput;
     private readonly ISpeechToTextService? _stt;
     private readonly Func<AppConfig>? _getConfig;
+    private readonly MemoryBridgeService? _memoryBridge;
 
     private string _inputText = "";
     private bool _isSending;
@@ -74,7 +75,8 @@ public class ChatViewModel : INotifyPropertyChanged
         ITtsService? tts = null,
         VoiceInputService? voiceInput = null,
         ISpeechToTextService? stt = null,
-        Func<AppConfig>? getConfig = null)
+        Func<AppConfig>? getConfig = null,
+        MemoryBridgeService? memoryBridge = null)
     {
         _chat = chat;
         _memory = memory;
@@ -83,6 +85,7 @@ public class ChatViewModel : INotifyPropertyChanged
         _voiceInput = voiceInput;
         _stt = stt;
         _getConfig = getConfig;
+        _memoryBridge = memoryBridge;
 
         if (_voiceInput != null)
         {
@@ -193,6 +196,7 @@ public class ChatViewModel : INotifyPropertyChanged
 
     /// <summary>
     /// Core method: adds user message, streams AI response.
+    /// Assembles memory context before AI call and submits for extraction after.
     /// </summary>
     private async Task SendCoreAsync(string userText, byte[]? screenshot)
     {
@@ -225,6 +229,10 @@ public class ChatViewModel : INotifyPropertyChanged
             _memory.AddMessage(new ChatMessage("assistant", assistantMsg.Content));
             _memory.Save();
             _stats.OnChatted();
+
+            // Fire-and-forget: submit conversation turn for memory extraction
+            if (_memoryBridge != null)
+                _ = _memoryBridge.SubmitForExtraction(userText, assistantMsg.Content);
 
             // Auto-speak response via TTS
             if (_tts != null && _getConfig?.Invoke().Tts is { Enabled: true, SpeakChatResponses: true })

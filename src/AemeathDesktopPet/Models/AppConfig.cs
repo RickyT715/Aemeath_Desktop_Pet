@@ -42,6 +42,9 @@ public class AppConfig
     public CompanionAppsConfig CompanionApps { get; set; } = new();
     public BackendConfig Backend { get; set; } = new();
     public McpConfig Mcp { get; set; } = new();
+
+    // Stable thread ID for Python backend agent (persisted across sessions)
+    public string AgentThreadId { get; set; } = "";
 }
 
 public class TtsConfig

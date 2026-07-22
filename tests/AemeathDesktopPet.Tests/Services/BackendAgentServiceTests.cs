@@ -16,7 +16,7 @@ public class BackendAgentServiceTests
     public void IsAvailable_FalseWhenBackendNotReady()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         Assert.False(service.IsAvailable);
     }
 
@@ -24,7 +24,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_ReturnsOfflineResponse_WhenBackendNotReady()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var result = await service.SendMessageAsync("Hello", new List<ChatMessage>());
         Assert.False(string.IsNullOrEmpty(result));
     }
@@ -33,7 +33,7 @@ public class BackendAgentServiceTests
     public async Task SendMessageWithScreenshot_ReturnsOfflineResponse_WhenBackendNotReady()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var screenshot = new byte[] { 1, 2, 3 };
         var result = await service.SendMessageAsync("Hello", new List<ChatMessage>(), screenshot);
         Assert.False(string.IsNullOrEmpty(result));
@@ -43,7 +43,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessage_YieldsOfflineResponse_WhenBackendNotReady()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync("Hello", new List<ChatMessage>()))
@@ -59,7 +59,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessageWithScreenshot_YieldsOfflineResponse_WhenBackendNotReady()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync(
@@ -76,7 +76,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_NullScreenshot_SameAsNoArg()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var result = await service.SendMessageAsync("Hello", new List<ChatMessage>(), null);
         Assert.False(string.IsNullOrEmpty(result));
     }
@@ -85,7 +85,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessage_NullScreenshot_SameAsNoArg()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync(
@@ -102,7 +102,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_OfflineResponseIsNonEmpty()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var result = await service.SendMessageAsync("Test", new List<ChatMessage>());
         Assert.True(result.Length > 0);
     }
@@ -111,7 +111,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_MultipleCallsMayReturnDifferentResponses()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var results = new HashSet<string>();
 
         for (int i = 0; i < 20; i++)
@@ -128,7 +128,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_EmptyHistory_Accepted()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var result = await service.SendMessageAsync("Hello", new List<ChatMessage>());
         Assert.False(string.IsNullOrEmpty(result));
     }
@@ -137,7 +137,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessage_EmptyHistory_Accepted()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync("Hello", new List<ChatMessage>()))
@@ -149,11 +149,11 @@ public class BackendAgentServiceTests
     }
 
     [Fact]
-    public void Constructor_GeneratesThreadId()
+    public void Constructor_AcceptsThreadId()
     {
         using var backend = CreateOfflineBackend();
-        // Constructor should not throw; internally generates a thread ID
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        // Constructor should accept a persisted thread ID
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         Assert.NotNull(service);
     }
 
@@ -161,7 +161,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessage_OfflineResponseIsNonEmpty()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync("Test", new List<ChatMessage>()))
@@ -177,7 +177,7 @@ public class BackendAgentServiceTests
     public async Task SendMessage_WithEmptyScreenshot_ReturnsOffline()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var result = await service.SendMessageAsync("Hello", new List<ChatMessage>(), Array.Empty<byte>());
         Assert.False(string.IsNullOrEmpty(result));
     }
@@ -186,7 +186,7 @@ public class BackendAgentServiceTests
     public async Task StreamMessage_WithEmptyScreenshot_YieldsOffline()
     {
         using var backend = CreateOfflineBackend();
-        var service = new BackendAgentService(backend, () => DefaultStats());
+        var service = new BackendAgentService(backend, () => DefaultStats(), "test_thread_1");
         var chunks = new List<string>();
 
         await foreach (var chunk in service.StreamMessageAsync(

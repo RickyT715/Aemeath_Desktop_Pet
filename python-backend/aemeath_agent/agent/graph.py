@@ -31,7 +31,7 @@ async def create_aemeath_agent(settings: Settings) -> Any:
     - Model selection based on ai_provider setting
     - All 9 tools + save_memory
     - SQLite checkpointer for conversation persistence
-    - InMemoryStore for long-term cross-session memory
+    - JSON-backed persistent store for long-term cross-session memory
     - Aemeath's character system prompt
 
     Args:

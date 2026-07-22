@@ -51,6 +51,12 @@ public class PetViewModel : INotifyPropertyChanged
     private BackendProcessManager? _backendManager;
     private InternalApiServer? _internalApi;
 
+    // Memory services
+    private readonly CoreMemoryService _coreMemory;
+    private readonly ProceduralMemoryService _proceduralMemory;
+    private readonly ObservationBufferService _observationBuffer;
+    private MemoryBridgeService? _memoryBridge;
+
     // Bindable properties
     private BitmapSource? _currentFrame;
     private double _petX;
@@ -111,6 +117,10 @@ public class PetViewModel : INotifyPropertyChanged
     public BehaviorEngine Behavior => _behavior;
     public AemeathStats CurrentStats => _stats.Stats;
     public BackendProcessManager? BackendManager => _backendManager;
+    public CoreMemoryService CoreMemory => _coreMemory;
+    public ProceduralMemoryService ProceduralMemory => _proceduralMemory;
+    public ObservationBufferService ObservationBuffer => _observationBuffer;
+    public MemoryBridgeService? MemoryBridge => _memoryBridge;
 
     public PetViewModel()
     {
@@ -155,6 +165,14 @@ public class PetViewModel : INotifyPropertyChanged
 
         // Activity monitor
         _activityMonitor = new ActivityMonitorService(() => _config.Config.ActivityMonitor);
+
+        // Memory services
+        _coreMemory = new CoreMemoryService();
+        _coreMemory.Load();
+        _proceduralMemory = new ProceduralMemoryService();
+        _proceduralMemory.Load();
+        _observationBuffer = new ObservationBufferService();
+        _observationBuffer.Load();
 
         SpriteSize = _config.Config.PetSize;
         PetOpacity = _config.Config.Opacity;
@@ -231,6 +249,8 @@ public class PetViewModel : INotifyPropertyChanged
             _internalApi.StartAsync();
 
             _backendManager = new BackendProcessManager(_config.Config.Backend);
+            _memoryBridge = new MemoryBridgeService(
+                _coreMemory, _proceduralMemory, _observationBuffer, _backendManager);
             _backendManager.BackendReady += (_, _) =>
             {
                 // Recreate chat service to use backend agent
@@ -238,6 +258,12 @@ public class PetViewModel : INotifyPropertyChanged
                 _stt = CreateSttService();
             };
             _ = _backendManager.StartAsync();
+        }
+        else
+        {
+            // No backend — still create bridge for local-only memory
+            _memoryBridge = new MemoryBridgeService(
+                _coreMemory, _proceduralMemory, _observationBuffer, null);
         }
     }
 
@@ -332,7 +358,15 @@ public class PetViewModel : INotifyPropertyChanged
     {
         // Three-tier fallback: Backend agent > Cloud API > Offline
         if (_backendManager is { IsReady: true })
-            return new BackendAgentService(_backendManager, () => _stats.Stats);
+        {
+            // Persist thread ID so the Python agent maintains conversation continuity across sessions
+            if (string.IsNullOrEmpty(_config.Config.AgentThreadId))
+            {
+                _config.Config.AgentThreadId = Guid.NewGuid().ToString("N")[..12];
+                _config.Save();
+            }
+            return new BackendAgentService(_backendManager, () => _stats.Stats, _config.Config.AgentThreadId);
+        }
 
         return _config.Config.AiProvider switch
         {

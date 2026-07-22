@@ -8,12 +8,14 @@ from aemeath_agent.tools.music_control import control_music
 from aemeath_agent.tools.pet_stats import configure as configure_stats
 from aemeath_agent.tools.pet_stats import get_pet_stats
 from aemeath_agent.tools.rag_retrieval import rag_retrieve
+from aemeath_agent.tools.retrieve_memory import retrieve_memory
 from aemeath_agent.tools.save_memory import save_memory
 from aemeath_agent.tools.screen_reader import configure as configure_screen
 from aemeath_agent.tools.screen_reader import read_screen
 from aemeath_agent.tools.system_info import get_system_info
 from aemeath_agent.tools.todo import configure as configure_todo
 from aemeath_agent.tools.todo import manage_todo
+from aemeath_agent.tools.update_user_block import update_user_block
 from aemeath_agent.tools.weather import configure as configure_weather
 from aemeath_agent.tools.weather import get_weather
 from aemeath_agent.tools.web_search import configure as configure_search
@@ -47,4 +49,6 @@ def get_all_tools(settings: Settings) -> list[Any]:
         rag_retrieve,
         get_system_info,
         save_memory,
+        update_user_block,
+        retrieve_memory,
     ]
