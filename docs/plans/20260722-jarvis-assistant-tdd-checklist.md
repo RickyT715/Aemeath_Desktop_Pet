@@ -352,14 +352,14 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 
 ### D0.3 Establish qualified traceability and manifest schemas
 
-- [ ] Write failing coverage probes, then create `docs/verification/traceability-v1.yml`, risk/lane,
+- [x] Write failing coverage probes, then create `docs/verification/traceability-v1.yml`, risk/lane,
   RED/GREEN/VERIFY, and exact-SHA manifest schemas.
-- [ ] Map every `CURRENT:*` requirement/locator and every `PRD:AC-FR-*`, `PRD:NFR-JA-*`,
+- [x] Map every `CURRENT:*` requirement/locator and every `PRD:AC-FR-*`, `PRD:NFR-JA-*`,
   `PRD:GATE-*`, and `PRD:RISK-*` ID to design/UI sections, checklist steps, future test/probe IDs,
   lanes, and evidence paths. No ambiguous bare `NFR-*` reference is allowed.
-- [ ] Validate missing, duplicate, stale source hash, invalid disposition, orphan test, and orphan
+- [x] Validate missing, duplicate, stale source hash, invalid disposition, orphan test, and orphan
   acceptance-criterion known-bad fixtures.
-- [ ] Commit, push, and obtain exact-head-SHA CI success.
+- [x] Commit, push, and obtain exact-head-SHA CI success.
 
 ### D0.4 Provision and prove required delivery environments
 
