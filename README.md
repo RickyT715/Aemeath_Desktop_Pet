@@ -1,1345 +1,321 @@
 # Aemeath Desktop Pet
 
-A desktop pet application featuring **Aemeath** (爱弥斯) from Wuthering Waves. She flies around your screen, reacts to your mouse, chats with you, and keeps you company while you work — accompanied by her black cat and paper planes.
-
-![Build](https://github.com/RickyC0626-archive/aemeath-desktop-pet/actions/workflows/ci.yml/badge.svg)
-![.NET 8](https://img.shields.io/badge/.NET-8.0-purple?logo=dotnet)
-![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
-![Platform](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
-![License](https://img.shields.io/badge/license-MIT-green)
-
 English | [中文](README_CN.md)
 
----
+Aemeath is a Windows-first desktop companion built with .NET 8 and WPF. It combines an animated always-on-top pet, lightweight stats and routines, AI chat, speech, optional screen awareness, and integrations with companion productivity apps. The core application runs without Python or an API key: when AI is unavailable, chat and idle reactions fall back to built-in offline responses.
+
+For agent tools, persistent agent threads, semantic memory, RAG, and backend speech/vision routes, Aemeath can launch an optional loopback FastAPI/LangGraph sidecar. During startup/service selection, a sidecar that is not ready leaves the WPF app on the selected direct provider (Claude, Gemini, or a Claude-compatible proxy), with offline responses as the final fallback. Once `BackendAgentService` has been selected, however, a failed backend request falls directly to offline output rather than retrying a direct provider.
+
+> Development status: active prototype. The repository contains working features, partial integrations, and design-stage code. See [Current Limitations](#current-limitations) before relying on privacy, memory deletion, MCP, or release packaging.
 
 ## Table of Contents
 
+- [Project Status](#project-status)
 - [Quick Start](#quick-start)
-- [Controls & Interactions](#controls--interactions)
+- [Using Aemeath](#using-aemeath)
 - [Features](#features)
-  - [Behavior System (26-State FSM)](#behavior-system-26-state-fsm)
-  - [Stats System](#stats-system)
-  - [AI Chat](#ai-chat)
-  - [Speech Bubbles & Idle Chatter](#speech-bubbles--idle-chatter)
-    - [Speech Frequency (Per-Context)](#speech-frequency-per-context)
-  - [Text-to-Speech (TTS)](#text-to-speech-tts)
-  - [Voice Input (Push-to-Talk)](#voice-input-push-to-talk)
-  - [Screenshot Support](#screenshot-support)
-  - [Screen Awareness](#screen-awareness)
-  - [Black Cat Companion](#black-cat-companion)
-  - [Paper Plane System](#paper-plane-system)
-  - [Particle System](#particle-system)
-  - [Digital Glitch Effect](#digital-glitch-effect)
-  - [Window Edge Perching](#window-edge-perching)
-  - [Time Awareness](#time-awareness)
-  - [Fullscreen Detection](#fullscreen-detection)
-  - [Click-Through Mode](#click-through-mode)
-  - [System Tray](#system-tray)
-  - [Pomodoro / To-Do List Integration](#pomodoro--to-do-list-integration)
-  - [Activity Monitor Integration](#activity-monitor-integration)
-  - [Companion App Auto-Launch](#companion-app-auto-launch)
-  - [Start with Windows](#start-with-windows)
-- [Settings Panel](#settings-panel)
-- [Sprites](#sprites)
-- [Configuration & Data Files](#configuration--data-files)
+- [Memory System](#memory-system)
 - [Architecture](#architecture)
 - [Python AI Backend](#python-ai-backend)
 - [MCP Integration](#mcp-integration)
-- [Project Structure](#project-structure)
-- [Dependencies](#dependencies)
+- [Settings](#settings)
+- [Data Storage and Privacy](#data-storage-and-privacy)
+- [Project Layout](#project-layout)
 - [Testing](#testing)
-- [Missing Assets & Stubbed Features](#missing-assets--stubbed-features)
-- [About Aemeath](#about-aemeath)
+- [Current Limitations](#current-limitations)
+- [Design Documents](#design-documents)
 
----
+## Project Status
+
+| Status | Meaning in this repository | Examples |
+|---|---|---|
+| Implemented | Connected to the running WPF or sidecar application | Pet window, chat history, stats, direct AI providers, five TTS providers, periodic screen awareness, tray icon |
+| Partial | A usable path exists, but the full design is not connected | Multi-tier memory, companion-app integrations, RAG APIs, black-cat companion |
+| External dependency | Requires a key, local service, model, database, or separate app | Cloud AI/TTS/STT, Ollama, GPT-SoVITS, activity monitor, Pomodoro bridge |
+| Asset placeholder | The behavior exists but reuses generic art | Several of the 26 pet states; the cat window currently renders a Unicode cat |
+| Planned or dormant | Classes, settings, or design exist without a runtime path | MCP startup, paper-plane rendering, window-edge pose transitions, fullscreen auto-hide |
 
 ## Quick Start
 
 ### Prerequisites
 
-- **Windows 10/11** (x64)
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (for building) or [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) (for running published builds)
-- [Python 3.12+](https://python.org) (for AI backend — optional, falls back to direct API calls)
+- Windows 10 or 11
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Python 3.11 or newer **only if you use the optional sidecar**
+- Optional provider keys or local services for AI, TTS, STT, and vision
 
-### Install .NET 8 SDK
+### Run the WPF application
 
-Download from: https://dotnet.microsoft.com/download/dotnet/8.0
-
-Or install via winget:
-```
-winget install Microsoft.DotNet.SDK.8
-```
-
-Verify installation:
-```
-dotnet --version
+```powershell
+git clone https://github.com/RickyT715/Aemeath_Desktop_Pet.git
+cd Aemeath_Desktop_Pet
+.\run.bat
 ```
 
-### Build & Run
+The equivalent development command is:
 
-**Windows (batch):**
-```
-run.bat
-```
-
-**Manual:**
-```
+```powershell
 dotnet run --project src/AemeathDesktopPet
 ```
 
-### Build Only
+The first run creates `%LOCALAPPDATA%\AemeathDesktopPet\config.json`. Open **Settings > AI** to configure a direct chat provider, or leave it unconfigured to use offline responses.
 
-```
-dotnet build src/AemeathDesktopPet/AemeathDesktopPet.csproj
-```
+### Set up the optional Python sidecar
 
-### Run Tests
+From the repository root:
 
-```
-dotnet test tests/AemeathDesktopPet.Tests/
-```
-
-See [Testing](#testing) for details on test categories and coverage.
-
-### Publish (Self-Contained)
-
-```
-dotnet publish src/AemeathDesktopPet/AemeathDesktopPet.csproj -c Release -r win-x64 --self-contained
-```
-
-Output will be in `src/AemeathDesktopPet/bin/Release/net8.0-windows/win-x64/publish/`.
-
----
-
-## Controls & Interactions
-
-### Mouse Controls
-
-| Input | Action | Details |
-|-------|--------|---------|
-| **Left-click** | Wave animation | Aemeath plays a hand-waving greeting |
-| **Hover 2 seconds** | Happy jump | Hold the cursor over Aemeath without clicking — she jumps happily (+5 Mood, +3 Affection) |
-| **Left-drag** | Pick up and move | Click and hold to drag Aemeath anywhere on screen |
-| **Fast drag + release** | Throw | Drag quickly and release — Aemeath flies with velocity, bounces off screen edges, then lands with gravity |
-| **Double-click** | Open chat window | Opens the AI chat window to talk with Aemeath |
-| **Right-click** | Context menu | Opens the action menu (see below) |
-
-### Context Menu
-
-Right-click Aemeath to open the context menu:
-
-| Item | Action | Details |
-|------|--------|---------|
-| **Sing** | Singing animation | Aemeath sings with music note particles. Requires a music folder set in Settings for audio playback (+8 Mood, -5 Energy) |
-| **Chat with Aemeath** | Open chat window | Same as double-click — opens the AI chat window |
-| **Throw a Paper Plane** | Launch paper plane | Aemeath throws a paper plane that arcs across the screen. The cat may chase it (+2 Mood, -2 Energy) |
-| **Call Cat** | Summon companion | The black cat runs to Aemeath's position (only visible if cat is enabled in Settings) |
-| **How's Aemeath?** | Stats popup | Shows mood, energy, and affection bars with gradient colors and lifetime counters |
-| **Settings** | Settings panel | Opens the 6-tab settings window |
-| **See you later!** | Hide pet | Hides Aemeath (and cat) from screen. She stays in the system tray — double-click the tray icon to bring her back |
-| **Quit** | Exit application | Closes the application entirely. If "Close to tray" is enabled, use this to truly quit |
-
-### System Tray Controls
-
-| Input | Action |
-|-------|--------|
-| **Double-click tray icon** | Show/hide pet |
-| **Right-click tray icon** | Tray context menu (Show, Toggle Click-Through, Settings, Quit) |
-
-### Keyboard Controls
-
-| Input | Action | Details |
-|-------|--------|---------|
-| **Push-to-talk hotkey** (default: `Ctrl+F2`) | Voice input | Hold to record, release to send. Requires voice input enabled in Settings |
-
----
-
-## Features
-
-### Behavior System (26-State FSM)
-
-Aemeath's behavior is driven by a **26-state finite state machine** with weighted random transitions. Every ~1 second, the engine evaluates whether to transition to a new state based on:
-
-- **Base weights** — Each state has a default likelihood (e.g., flying: 15, singing: 5, sleep: 1)
-- **Stats modifiers** — Mood, energy, and time of day dynamically adjust weights
-- **Conditions** — Some states only trigger under specific circumstances
-
-#### All 26 States
-
-| Category | States | Description |
-|----------|--------|-------------|
-| **Core** | Idle, FlyLeft, FlyRight, Fall, Landing | Basic movement and rest |
-| **Interaction** | Drag, Thrown, Wave, PetHappy, Laugh | User-triggered reactions |
-| **Personality** | Sing, PlayGame, Sigh, LookAtUser, Sleep | Autonomous behaviors |
-| **Social** | Chat, PaperPlane, CatLap, PetCat | Interactive and companion states |
-| **Window** | PeekEdge, LieOnWindow, HideTaskbar, ClingEdge | Window edge interactions |
-| **Special** | Glitch, Speaking, ScreenComment | Digital effects and voice |
-
-#### Dynamic Weight Examples
-
-| Condition | Effect |
-|-----------|--------|
-| Mood < 50 | Sigh weight doubles (more melancholy) |
-| Mood > 70 | Laugh weight increases 1.5x |
-| Energy < 30 | Sleep weight increases to 5; PlayGame and Sing disabled |
-| Energy < 20 | PlayGame disabled |
-| Energy < 15 | Sing disabled |
-| Night (21:00–5:59) | Sleep becomes available |
-| Mood < 20 | Sing disabled (too sad to sing) |
-| Pomodoro work mode | Sing suppressed (no auto-singing during focus) |
-| No music folder set | Sing suppressed (nothing to play) |
-
-Each state has a randomized duration (e.g., Sing: 5–15 seconds, Sleep: 8–20 seconds). States like Drag, Chat, and Sleep are user-driven and don't auto-transition.
-
----
-
-### Stats System
-
-Aemeath has three core stats that track her emotional state. They affect her behavior, dialogue, and animations.
-
-#### Stats Overview
-
-| Stat | Range | Default | What It Affects |
-|------|-------|---------|-----------------|
-| **Mood** | 0–100 | 70 | Behavior weights (more laughs when high, more sighs when low), dialogue tone |
-| **Energy** | 0–100 | 80 | Available activities (singing, games disabled when low), sleep tendency |
-| **Affection** | 0–100 | 50 | Long-term bond indicator, greeting warmth |
-
-#### How Stats Change
-
-**Interactions (immediate effects):**
-
-| Action | Mood | Energy | Affection |
-|--------|------|--------|-----------|
-| Chat with Aemeath | +3 | — | +2 |
-| Pet (hover 2s) | +5 | — | +3 |
-| Sing | +8 | -5 | — |
-| Throw paper plane | +2 | -2 | — |
-| Play game | +6 | -8 | — |
-| Pomodoro work finished | +3 | — | — |
-
-**Active session decay (every 5 minutes while running):**
-- Energy: -1
-- Mood: Drifts toward 50 (±0.5 per tick)
-
-**Offline decay (when app is closed):**
-
-| Stat | First hours | After that | Floor |
-|------|-------------|------------|-------|
-| Mood | -5/hr (first 4 hrs) | -2/hr | 30 |
-| Energy | -3/hr (first 6 hrs) | -1/hr | 20 |
-| Affection | -1/hr (first 12 hrs) | -0.5/hr | 40 |
-
-**Lifetime counters** tracked: Total Chats, Total Pets, Total Songs, Total Paper Planes, Total Games, Days Together.
-
-#### Viewing Stats
-
-Right-click Aemeath > **"How's Aemeath?"** to see gradient progress bars for each stat and lifetime counters.
-
----
-
-### AI Chat
-
-Double-click Aemeath or use the context menu to open the chat window. Three AI providers are supported:
-
-#### Claude (Anthropic)
-
-1. Get an API key from [console.anthropic.com](https://console.anthropic.com/)
-2. Open **Settings** (right-click > Settings) > **AI** tab
-3. Select **Claude** as the provider
-4. Enter your API key
-
-#### Gemini (Google)
-
-1. Get an API key from [aistudio.google.com](https://aistudio.google.com/)
-2. Open **Settings** > **AI** tab
-3. Select **Gemini** as the provider
-4. Enter your API key
-
-#### Claude Code Proxy
-
-Use a local [claude-code-proxy](https://github.com/nicekid1/Claude-Code-Proxy) to route requests through Claude MAX subscription OAuth tokens — no API key needed.
-
-1. Install and start the proxy (`npm start` — runs on `http://localhost:42069` by default)
-2. Open **Settings** > **AI** tab
-3. Select **Claude Code Proxy** as the provider
-4. (Optional) Adjust the Proxy Base URL if your proxy runs on a different port
-5. (Optional) Select a model (Sonnet 4.5, Sonnet 4, Opus 4, or Haiku 3.5)
-
-The proxy exposes the standard Anthropic Messages API with SSE streaming. No API key is required — the proxy handles OAuth authentication transparently.
-
-#### Offline Fallback
-
-Without an API key, the chat uses **75+ pre-scripted character responses** that are context-aware:
-- **Time of day** — morning greetings, night sleepy responses
-- **Mood** — happy reactions vs. melancholy lines
-- **Energy** — sleepy responses when low
-- **Absence duration** — "Where were you?" when returning after a long time
-
-#### Chat Features
-
-- **Streaming responses** — AI text appears word-by-word in the chat window
-- **Character personality** — The system prompt maintains Aemeath's personality (bubbly, digital ghost, loves singing)
-- **Chat history** — Last 200 messages are saved and loaded between sessions
-- **TTS integration** — AI responses are spoken aloud when TTS is enabled
-- **Screenshot support** — Attach a screenshot to your message for visual context
-
----
-
-### Speech Bubbles & Idle Chatter
-
-Aemeath periodically shows speech bubbles with themed dialogue while idle.
-
-- **Configurable per-context frequency**: Each activity context has its own speech frequency preset
-- **Streaming text effect**: Text appears character-by-character
-- **Duration**: Each bubble stays for ~5 seconds
-
-Speech bubbles are **suppressed** during: Drag, Thrown, Fall, Chat, Sleep, and Speaking states.
-
-#### Speech Frequency (Per-Context)
-
-Aemeath's idle chatter frequency automatically adapts to what you're doing. Six activity contexts are detected, each configurable with four frequency presets.
-
-**Activity Contexts:**
-
-| Context | Default Preset | Detection Method |
-|---------|---------------|-----------------|
-| Pomodoro Work | Silent | Pomodoro timer work mode active |
-| Pomodoro Break | Chatty | Pomodoro timer break mode active |
-| Gaming | Rare | Process names (Steam, Epic, Genshin, etc.) + domains |
-| Watching Videos | Rare | Domains (YouTube, Twitch, Bilibili, Netflix, etc.) |
-| Studying / Coding | Normal | Process names (VS Code, DevEnv, etc.) + domains (GitHub, StackOverflow, etc.) |
-| Default / Idle | Normal | Fallback when no specific activity detected |
-
-**Frequency Presets:**
-
-| Preset | Interval | Description |
-|--------|----------|-------------|
-| Silent | — | No idle chatter |
-| Rare | 2–4 minutes | Minimal interruptions |
-| Normal | 45–90 seconds | Standard chatter |
-| Chatty | 15–30 seconds | Frequent conversation |
-
-**Priority:** Pomodoro state > Activity detection > Default
-
-**Configuration:** Settings > General > Speech Frequency. Each context has a dropdown to select its preset.
-
-> **Note:** Gaming, Videos, and Study/Coding detection requires Activity Monitor to be enabled with a valid database path.
-
----
-
-### Text-to-Speech (TTS)
-
-Five TTS providers are available. Configure in **Settings** > **Voice** tab.
-
-#### Edge TTS (Default — Free)
-
-Uses Microsoft Edge's neural TTS voices via WebSocket. **No API key needed.**
-
-- Default voice: `en-US-AvaMultilingualNeural`
-- 300+ voices across many languages
-- Popular Chinese voices: `zh-CN-XiaoxiaoNeural`, `zh-CN-YunxiNeural`, `zh-CN-YunyangNeural`
-- English voices: `en-US-AvaMultilingualNeural`, `en-US-JennyNeural`, etc.
-
-**How to use:** Select "Edge TTS" in Settings > Voice tab. Type the exact voice name.
-
-> **Note:** `Edge_tts.Await = true` is bugged in Edge_tts_sharp v1.1.7 — the library's callback never fires. The provider uses `Await = false` with `ManualResetEventSlim` to wait correctly.
-
-#### GPT-SoVITS (Local)
-
-Connects to a local [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS) server for custom voice cloning.
-Supports **model profiles** for switching between multiple trained models.
-
-**Prerequisites:**
-- Python 3.9+ installed
-- NVIDIA GPU recommended (CUDA); CPU inference works but is slow
-- A trained GPT-SoVITS model (`.ckpt` + `.pth` weight files) and a short reference audio clip
-
-**Server Setup:**
-1. Clone or download [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
-2. Install dependencies: `pip install -r requirements.txt`
-3. Start the **API server** (not the WebUI):
-   ```bash
-   python api_v2.py -a 127.0.0.1 -p 9880
-   ```
-   The server listens on `http://localhost:9880` by default.
-   > **Tip:** Use `-a 0.0.0.0` if the server runs on a different machine on your LAN.
-
-**Desktop Pet Setup:**
-1. Open **Settings** > **Voice** tab
-2. Select **GPT-SoVITS** as the TTS provider
-3. Verify the server URL (default: `http://localhost:9880`)
-
-**Model Profiles:**
-1. Click **Add** to create a profile
-2. Configure:
-   - **GPT Weights Path** (`.ckpt`) — full path **on the server machine**
-   - **SoVITS Weights Path** (`.pth`) — full path **on the server machine**
-   - **Reference Audio** — a short (3-10s) clear speech clip of the target voice
-   - **Prompt Text** — exact transcription of the reference audio
-   - **Prompt / Text Language** — Auto, Chinese, English, Japanese, or Korean
-   - **Speed** — 0.5x to 2.0x
-3. Select the profile from the dropdown to activate it
-
-> All file paths (weights, reference audio) are resolved **on the GPT-SoVITS server**, not on the desktop pet machine.
-> If both run on the same PC, use absolute paths like `D:\GPT-SoVITS\models\my_model.ckpt`.
-
-When a profile is active, the provider automatically calls `/set_gpt_weights` and `/set_sovits_weights` to load the model before synthesis. Select *"(No profile - legacy mode)"* to use the server's currently loaded default model.
-
-#### ElevenLabs (Cloud)
-
-High-quality cloud TTS with many voice options.
-
-1. Get an API key from [elevenlabs.io](https://elevenlabs.io/)
-2. Enter your API key and voice ID in Settings
-3. Select "ElevenLabs" as the TTS provider
-
-#### Fish Audio (Cloud)
-
-Cloud voice cloning and TTS via [Fish Audio](https://fish.audio/). Supports zero-shot voice cloning with a short reference audio clip — no model training required.
-
-1. Get an API key from [fish.audio](https://fish.audio/)
-2. **(Optional)** Upload a reference audio clip on Fish Audio to create a voice model and copy its Model ID
-3. Enter your API key and Model ID in **Settings** > **Voice** tab
-4. Select "Fish Audio" as the TTS provider
-
-> The API Base URL defaults to `https://api.fish.audio`. Change it only if you self-host the Fish Speech server.
-
-#### OpenAI TTS (Cloud)
-
-Simple cloud TTS via the OpenAI API. 13 preset voices, no voice cloning.
-
-1. Get an API key from [platform.openai.com](https://platform.openai.com/)
-2. Enter your API key in **Settings** > **Voice** tab
-3. Select a model (`tts-1`, `tts-1-hd`, or `gpt-4o-mini-tts`) and voice
-4. Select "OpenAI TTS" as the TTS provider
-
-Available voices: `alloy`, `ash`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`.
-Speed adjustable from 0.25x to 4.0x.
-
-#### TTS Features
-
-| Feature | Description |
-|---------|-------------|
-| **Auto-speak chat** | AI chat responses are spoken aloud when TTS is enabled |
-| **Auto-speak idle chatter** | Speech bubbles can optionally be spoken (off by default) |
-| **Auto-mute fullscreen** | TTS silenced when a fullscreen app is active (configurable) |
-| **Queue system** | Utterances queued and played one at a time via NAudio |
-| **Stop on new message** | Sending a new chat message cancels current speech |
-| **Format detection** | Handles MP3 (Edge TTS, ElevenLabs, OpenAI) and WAV (GPT-SoVITS, Fish Audio) |
-| **Volume control** | Adjustable 0–100% in Settings |
-
-#### Testing TTS
-
-A standalone integration test console app is included:
-
-```
-dotnet run --project tests/TtsIntegrationTest
-```
-
-This tests all 5 providers sequentially. Set API key environment variables to include cloud providers.
-
----
-
-### Voice Input (Push-to-Talk)
-
-Record voice messages and send them to the AI chat.
-
-**Setup:**
-1. Enable voice input in **Settings** > **Voice** tab
-2. Choose STT provider: **Whisper** (OpenAI) or **Gemini** (Google)
-3. Enter the API key for your chosen provider
-4. Set the push-to-talk hotkey (default: `Ctrl+F2`)
-5. Optionally enable screenshot attachment
-
-**How to use:**
-1. Press and hold the hotkey to start recording (microphone icon appears)
-2. Speak your message
-3. Release the hotkey — audio is transcribed and sent as a chat message
-4. If screenshot is enabled, a screen capture is attached automatically
-
-**STT Providers:**
-
-| Provider | API Key Required | Notes |
-|----------|-----------------|-------|
-| Whisper (OpenAI) | Yes (OpenAI key) | Accurate, supports many languages |
-| Gemini (Google) | Uses Gemini key | Reuses the AI chat Gemini key |
-
-**Language options:** English, Chinese, Japanese, Korean, Spanish, French, German.
-
----
-
-### Screenshot Support
-
-Capture and include screenshots in your chat messages for visual context.
-
-- **With voice input**: Enable "Include screenshot" in Voice settings — a screenshot is automatically captured when you release the push-to-talk key
-- **With text chat**: Use the screenshot button in the chat window to capture and attach
-
-Screenshots are captured as JPEG with downscaling for efficient API transmission.
-
----
-
-### Screen Awareness
-
-Aemeath can periodically capture screenshots of your screen and comment on what you're doing via speech bubbles, powered by a vision AI.
-
-#### How It Works
-
-1. A background timer captures a screenshot every 60 seconds (configurable)
-2. **Layer 0: Protected Window Check** — if any DRM-protected window is visible (`GetWindowDisplayAffinity`), skip (~0ms, toggleable)
-3. **Layer 1: App/Title Blacklist** — if the foreground app matches the blacklist (17 default entries covering password managers, banking, login pages across Chrome/Edge/Firefox), skip (~1ms)
-4. **Fullscreen skip** — if a fullscreen app is active, skip
-5. **Budget check** — if monthly spending exceeds the cap, skip
-6. **Layer 3: Privacy Downscale** — screenshot is downscaled to 480px (configurable) to destroy text legibility (~5ms, toggleable)
-7. **Perceptual hash dedup** — if the screen hasn't changed meaningfully (Hamming distance < 10), skip (~2ms)
-8. The screenshot is sent to the configured vision AI (Gemini Flash, Claude, Ollama, or Local+Cloud Hybrid)
-9. **Layer 7: Post-Response PII Scan** — regex+Luhn scan of the AI response; discard if credit cards, SSNs, emails, phones, or password keywords are detected (~1ms, toggleable)
-10. The next idle chatter tick picks up the cached commentary and shows it as a speech bubble
-
-#### Privacy Pipeline
-
-| Layer | Protection | Latency | Toggle |
-|-------|-----------|---------|--------|
-| **0** | OS Protected Window Check | ~0ms | On by default |
-| **1** | App/Title Blacklist (17 defaults) | ~1ms | Always on |
-| — | Fullscreen skip | ~0ms | Always on |
-| — | Budget cap | ~0ms | Always on |
-| **3** | Privacy Downscale (480px) | ~5ms | On by default |
-| — | Perceptual Hash Dedup | ~2ms | Always on |
-| — | Vision AI Analysis | varies | — |
-| **7** | Post-Response PII Scan | ~1ms | On by default |
-
-The analysis prompt instructs the AI to only comment on the **general activity** (e.g., "looks like you're coding" or "watching a video?"), never quoting specific on-screen content.
-
-#### Vision Providers
-
-| Provider | Privacy | Cost | Requirements |
-|----------|---------|------|--------------|
-| **Gemini Flash** (default) | Cloud | ~$0.04/1K shots | API key |
-| Claude Haiku | Cloud | ~$1.33/1K shots | API key |
-| **Ollama (Local)** | Fully local | $0 | Ollama running locally with a vision model (e.g., `qwen2.5vl:3b`) |
-| **Local + Cloud Hybrid** | Pixels stay local | ~$0.005/1K shots | Ollama + cloud API key (text-only cloud call) |
-
-The hybrid provider sends raw screenshots only to the local Ollama model, which generates a text description. That text (no pixels) is then sent to a cloud model for personality commentary.
-
-Default provider is Gemini Flash for cost efficiency. A configurable monthly budget cap (default: $5) prevents runaway spending.
-
-#### Visual Indicator
-
-When screen awareness is active, a small badge appears near Aemeath: **"👁 Aemeath can see"**. This can be toggled off in Settings.
-
-#### Setup
-
-**Gemini Flash (recommended — cheap cloud):**
-1. Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-2. Open **Settings** > **Screen** tab > Enable screen awareness
-3. Select **Gemini Flash** as the vision provider
-4. Paste the API key
-
-**Claude (higher quality cloud):**
-1. Get an API key from [Anthropic Console](https://console.anthropic.com/)
-2. Select **Claude** as the vision provider and paste the key
-
-**Ollama (fully local — no data leaves your device):**
-1. Install [Ollama](https://ollama.com/) and pull a vision model:
-   ```
-   ollama pull qwen2.5vl:3b
-   ```
-2. Select **Ollama (Local)** as the vision provider
-3. Verify the base URL (default: `http://localhost:11434`) and model name match your setup
-4. No API key needed — cost is $0
-
-**Local + Cloud Hybrid (pixels stay local):**
-1. Install Ollama with a vision model (same as above)
-2. Select **Local + Cloud Hybrid** as the vision provider
-3. Configure Ollama settings (URL + model)
-4. Select a cloud provider (Gemini or Claude) for the text-only commentary step
-5. Enter the cloud API key
-
-With hybrid mode, raw screenshots are only processed by the local Ollama model. Only a text description (no pixels) is sent to the cloud for personality-flavored commentary.
-
-**Privacy layers** (all on by default):
-- **DRM protection**: Automatically skips capture when protected windows (e.g., DRM video) are visible
-- **Privacy downscale**: Resizes screenshots to 480px (configurable: 320/480/640) to make text unreadable
-- **PII scan**: Discards AI responses containing credit card numbers, SSNs, emails, phone numbers, or password keywords
-
-### Black Cat Companion
-
-A black cat follows Aemeath around the screen in its own independent window.
-
-#### Cat Behavior
-
-The cat has its own **12-state FSM** that runs independently:
-
-| State | Description |
-|-------|-------------|
-| **CatIdle** | Sitting still, watching |
-| **CatWalk** | Walking toward Aemeath |
-| **CatNap** | Taking a nap |
-| **CatGroom** | Grooming itself |
-| **CatPounce** | Pouncing at something |
-| **CatWatch** | Alert, watching Aemeath |
-| **CatRub** | Rubbing against Aemeath |
-| **CatStartled** | Startled reaction |
-| **CatPurr** | Content purring |
-| **CatPerch** | Sitting on a perch |
-| **CatChase** | Chasing a paper plane |
-| **CatBat** | Batting at something |
-
-**Behavior details:**
-- **Follows Aemeath** with a 40–80px horizontal offset and 10–30px vertical offset
-- **Smooth movement** — lerps toward target position
-- **Reacts to events** — gets startled by drag, chases paper planes, purrs during petting
-- **Independent window** — separate transparent WPF window for independent movement
-
-**Customization** (Settings > Appearance):
-- Enable/disable the cat companion
-- Set the cat's name (default: "Kuro")
-
-> **Note:** Currently uses a Unicode emoji placeholder. GIF sprites for 12 states are planned but not yet created.
-
----
-
-### Paper Plane System
-
-Paper planes appear in two ways:
-
-#### Ambient Planes (Automatic)
-
-- Spawn at random intervals from screen edges
-- **Default frequency**: Every 5 minutes (randomized 3–8 minutes)
-- **Configurable**: 3, 5, 8, or 10 minutes in Settings > Appearance
-- **Trajectory**: Slow horizontal drift + gentle downward float + sinusoidal wobble
-- **Lifetime**: Auto-removed after 20 seconds
-
-#### Thrown Planes (User-Triggered)
-
-- Right-click > **"Throw a Paper Plane"**
-- Aemeath enters the PaperPlane state and throws a plane
-- **Physics**: Parabolic trajectory with gravity (20 px/s²) + wobble
-- **Speed**: 80–140 px/s horizontal, upward arc
-- **Cat reaction**: The cat chases landed planes (triggers CatChase state)
-
-> **Note:** Currently uses a Unicode plane symbol (✈). A sprite asset is planned.
-
----
-
-### Particle System
-
-Visual particle effects that appear during various interactions:
-
-| Particle | Symbol | When It Appears |
-|----------|--------|-----------------|
-| **Music Note** | ♪ | During singing |
-| **Heart** | ♥ | When petted (hover 2s) |
-| **Sparkle** | ✦ | Pomodoro work completion, special events |
-| **Sleep Z** | Z | During sleep state |
-| **Paw Print** | 🐾 | Cat-related interactions |
-| **Fur Puff** | • | Cat grooming/startled |
-
-**Physics**: Particles spawn with random offset, float upward with slight gravity, and fade out over ~1–2 seconds. Maximum 12 particles on screen at once.
-
----
-
-### Digital Glitch Effect
-
-Aemeath is a digital ghost, and her image occasionally glitches — a subtle visual reminder of her nature.
-
-- **Trigger**: Random 2–5% chance every 5–10 seconds
-- **Duration**: 300–800 milliseconds
-- **Visual effects**:
-  - **RGB channel split** — color channels separate horizontally
-  - **Horizontal slice displacement** — image slices shift randomly
-  - **Opacity flicker** — transparency modulates rapidly
-- **Toggle**: Enable/disable in Settings > Appearance
-- **Can be forced**: Certain events (like special interactions) trigger a glitch
-
----
-
-### Window Edge Perching
-
-Aemeath can interact with other windows on your desktop.
-
-- **Detection**: Every 500ms, checks for nearby window title bars (within 30px)
-- **Perch states**: `PeekEdge`, `LieOnWindow`, `HideTaskbar`, `ClingEdge`
-- **Screen edges**: Detects proximity to left/right/top edges (20px) and taskbar (10px)
-- **Window tracking**: When Aemeath perches on a window and that window closes, she reacts (falls or flies away)
-- **Works with**: Any visible, non-cloaked window on the desktop
-
----
-
-### Time Awareness
-
-Aemeath knows what time it is and behaves accordingly.
-
-| Time Period | Hours | Effect |
-|-------------|-------|--------|
-| **Morning** | 6:00–11:59 | Morning-specific greetings on launch |
-| **Day** | 12:00–16:59 | Normal behavior |
-| **Evening** | 17:00–20:59 | Normal behavior |
-| **Night** | 21:00–23:59 | Sleep state available, sleepy greetings |
-| **Late Night** | 0:00–5:59 | Sleep state available, concerned "you're still up?" lines |
-
-- **Greeting selection**: Launch greetings match the time of day
-- **Sleep behavior**: Only triggers during Night/LateNight, or when energy < 30
-- **Idle chatter**: Lines are contextual to the current time period
-
----
-
-### Fullscreen Detection
-
-Aemeath knows when you're watching a video or playing a game.
-
-- **Auto-hide**: Aemeath (and cat) hide when a fullscreen application is detected
-- **Auto-show**: Reappears when you exit fullscreen
-- **TTS muting**: When "Auto-mute fullscreen" is enabled, TTS is silenced during fullscreen apps
-- **Detection method**: Checks if the foreground window covers the entire screen (excluding the Windows shell/desktop)
-
----
-
-### Click-Through Mode
-
-Make Aemeath purely visual — mouse clicks pass through her to the window below.
-
-- **Toggle**: Right-click the **system tray icon** > "Toggle Click-Through"
-- **Effect**: Both Aemeath and cat windows become non-interactive
-- **Visual indicator**: A ghost-like reduced opacity overlay appears as a reminder
-- **Tray notification**: A balloon tip reminds you how to toggle back
-- **Implementation**: Uses Win32 `WS_EX_TRANSPARENT` window style
-
-> **Tip**: To restore interaction, right-click the **system tray icon** and toggle click-through off.
-
----
-
-### System Tray
-
-Aemeath lives in your system tray for easy access.
-
-- **Minimize to tray**: When "Close to tray" is enabled (default), closing the window hides Aemeath to the tray instead of quitting
-- **Double-click tray icon**: Show/hide the pet
-- **Right-click tray icon**: Menu with Show, Toggle Click-Through, Settings, and Quit
-- **Always available**: Even when hidden, Aemeath is one click away
-
----
-
-### Pomodoro / To-Do List Integration
-
-Aemeath reacts to events from the companion **To-Do List / Pomodoro Timer** (Electron app) via Windows Named Pipes.
-
-#### LLM-Powered Responses
-
-When an AI provider (Claude or Gemini) is configured, pomodoro event messages are **generated by the LLM** in real-time — Aemeath says something unique and contextual each time instead of repeating pre-scripted lines. If no API key is configured or the LLM call fails, the system gracefully falls back to the pre-written offline responses.
-
-- LLM calls use empty chat history (standalone reactions, not part of ongoing conversation)
-- Responses are not saved to chat memory
-- Prompts include event context (task title, duration, break type) for relevant messages
-- **Prompt templates are fully customizable** in Settings > General > LLM Prompt Templates
-- Templates support `{taskTitle}`, `{duration}`, and `{breakType}` placeholders
-- A "Reset to Defaults" button restores the original prompts
-
-#### Event Reactions
-
-| Event | Pet Reaction |
-|-------|-------------|
-| **Work session starts** | LLM-generated encouragement (or offline fallback) + happy animation |
-| **Work session ends** | LLM-generated celebration (or offline fallback) + sparkle particles + mood boost (+3) + TTS |
-| **Break starts** | LLM-generated relaxation chat (or offline fallback) + TTS, idle chatter becomes more frequent |
-| **Break ends** | LLM-generated motivation (or offline fallback) |
-| **Task added** | LLM-generated reaction mentioning the task title (or offline fallback) |
-| **During work** | Idle chatter is completely suppressed (quiet focus mode) |
-
-#### Setup
-
-Enabled by default. Both apps detect each other automatically — just start them.
-
-- **Toggle**: Settings > General > Integrations > "Connect to To-Do List / Pomodoro Timer"
-- **Requires restart**: Changing this setting requires restarting the desktop pet
-- **No configuration needed**: The pipe name is fixed (`AemeathDesktopPet`)
-
-#### How It Works
-
-- **Protocol**: One-way Named Pipe (`\\.\pipe\AemeathDesktopPet`), newline-delimited JSON
-- **Desktop Pet**: Runs the pipe server (always listening)
-- **To-Do List**: Connects as a client with auto-reconnect (5-second retry)
-- **Direction**: One-way (To-Do List → Desktop Pet)
-
----
-
-### Activity Monitor Integration
-
-Aemeath can read your recent computer activity from the **Computer & Chrome Monitor** app's SQLite database, making her idle chatter and pomodoro reactions contextually aware of what you've been doing.
-
-#### How It Works
-
-- Reads `window_sessions` and `chrome_sessions` tables from the monitor's SQLite database (read-only access)
-- Groups activity by application/domain, sorted by duration
-- Generates a compact summary like: *"You spent 12 min in VS Code, 8 min on github.com, 5 min on stackoverflow.com"*
-- **Camera-based commentary**: Also reads `attention_sessions` for face detection, emotion recognition, attention scoring, and mind wandering detection — generating a user state summary like: *"Dominant emotion: happy. Attention: 0.72. Looking at screen: 85%. 2 mind-wandering events."*
-- Both summaries are included in AI prompts so Aemeath can comment on your activity and physical state
-
-#### Integration Points
-
-| Context | Behavior |
-|---------|----------|
-| **Idle chatter** | When AI is available, idle speech bubbles reference what you've been doing and how you look/feel (emotion, attention, etc.) |
-| **Pomodoro work finished** | AI prompt includes what you worked on and your physical state during the entire session |
-| **Other pomodoro events** | AI prompt includes last 5 minutes of activity and camera data as context |
-| **No data / DB unavailable** | Gracefully falls back to normal offline responses |
-
-#### Setup
-
-1. Install and run the [Computer & Chrome Monitor](https://github.com/user/Computer_and_Chrome_Monitor_with_AI_Analysis) app
-2. Open **Settings** > **General** > **Activity Monitor**
-3. Check "Include recent activity in Aemeath's speech"
-4. Set the database path (default: `D:\Study\Project\Computer_and_Chrome_Monitor_with_AI_Analysis\data\monitor.db`)
-5. Ensure an AI provider (Claude or Gemini) is configured in the AI tab
-
-> **Note:** The database is opened in read-only mode — the desktop pet never modifies monitor data.
-
----
-
-### Companion App Auto-Launch
-
-The desktop pet can automatically launch its two companion programs when it starts, so you don't have to open them manually each time.
-
-#### Supported Companions
-
-| Program | Description | Default Path |
-|---------|-------------|-------------|
-| **Computer & Chrome Monitor** | Activity tracking (window/browser sessions, camera attention data) | `...\run.bat` |
-| **To-Do List / Pomodoro Timer** | Task management and pomodoro timer with pet integration | `...\run.bat` |
-
-#### Setup
-
-1. Open **Settings** > **General** > **Companion Apps**
-2. Check the boxes for the programs you want to auto-launch
-3. Verify or browse to the correct executable/batch file paths
-4. Save — next time the pet starts, companions launch automatically
-
-#### Behavior
-
-- **Duplicate prevention** (exe files): If the companion is already running, a second instance won't be launched
-- **Batch file support**: `.bat` files are launched via `UseShellExecute` (supports `run.bat` → `npm start` chains)
-- **Silent failure**: If a companion fails to launch (wrong path, missing file), the pet continues normally
-- **Launch order**: Companions are launched before the main pet window, giving them time to initialize
-
----
-
-### Start with Windows
-
-Enable "Start with Windows" in **Settings** > **General** to have the desktop pet launch automatically at login.
-
-- Uses the Windows Registry (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`) — no admin rights needed
-- The setting is applied immediately when you save
-- When combined with companion auto-launch, all three apps start together at login
-
----
-
-## Settings Panel
-
-Open via right-click > **Settings** or the system tray menu. Six tabs organized by category:
-
-### Tab 1: General
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Start with Windows | Off | Launch on Windows startup (writes to registry on save) |
-| Close to system tray | On | Closing the window hides to tray instead of quitting |
-| Launch Monitor on startup | Off | Auto-launch Computer & Chrome Monitor when pet starts |
-| Monitor Path | (default) | Path to run.bat (or ComputerMonitor.exe) |
-| Launch To-Do List on startup | Off | Auto-launch To-Do List / Pomodoro Timer when pet starts |
-| To-Do List Path | (default) | Path to the To-Do List run.bat or executable |
-| Behavior Frequency | Normal | How active Aemeath is: Calm, Normal, or Active |
-| Pomodoro Integration | On | Connect to To-Do List / Pomodoro Timer (requires restart) |
-| LLM Prompt Templates | (defaults) | Customize 5 prompt templates for pomodoro events (visible when integration is enabled). Supports `{taskTitle}`, `{duration}`, `{breakType}` placeholders |
-| Activity Monitor | Off | Include recent computer activity in Aemeath's AI-generated speech |
-| Activity Monitor DB Path | (default path) | Path to the Computer & Chrome Monitor SQLite database |
-| Speech Frequency | (per-context defaults) | Configure how often Aemeath speaks during 6 activity contexts: Pomodoro Work (Silent), Pomodoro Break (Chatty), Gaming (Rare), Videos (Rare), Study/Coding (Normal), Default (Normal) |
-
-### Tab 2: Appearance
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Pet Size | Normal (200px) | Small (150px), Normal (200px), or Large (250px) |
-| Opacity | 100% | Pet transparency (30–100%) |
-| Enable digital glitch effect | On | Random RGB split/flicker effect |
-| Enable black cat companion | On | Show the cat companion |
-| Cat Name | "Kuro" | The cat's display name |
-| Enable ambient paper planes | On | Planes drift in from screen edges |
-| Paper plane frequency | 5 minutes | How often ambient planes appear (3, 5, 8, or 10 min) |
-
-### Tab 3: Music
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Music Folder | (empty) | Path to a folder of songs. Aemeath plays random songs when singing |
-| Song count | Auto | Displays how many songs were found in the folder |
-
-Browse to select a folder. Aemeath will scan it for audio files and play a random one during the Sing state.
-
-### Tab 4: AI
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| AI Provider | Claude | Choose between Claude (Anthropic), Gemini (Google), or Claude Code Proxy |
-| Claude API Key | (empty) | Your Anthropic API key |
-| Gemini API Key | (empty) | Your Google AI Studio API key |
-| Proxy Base URL | `http://localhost:42069` | Base URL for the Claude Code Proxy (only when Proxy selected) |
-| Proxy Model | Claude Sonnet 4.5 | Model to use via proxy: Sonnet 4.5, Sonnet 4, Opus 4, or Haiku 3.5 |
-
-API keys are stored locally in `config.json`. The proxy provider requires no API key — the proxy handles authentication. Without a key or proxy, chat falls back to offline scripted responses.
-
-### Tab 5: Voice
-
-**Voice Input (STT):**
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Enable voice input | Off | Activate push-to-talk functionality |
-| STT Provider | Whisper | Whisper (OpenAI) or Gemini (Google) |
-| Whisper API Key | (empty) | OpenAI API key (only when Whisper selected) |
-| Language | English | Recognition language (en, zh, ja, ko, es, fr, de) |
-| Include screenshot | Off | Attach a screenshot with each voice message |
-| Push-to-Talk Hotkey | Ctrl+F2 | Click the field and press your desired key combination |
-
-**Text-to-Speech:**
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Enable TTS | Off | Activate text-to-speech |
-| Provider | Edge TTS | Edge TTS (free), GPT-SoVITS (local), or ElevenLabs (cloud) |
-| Edge TTS Voice | en-US-AvaMultilingualNeural | Voice name (300+ available) |
-| GPT-SoVITS URL | http://localhost:9880 | Local server address |
-| GPT-SoVITS Profiles | — | Manage model profiles (Add/Delete, with weights/audio/language) |
-| ElevenLabs API Key | (empty) | ElevenLabs API key |
-| ElevenLabs Voice ID | 21m00Tcm4TlvDq8ikWAM | Voice to use |
-| Volume | 70% | Playback volume (0–100%) |
-| Speak chat responses | On | Read AI replies aloud |
-| Speak idle chatter | Off | Read speech bubbles aloud |
-| Auto-mute fullscreen | On | Silence TTS during fullscreen apps |
-
-### Tab 6: Screen Awareness
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Enable screen awareness | Off | Periodic screenshot analysis for contextual comments |
-| Show indicator | On | Display "👁 Aemeath can see" badge when active |
-| Block DRM-protected windows | On | Skip capture when `GetWindowDisplayAffinity` detects protected content |
-| Privacy downscale | On (480px) | Downscale screenshots to destroy text legibility (320/480/640px) |
-| Post-response PII scan | On | Discard AI responses containing credit cards, SSNs, emails, phones, passwords |
-| Vision provider | Gemini Flash | Gemini Flash, Claude, Ollama (local), or Local+Cloud Hybrid |
-| Vision API key | (empty) | API key for cloud vision providers |
-| Ollama base URL | localhost:11434 | Ollama server address (for Ollama / Hybrid) |
-| Ollama model name | qwen2.5vl:3b | Vision model to use with Ollama |
-| Hybrid cloud provider | Gemini | Cloud provider for text-only step in hybrid mode |
-| Hybrid cloud API key | (empty) | API key for hybrid cloud text-only calls |
-| Check interval | 60s | How often to capture (30/60/120 seconds) |
-| Monthly budget cap | $5.00 | Spending limit for cloud vision API calls |
-| Analysis prompt | (default) | Customizable prompt for the vision AI. Reset button available |
-| Blacklisted apps | (17 defaults) | Apps/title patterns that block screenshots (one per line) |
-
----
-
-## Architecture
-
-Aemeath uses a **polyglot microservice architecture** — a C# WPF frontend communicates with a Python FastAPI AI backend over REST + SSE.
-
-```mermaid
-C4Container
-    title Aemeath Desktop Pet — Container Architecture
-
-    Person(user, "User", "Interacts with desktop pet")
-
-    Container_Boundary(app, "Aemeath Application") {
-        Container(wpf, "WPF Frontend", "C#, .NET 8", "Pet UI, animations, physics, screen capture")
-        Container(python, "AI Backend", "Python, FastAPI", "LangGraph agent, RAG, tools, STT, vision")
-        Container(mcp_server, "MCP Server", "C#, .NET 8", "Exposes pet tools to external AI apps")
-        ContainerDb(sqlite, "Local Storage", "SQLite + JSON", "Chat memory, todos, vector DB, config")
-    }
-
-    System_Ext(llm, "LLM Providers", "Claude / Gemini / Proxy APIs")
-    System_Ext(mcp_ext, "External MCP Servers", "Weather, filesystem tools")
-    System_Ext(claude_desktop, "Claude Desktop / VS Code", "External MCP clients")
-
-    Rel(user, wpf, "Interacts with pet")
-    Rel(wpf, python, "REST + SSE", "localhost:18900")
-    Rel(python, llm, "HTTPS/SSE", "Streaming completions")
-    Rel(python, mcp_ext, "stdio", "External tool access")
-    Rel(python, sqlite, "Read/write")
-    Rel(wpf, sqlite, "Config, state")
-    Rel(claude_desktop, mcp_server, "stdio", "Control pet externally")
-```
-
-### Three-Tier Fallback
-
-| Tier | Provider | When Used |
-|------|----------|-----------|
-| 1 | **Python Backend Agent** (LangGraph + tools + memory) | Backend is running and healthy |
-| 2 | **Direct C# API** (ClaudeApiService / GeminiApiService / ProxyApiService) | Backend unavailable, API key or proxy present |
-| 3 | **Offline Responses** (OfflineResponses.cs) | No API keys configured |
-
----
-
-## Python AI Backend
-
-The Python sidecar (`python-backend/`) provides the AI agent powered by LangGraph, with 9 tools:
-
-| Tool | Description |
-|------|-------------|
-| `search_web` | Tavily internet search |
-| `get_weather` | OpenWeatherMap current weather |
-| `manage_todo` | SQLite-backed todo list CRUD |
-| `read_screen` | Analyze screen via WPF bridge |
-| `control_music` | Play/stop/next music |
-| `get_pet_stats` | Query pet mood/energy/affection |
-| `rag_retrieve` | Hybrid BM25+semantic document search |
-| `get_system_info` | CPU, memory, disk, battery via psutil |
-| `save_memory` | Persist facts across sessions |
-
-### RAG Module
-
-- **Ingestion**: PDF, DOCX, TXT, Markdown, Python, CSV
-- **Chunking**: RecursiveCharacterTextSplitter (1000 chars, 200 overlap)
-- **Embeddings**: Gemini Embedding (free API) with local fallback (`all-MiniLM-L6-v2`)
-- **Vector Store**: ChromaDB (persistent, local)
-- **Retrieval**: Hybrid BM25 (0.4) + semantic (0.6), cross-encoder reranking (top 5 from 20)
-
-### Running the Backend (Dev Mode)
-
-```bash
+```powershell
 cd python-backend
-pip install -r requirements.txt
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
 python -m aemeath_agent.main
 ```
 
----
+The current manifests omit the imported `langgraph-checkpoint-sqlite` package. As a result, the command above installs the declared environment but does not guarantee that the LangGraph agent initializes; FastAPI can continue in degraded mode and `/health` can still report healthy. Until the manifest is corrected, install that missing dependency separately when developing the agent and verify an agent route, not only `/health`.
+
+For a provider-backed agent, set sidecar environment variables before starting it. For example:
+
+```powershell
+$env:AEMEATH_AI_PROVIDER = "gemini"
+$env:AEMEATH_GOOGLE_API_KEY = "your-key"
+python -m aemeath_agent.main
+```
+
+Claude uses `AEMEATH_ANTHROPIC_API_KEY`. The sidecar listens on `127.0.0.1:18900` by default. For app-managed developer mode, install the package as above, select **Settings > Backend > Developer**, point Python path at `.venv\Scripts\python.exe`, and restart Aemeath after changing backend startup settings. The Backend port field is currently ineffective for app-managed startup: WPF sets `AEMEATH_PORT`, but the Python CLI binds argparse's default `18900` and WPF does not pass `--port`.
+
+The normal .NET publish output does not include a built sidecar. See [`python-backend/scripts/build_exe.py`](python-backend/scripts/build_exe.py) for the separate backend packaging entry point.
+
+## Using Aemeath
+
+- **Click** Aemeath to trigger a reaction and improve her mood.
+- **Hover for two seconds** to trigger a happy reaction.
+- **Drag** to reposition the pet; the position is restored on the next run.
+- **Double-click** to open chat.
+- **Right-click** for chat, music, paper-plane, cat, stats, click-through, settings, hide, and quit actions.
+- Use the **system tray icon** to show Aemeath, open chat/settings, toggle click-through, or quit.
+- In chat, **Enter** sends and **Shift+Enter** inserts a new line.
+- When voice input is enabled, hold the configured global hotkey (default `Ctrl+F2`) to record and release it to transcribe and send.
+
+Click-through mode makes the pet ignore mouse input. Use the tray menu to turn it off again.
+
+## Features
+
+### Companion behavior and visuals
+
+- A 26-state weighted finite-state model reacts to mood, energy, time, dragging, chat, music, and companion events.
+- WPF GIF playback supports mirroring and falls back to `normal.gif` when a state has no dedicated animation.
+- Basic flight, gravity, landing, particle, and intermittent glitch effects are active.
+- Mood, Energy, and Affection plus lifetime interaction counters persist locally.
+- The optional black-cat window follows and reacts to selected Aemeath events, but currently uses placeholder glyph art.
+- Music playback selects files from a user-configured folder and drives singing behavior.
+
+### Chat and integrations
+
+- Direct chat providers: Anthropic Claude, Google Gemini, and a Claude-compatible proxy.
+- Optional LangGraph backend agent with streaming responses, persistent thread state, and tools.
+- Offline responses keep basic chat, greetings, and event reactions available without network access.
+- Chat history is persisted locally and the latest messages are supplied as conversational context.
+- Optional Pomodoro/to-do named-pipe events and read-only activity-monitor SQLite summaries can influence speech and observations.
+- Companion launch paths and Windows startup can be configured from the app.
+
+### Speech and vision
+
+- TTS providers: **Edge TTS**, **GPT-SoVITS**, **ElevenLabs**, **Fish Audio**, and **OpenAI TTS**.
+- Push-to-talk STT supports separate, direct C# OpenAI Whisper and Gemini paths. The WPF-to-sidecar STT path is currently nonfunctional: `BackendSttService` sends multipart `file`/`language` fields, while `/stt/transcribe` expects JSON with `audio_base64`, `provider`, and `language`; the route also passes `anthropic_api_key` to Whisper and defines no `openai_api_key`.
+- Chat can optionally attach a current screenshot.
+- Periodic screen awareness is opt-in and supports Gemini, Claude, Ollama, and local-plus-cloud hybrid vision.
+- Periodic capture includes protected-window/fullscreen checks, an app/title blacklist, optional privacy downscaling, change detection, a budget guard, and response PII scanning.
+
+Cloud services require their own keys and send relevant text, audio, or images to the selected provider. GPT-SoVITS and Ollama can remain local; hybrid vision sends a locally produced description to a cloud model. Edge TTS is network-backed even though it does not require an API key.
+
+## Memory System
+
+The current tree contains a four-layer memory design, but the layers do not yet form one fully connected memory product.
+
+| Layer | Current implementation | Persistence and availability |
+|---|---|---|
+| Working memory | Recent chat messages and backend thread state | WPF `messages.json`; backend `agent_state.db` when used |
+| Core memory | C# profile models plus a Python MemGPT-inspired USER block | `core_memory.json` and `memory_blocks.json` |
+| Episodic memory | Conversation extraction, observation distillation, and semantic retrieval | Python JSON store plus Chroma collection `aemeath_memories` |
+| Procedural memory | Local routines, preferences, and scheduled-event models | `procedural_memory.json` |
+
+Implemented paths include persisted chat history, a stable backend thread ID, Python `save_memory`, `update_user_block`, and `retrieve_memory` tools, background conversation extraction, and 30-minute observation distillation when the sidecar is ready. Screen, activity, camera-summary, and Pomodoro observations are buffered locally before distillation.
+
+Important boundaries:
+
+- The Python agent injects the USER block snapshot read when the agent is constructed and can call its memory tools. `update_user_block` persists a replacement for the next agent construction/restart; it does not refresh the active compiled prompt. Direct C# Claude/Gemini/proxy chat does **not** inject the assembled `MemoryContext`.
+- The C# `core_memory.json` and `procedural_memory.json` stores load locally, but conversation extraction does not currently update them automatically and there is no memory-management UI.
+- Without the Python sidecar, recent chat history still works, but semantic extraction/retrieval and observation distillation do not.
+- `GET /memory/retrieve` currently searches only the memory Chroma collection. `/memory/core/update` appends to the Python mirror and does not apply event updates to the C# canonical file. `/memory/forget` does not apply `time_range`, and its Chroma deletion path may not find stored IDs.
+
+See [`docs/memory_system_design.md`](docs/memory_system_design.md) for the detailed design and its implementation notes.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    UI[WPF views] --> VM[View models]
+    VM --> ENG[Behavior, animation, physics engines]
+    VM --> SVC[C# services and local JSON]
+    SVC -->|ready| PY[Loopback FastAPI / LangGraph sidecar]
+    SVC -->|sidecar not ready at selection| DIRECT[Claude / Gemini / proxy]
+    SVC -->|provider or selected service fails| OFFLINE[Built-in responses]
+    PY --> TOOLS[Agent tools]
+    PY --> PERSIST[SQLite / JSON / Chroma]
+    PY <--> INTERNAL[WPF loopback control API]
+```
+
+The startup/service-selection preference is **ready backend agent -> selected direct provider -> offline response**. This is not complete per-request failover: after the backend service is selected, its request failures go directly to offline responses. The WPF application owns windows, animation, interaction, local settings/stats/history, TTS, and integrations. The optional sidecar adds agent orchestration and data-heavy AI capabilities. Both loopback APIs bind locally by default, but they are not authenticated.
+
+## Python AI Backend
+
+The optional [`python-backend`](python-backend/) package is a FastAPI application using LangGraph. It exposes health, agent streaming, STT, vision, RAG, configuration, and memory routes. Its 11 registered agent tools are:
+
+| Tool | Purpose |
+|---|---|
+| `search_web` | Tavily web search |
+| `get_weather` | OpenWeatherMap lookup |
+| `manage_todo` | Local SQLite to-do operations |
+| `read_screen` | Ask the WPF bridge for a screen description |
+| `control_music` | Control WPF music playback |
+| `get_pet_stats` | Read pet stats from WPF |
+| `rag_retrieve` | Search an ingested personal document collection |
+| `get_system_info` | Read local system information |
+| `save_memory` | Store long-term facts, episodes, or preferences |
+| `update_user_block` | Persist the USER-block replacement used on the next agent construction/restart |
+| `retrieve_memory` | Search persistent user memories |
+
+`rag_retrieve` is registered but no startup path configures its retriever, so it reports that RAG is not initialized until code explicitly wires an ingested collection. The RAG API and ingestion modules exist separately.
+
+Sidecar configuration comes from `AEMEATH_*` environment variables or `python-backend/.env`; see [`config.py`](python-backend/aemeath_agent/config.py) and [`pyproject.toml`](python-backend/pyproject.toml). The WPF `/config/sync` request currently carries only a status marker and does not synchronize provider settings.
 
 ## MCP Integration
 
-Aemeath is both an **MCP client** (consuming external tool servers) and an **MCP server** (exposing pet tools).
+The repository includes an MCP client implementation, Aemeath tool definitions, MCP settings, and tests. The settings tab can save external server definitions and an “Expose as server” flag.
 
-### Exposed MCP Tools
+These components are **not connected to application startup or the active chat/agent tool graph**. Enabling MCP in Settings does not currently launch configured servers, expose Aemeath, or add their tools to chat. Treat MCP as dormant infrastructure rather than a user-ready feature.
 
-| Tool | Description |
-|------|-------------|
-| `get_pet_status` | Current mood, energy, affection |
-| `boost_mood` | Increase pet mood (1-100) |
-| `play_animation` | Trigger wave, laugh, sing, fly, sleep |
-| `send_message` | Send chat message to the pet |
+## Settings
 
-### Consuming External MCP Servers
+The Settings window has eight tabs:
 
-Add servers in **Settings > MCP** tab. Supports stdio transport for local servers.
+| Tab | Main controls | Runtime notes |
+|---|---|---|
+| General | Startup, companion apps, Pomodoro prompts, activity monitor, context speech frequency | Some integrations require restart/external apps |
+| Appearance | Size, opacity, glitch, black cat/name, ambient paper planes | Plane interval is saved but not applied by the engine |
+| Music | Local music folder | Used by singing behavior |
+| AI | Claude, Gemini, proxy, credentials, singing-bubble flag | Direct providers recreate on save; singing flag is saved but not consumed |
+| Voice | STT/hotkey/screenshot plus all five TTS providers and playback options | Local or cloud dependencies vary by provider |
+| Screen | Opt-in capture, privacy checks, vision provider, interval, budget, prompt, blacklist | Periodic pipeline only; see Privacy below |
+| Backend | Enable/mode, ports, Python path, tool keys, retry limit, status | Startup changes generally require restart; app-managed port override is currently ineffective; release does not bundle it |
+| MCP | Client/server toggles and server definitions | Saved only; not runtime-wired |
 
----
+The General “close to tray” and behavior-frequency values are also saved but are not currently applied to window closing or the behavior timer.
 
-## Sprites
+## Data Storage and Privacy
 
-9 hand-crafted chibi GIF animations:
+### Local files
 
-| Animation | File | Size | FPS | When Used |
-|-----------|------|------|-----|-----------|
-| Idle | `normal.gif` | 200x200 | ~9 | Default standing pose |
-| Fly | `normal_flying.gif` | 200x200 | ~9 | Flying movement (mirrored for left) |
-| Wave | `happy_hand_waving.gif` | 200x200 | ~9 | Greeting on click |
-| Happy | `happy_jumping.gif` | 200x200 | ~9 | Jumping on hover |
-| Laugh | `laugh.gif` | 200x200 | ~9 | Random idle laugh |
-| Laugh (flying) | `laugh_flying.gif` | 200x200 | ~9 | Laughing while airborne |
-| Sigh | `sign.gif` | 200x200 | ~9 | Melancholy moment |
-| Sing | `listening_music.gif` | 1000x1000 | 25 | Premium singing animation |
-| Seal | `seal.gif` | 200x200 | ~9 | Seal transformation |
+By default, WPF data and the sidecar’s agent files are stored under:
 
-Sprite assets are located at `src/AemeathDesktopPet/Resources/Sprites/Aemeath/` and `.../Seal/`.
-
-States without a dedicated sprite fall back to the closest matching animation (e.g., `normal.gif` for most idle-like states).
-
----
-
-## Configuration & Data Files
-
-All data is stored in `%LOCALAPPDATA%\AemeathDesktopPet\`:
-
-| File | Purpose |
-|------|---------|
-| `config.json` | All user preferences and settings |
-| `stats.json` | Mood, Energy, Affection values + lifetime counters |
-| `messages.json` | Chat conversation history (up to 200 messages) |
-
-### Example config.json
-
-```json
-{
-  "petSize": 200,
-  "opacity": 1.0,
-  "closeToTray": true,
-  "behaviorFrequency": "normal",
-  "enableGlitchEffect": true,
-  "enableSinging": true,
-  "enableBlackCat": true,
-  "catName": "Kuro",
-  "enableAmbientPaperPlanes": true,
-  "ambientPlaneFrequency": "normal",
-  "musicFolder": "",
-  "aiProvider": "claude",
-  "claudeApiKey": "",
-  "geminiApiKey": "",
-  "proxyBaseUrl": "http://localhost:42069",
-  "proxyModel": "claude-sonnet-4-5-20250929",
-  "tts": {
-    "enabled": false,
-    "provider": "edgetts",
-    "edgeTtsVoice": "en-US-AvaMultilingualNeural",
-    "gptsovitsUrl": "http://localhost:9880",
-    "gptsovitsProfiles": [],
-    "gptsovitsActiveProfile": "",
-    "elevenLabsApiKey": "",
-    "elevenLabsVoiceId": "21m00Tcm4TlvDq8ikWAM",
-    "elevenLabsModelId": "eleven_multilingual_v2",
-    "volume": 0.7,
-    "speakChatResponses": true,
-    "speakIdleChatter": false,
-    "autoMuteFullscreen": true
-  },
-  "voiceInput": {
-    "enabled": false,
-    "sttProvider": "whisper",
-    "sttApiKey": "",
-    "language": "en",
-    "includeScreenshot": false,
-    "hotkey": "Ctrl+F2"
-  },
-  "pomodoroIntegration": {
-    "enabled": true,
-    "pipeName": "AemeathDesktopPet",
-    "workStartedPrompt": "[Pomodoro Timer] I just started a {duration}-minute work session on \"{taskTitle}\". Say something short (1-2 sentences) to encourage me and remind me to focus.",
-    "workFinishedPrompt": "[Pomodoro Timer] I just finished my pomodoro work session on \"{taskTitle}\"! Say something short (1-2 sentences) to celebrate and congratulate me.",
-    "breakStartedPrompt": "[Pomodoro Timer] I'm starting a {breakType} break ({duration} minutes). Say something short (1-2 sentences) to help me relax or chat with me.",
-    "breakFinishedPrompt": "[Pomodoro Timer] My break is over, time to get back to work. Say something short (1-2 sentences) to motivate me.",
-    "taskAddedPrompt": "[Pomodoro Timer] I just added a new task to my to-do list: \"{taskTitle}\". React briefly (1 sentence)."
-  },
-  "activityMonitor": {
-    "enabled": false,
-    "databasePath": "D:\\Study\\Project\\Computer_and_Chrome_Monitor_with_AI_Analysis\\data\\monitor.db"
-  },
-  "companionApps": {
-    "launchMonitor": false,
-    "monitorPath": "D:\\Study\\Project\\Computer_and_Chrome_Monitor_with_AI_Analysis\\run.bat",
-    "launchTodoList": false,
-    "todoListPath": "D:\\Study\\Project\\To_Do_List\\run.bat"
-  }
-}
+```text
+%LOCALAPPDATA%\AemeathDesktopPet\
 ```
 
----
+| File | Contents |
+|---|---|
+| `config.json` | Settings, provider endpoints, and API keys |
+| `stats.json` | Pet stats and lifetime counters |
+| `messages.json` | Up to 200 chat messages |
+| `core_memory.json` | C# user-profile/core-memory model |
+| `procedural_memory.json` | C# routines and scheduled events |
+| `observation_buffer.json` | Pending observations, with local expiration handling |
+| `agent_state.db` | LangGraph checkpoints (sidecar default) |
+| `memory_store.json` | Python facts, episodes, and preferences |
+| `memory_blocks.json` | Python USER block and other prompt blocks |
 
-## Project Structure
+Python Chroma data defaults to the relative path `data/chromadb` and can be changed with `AEMEATH_CHROMADB_PATH`. The agent to-do tool currently uses relative `data/todos.db`. Relative paths resolve from the sidecar process working directory, so they are not guaranteed to live under `%LOCALAPPDATA%`.
 
-```
-AemeathDesktopPet/
-├── AemeathDesktopPet.sln           # Solution file
-├── run.bat / run.sh                # Launcher scripts
-├── REQUIREMENTS.md                 # Full requirements document
-├── CHECKLIST.md                    # Implementation checklist
-├── aemeath_desktop_pet_design.md   # Detailed design document
-│
-├── src/AemeathDesktopPet/
-│   ├── AemeathDesktopPet.csproj
-│   ├── App.xaml / App.xaml.cs
-│   ├── app.manifest                # DPI awareness (PerMonitorV2)
-│   │
-│   ├── Models/
-│   │   ├── PetState.cs             # 26-state enum + AnimationInfo
-│   │   ├── AppConfig.cs            # Config schema (TTS, STT, screen awareness, pomodoro)
-│   │   ├── AemeathStats.cs         # Mood/Energy/Affection + offline decay
-│   │   ├── ChatMessage.cs          # Chat message model
-│   │   ├── CatState.cs             # 12-state cat enum
-│   │   ├── PomodoroEvent.cs        # Pomodoro pipe message model
-│   │   └── OfflineResponses.cs     # 100+ scripted character lines
-│   │
-│   ├── Engine/
-│   │   ├── AnimationEngine.cs      # GIF frame decoder & playback
-│   │   ├── BehaviorEngine.cs       # 26-state FSM, conditional weights
-│   │   ├── PhysicsEngine.cs        # Gravity, collision, drag/throw
-│   │   ├── EnvironmentDetector.cs  # Screen bounds & fullscreen detection
-│   │   ├── GlitchEffect.cs         # Digital ghost visual effect
-│   │   ├── ParticleSystem.cs       # 6 particle types, Canvas rendering
-│   │   ├── PaperPlaneSystem.cs     # Thrown + ambient paper planes
-│   │   ├── CatBehaviorEngine.cs    # Independent cat FSM
-│   │   ├── WindowEdgeManager.cs    # Window title bar detection & perch
-│   │   └── TimeAwareness.cs        # Time-of-day periods & conditions
-│   │
-│   ├── Services/
-│   │   ├── ConfigService.cs        # JSON config load/save
-│   │   ├── MusicService.cs         # Audio folder scan & playback
-│   │   ├── StatsService.cs         # Stat tracking & interaction effects
-│   │   ├── MemoryService.cs        # Chat history persistence
-│   │   ├── JsonPersistenceService.cs  # Stats + messages JSON storage
-│   │   ├── ClaudeApiService.cs     # Claude API with SSE streaming
-│   │   ├── GeminiApiService.cs     # Gemini API with streaming
-│   │   ├── ProxyApiService.cs      # Claude Code Proxy API (no API key needed)
-│   │   ├── ChatPromptBuilder.cs    # Shared system prompt for AI chat
-│   │   ├── IChatService.cs         # Chat provider interface
-│   │   ├── ITtsService.cs          # TTS service interface
-│   │   ├── ITtsProvider.cs         # Internal TTS provider interface
-│   │   ├── TtsVoiceService.cs      # Main TTS service (NAudio playback, queue)
-│   │   ├── EdgeTtsProvider.cs      # Edge TTS (free, no API key)
-│   │   ├── GptSovitsTtsProvider.cs # GPT-SoVITS (local server)
-│   │   ├── ElevenLabsTtsProvider.cs # ElevenLabs (cloud API)
-│   │   ├── VoiceInputService.cs    # NAudio microphone recording
-│   │   ├── GlobalHotkeyService.cs  # Low-level keyboard hook for PTT
-│   │   ├── WhisperSttService.cs    # OpenAI Whisper STT
-│   │   ├── GeminiSttService.cs     # Gemini STT
-│   │   ├── ISpeechToTextService.cs # STT provider interface
-│   │   ├── ScreenCaptureService.cs # Screenshot capture + JPEG downscale
-│   │   ├── IScreenAwarenessService.cs # Screen awareness interface
-│   │   ├── ScreenAwarenessService.cs # Screen awareness (vision AI + privacy pipeline)
-│   │   ├── PomodoroIntegrationService.cs # Named pipe server for To-Do List
-│   │   ├── ActivityMonitorService.cs # Read-only SQLite access for activity data
-│   │   ├── CompanionLauncherService.cs # Auto-launch companion programs
-│   │   └── StartupService.cs         # Start with Windows registry management
-│   │
-│   ├── ViewModels/
-│   │   ├── PetViewModel.cs         # Main orchestrator
-│   │   └── ChatViewModel.cs        # Chat window logic + streaming + TTS
-│   │
-│   ├── Views/
-│   │   ├── PetWindow.xaml/.cs      # Main transparent pet window
-│   │   ├── ChatWindow.xaml/.cs     # AI chat window (dark theme)
-│   │   ├── SettingsWindow.xaml/.cs # 6-tab settings panel
-│   │   ├── StatsPopup.xaml/.cs     # Stats display with gradient bars
-│   │   ├── SpeechBubble.xaml/.cs   # Themed speech bubble
-│   │   └── CatWindow.xaml/.cs      # Cat companion window
-│   │
-│   ├── Interop/
-│   │   └── Win32Api.cs             # P/Invoke (GetWindowLong, SetWindowPos, click-through)
-│   │
-│   ├── Themes/
-│   │   └── AemeathTheme.xaml       # Color palette (11 named colors)
-│   │
-│   └── Resources/Sprites/
-│       ├── Aemeath/                # 8 character GIF animations
-│       └── Seal/                   # Seal transformation sprite
-│
-├── tests/AemeathDesktopPet.Tests/  # 791 tests across 42+ classes
-│   ├── Models/                    # 10 test classes
-│   ├── Engine/                    # 8 test classes
-│   ├── Services/                  # 21 test classes (unit + integration + E2E)
-│   ├── ViewModels/                # 2 test classes
-│   └── Interop/                   # 1 test class
-│
-└── tests/TtsIntegrationTest/      # Console app for live TTS testing
+### Privacy and security boundaries
+
+- API keys and local history/memory files are stored in plaintext. Protect the Windows account and data directory; do not commit real keys or `.env` files.
+- The FastAPI sidecar and WPF internal bridge use unauthenticated loopback HTTP. They are not intended for remote exposure, but another local process may be able to call them.
+- Periodic screen awareness is disabled by default and provides blacklist, protected-window, fullscreen, downscale, and response-scan controls. These reduce risk; they do not guarantee that sensitive content can never leave the device.
+- The chat “include screenshot” path is a separate explicit action and bypasses the periodic screen-awareness blacklist, protected-window check, fullscreen skip, and response PII scan. It sends the captured image to the active chat/backend provider.
+- Activity and periodic screen observation are opt-in. Conversation history is stored whenever chat is used, and backend conversation extraction runs when the sidecar is ready.
+- Cloud Claude, Gemini, OpenAI, ElevenLabs, Fish Audio, Edge TTS, and remote proxy endpoints receive the data required for their feature. Ollama and GPT-SoVITS can operate locally, subject to their own configuration.
+
+## Project Layout
+
+```text
+src/AemeathDesktopPet/
+  Views/          WPF windows and interaction wiring
+  ViewModels/     presentation orchestration
+  Models/         configuration, state, stats, and memory contracts
+  Services/       AI, speech, persistence, privacy, and integrations
+  Engine/         animation, behavior, physics, and visual systems
+  Resources/      GIF sprites and tray_icon.ico
+  Themes/         WPF resources
+python-backend/
+  aemeath_agent/  FastAPI, LangGraph, tools, RAG, STT, and vision
+  tests/          Python tests
+tests/
+  AemeathDesktopPet.Tests/  xUnit unit, integration, contract, and E2E tests
+  TtsIntegrationTest/       manual provider harness
+docs/             focused design and audit documents
 ```
 
----
-
-## Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| [Hardcodet.NotifyIcon.Wpf](https://github.com/hardcodet/wpf-notifyicon) | 1.1.0 | System tray icon |
-| [System.Drawing.Common](https://www.nuget.org/packages/System.Drawing.Common) | 8.0.0 | GIF frame extraction |
-| [NAudio](https://github.com/naudio/NAudio) | 2.2.1 | Audio recording (voice input) and TTS playback |
-| [Edge_tts_sharp](https://www.nuget.org/packages/Edge_tts_sharp) | 1.1.7 | Free Edge TTS via WebSocket |
-| [Microsoft.Data.Sqlite](https://www.nuget.org/packages/Microsoft.Data.Sqlite) | 8.0.0 | Read-only SQLite access for activity monitor |
-| [xUnit](https://xunit.net/) | 2.6.6 | Unit testing (test project only) |
-
----
+For exact dependencies, use [`AemeathDesktopPet.csproj`](src/AemeathDesktopPet/AemeathDesktopPet.csproj) and [`pyproject.toml`](python-backend/pyproject.toml) as the source of truth. The tray icon and current runtime GIFs are present under [`Resources`](src/AemeathDesktopPet/Resources/); several modeled states intentionally reuse those sprites.
 
 ## Testing
 
-The project has a comprehensive test suite covering unit tests, integration tests, and end-to-end tests.
+Run .NET validation from the repository root:
 
-### Running Tests
-
-```bash
-# Run all tests
+```powershell
+dotnet build AemeathDesktopPet.sln -c Release
 dotnet test tests/AemeathDesktopPet.Tests/
-
-# Run a specific test class
-dotnet test tests/AemeathDesktopPet.Tests/ --filter "FullyQualifiedName~PiiScannerTests"
-
-# Run with verbose output
-dotnet test tests/AemeathDesktopPet.Tests/ -v normal
+dotnet format --verify-no-changes
 ```
 
-### Test Categories
+Run Python validation after installing the optional development dependencies:
 
-| Category | Classes | Tests | What's Tested |
-|----------|---------|-------|---------------|
-| **Models** | 10 | ~80 | Config defaults, stat calculations, state enums, serialization |
-| **Engine** | 8 | ~130 | Animation, behavior FSM, physics, particles, glitch, time awareness |
-| **Services** | 21+ | ~310 | All services including AI (Claude, Gemini, Proxy), TTS, screen awareness, PII scanner, config persistence |
-| **ViewModels** | 2 | ~50 | PetViewModel orchestration, ChatViewModel streaming |
-| **Interop** | 1 | ~18 | Win32 API wrappers |
-| **Integration** | 1 | ~15 | Config roundtrip, privacy pipeline flow, HTTP provider simulation |
-| **E2E** | 1 | ~15 | Full screen awareness pipeline, provider routing, PII filtering |
-
-### Unit Tests
-
-Unit tests cover individual classes in isolation:
-
-- **PiiScannerTests** — Credit card detection (Luhn validation), SSN, email, phone, password keywords, clean text, null/empty edge cases
-- **ScreenAwarenessServiceTests** — Provider config checks, blacklist matching, perceptual hash, budget tracking, Ollama/Gemini/Claude response parsing, config defaults
-- **AppConfigTests** — Default values for all new privacy layer properties, expanded blacklist verification
-
-### Integration Tests
-
-Integration tests verify components working together with realistic scenarios:
-
-- **Config persistence roundtrip** — Save/load all new `ScreenAwarenessConfig` properties through `ConfigService`
-- **Mock HTTP pipeline** — Simulated Ollama, Gemini, and Claude API responses through `ScreenAwarenessService` with injected `HttpClient`
-- **Provider routing** — Correct API endpoint selection based on provider config
-
-### E2E Tests
-
-End-to-end tests exercise the full privacy pipeline from config through to output:
-
-- **Full pipeline flow** — Config → provider check → privacy layers → vision analysis → PII scan → commentary output
-- **Privacy layer toggles** — Each layer independently tested on/off
-- **PII filtering** — AI responses containing PII are correctly discarded
-- **All provider paths** — Gemini, Claude, Ollama, and hybrid provider routing verified
-
-### Manual Integration Test
-
-A separate console app for live TTS testing:
-
-```bash
-dotnet run --project tests/TtsIntegrationTest/
+```powershell
+cd python-backend
+pytest -v --cov=aemeath_agent
+ruff check .
 ```
 
-Tests Edge TTS, GPT-SoVITS, and ElevenLabs providers with real audio output.
+The suites cover models, engines, services, view models, Win32 wrappers, HTTP/provider simulations, memory contracts and flows, and backend routes/tools. Tests that simulate a dependency do not prove that a real cloud account, local model, companion app, or packaged sidecar is correctly configured.
 
----
+For manual TTS provider checks:
 
-## Missing Assets & Stubbed Features
+```powershell
+dotnet run --project tests/TtsIntegrationTest
+```
 
-### Missing Assets
+## Current Limitations
 
-| Asset | Current Workaround | What's Needed |
-|-------|-------------------|---------------|
-| Black cat GIFs | Unicode emoji placeholder | ~80x80px sprite set (12 states) matching art style |
-| Paper plane sprite | Unicode plane (✈) | ~32x32px PNG or small GIF |
-| Tray icon | Build warning | `.ico` multi-resolution (16–256px) |
-| App icon | None | `.ico` for window titlebar/taskbar |
+- **Memory is partial:** advanced memory is primarily on the Python-agent path; direct C# chat does not receive `MemoryContext`, C# core memory is not auto-learned, and there is no review/edit/delete UI. Memory endpoint caveats are listed above.
+- **MCP is dormant:** client/server classes and saved settings are not initialized by the running app.
+- **RAG is partial:** ingestion and API code exist, but the agent’s `rag_retrieve` tool is not configured at startup.
+- **Paper planes are not visible:** the simulation and landing events run, but no WPF renderer subscribes to plane updates; throw/release physics for Aemeath is also not wired to mouse interaction.
+- **Window-edge poses are dormant:** edge detection code runs, but no subscriber transitions the pet into peek, cling, lie, or taskbar-hide states.
+- **Fullscreen handling is limited:** periodic screen capture is skipped and TTS can auto-mute, but the pet does not auto-hide for fullscreen apps.
+- **Some art is placeholder:** multiple states reuse existing GIFs, and the black-cat window uses a Unicode glyph rather than the included seal asset.
+- **Some settings are saved only or need restart:** close-to-tray, behavior frequency, ambient-plane frequency, and the singing flag are not fully consumed; backend and integration lifecycles are not fully reconfigured on save.
+- **Backend packaging is separate:** normal .NET publish/release output does not contain the sidecar executable.
+- **Backend setup and configuration have gaps:** the declared install omits `langgraph-checkpoint-sqlite`, degraded `/health` does not prove agent readiness, WPF config sync does not transfer effective settings, and the app-managed port override does not change the CLI bind port.
+- **Backend STT is not currently interoperable:** WPF sends multipart audio while the route requires JSON `audio_base64`, and the route uses the Anthropic key for Whisper without an OpenAI key setting. Use the separate direct C# Whisper or Gemini path instead.
+- **Loopback services are unauthenticated** and local data/API keys are unencrypted.
 
----
+## Design Documents
 
-## Tech Stack
+- [`REQUIREMENTS.md`](REQUIREMENTS.md) — product scope and requirement status
+- [`docs/architecture.md`](docs/architecture.md) — canonical current runtime architecture
+- [`CHECKLIST.md`](CHECKLIST.md) — evidence-based implementation ledger
+- [`docs/memory_system_design.md`](docs/memory_system_design.md) — memory architecture and known integration state
+- [`aemeath_desktop_pet_design.md`](aemeath_desktop_pet_design.md) — historical design intent, not current implementation status
+- [`AGENTS.md`](AGENTS.md) — repository contribution guidance
 
-- **C# / .NET 8** — WPF with `AllowsTransparency`
-- **Win32 Interop** — `SetWindowLong`, `SetWindowPos`, `DwmGetWindowAttribute`, `EnumWindows`, `SetWinEventHook`
-- **Hardcodet.NotifyIcon.Wpf** — System tray integration
-- **NAudio** — Audio recording and TTS playback
-- **Edge_tts_sharp** — Free Edge TTS synthesis
-- **Microsoft.Data.Sqlite** — Read-only SQLite access for activity monitor integration
-- **System.Text.Json** — Configuration and persistence
-- **xUnit** — 791 C# tests + 157 Python tests across 42+ test classes (unit, integration, E2E)
-
----
-
-## About Aemeath
-
-Aemeath (爱弥斯) is a character from Wuthering Waves. A digital ghost who lost her physical body, she exists as a virtual idol known as "Fleet Snowfluff" (@fltsnflf). Bubbly and optimistic on the surface, with an underlying melancholy captured in her signature line: *"Did you see me?"*
-
-This project is a fan-made desktop companion. All character rights belong to Kuro Games.
+Older root-level design and asset-generation notes are useful historical context, but source code, manifests, and the documents above should be preferred for current behavior.

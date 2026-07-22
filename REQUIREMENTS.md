@@ -1,320 +1,285 @@
-# Aemeath Desktop Pet - Requirements Document
-
-## 1. Product Overview
-
-**Aemeath Desktop Pet** is a Windows desktop companion application featuring Aemeath (爱弥斯) from Wuthering Waves. The pet lives on the user's desktop as a transparent, always-on-top animated character that idles, flies, reacts to interaction, and optionally converses via AI.
-
-**Target Platform:** Windows 10/11 (x64)
-**Framework:** .NET 8.0 WPF
-**License:** Fan-made project. Character rights belong to Kuro Games.
-
----
-
-## 2. Functional Requirements
-
-### 2.1 Core Pet (Phase 1)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-1.1 | Transparent always-on-top window with no taskbar entry | Must | Done |
-| FR-1.2 | GIF-based animation engine with frame caching and horizontal mirroring | Must | Done |
-| FR-1.3 | 26-state finite state machine with weighted-random idle transitions | Must | Done |
-| FR-1.4 | Physics engine: gravity, velocity, bounce, screen-edge collision | Must | Done |
-| FR-1.5 | Drag-and-drop with throw velocity tracking | Must | Done |
-| FR-1.6 | Left-click wave, hover happy jump reactions | Must | Done |
-| FR-1.7 | Right-click context menu (Sing, Chat, Paper Plane, Call Cat, Stats, Settings, Quit) | Must | Done |
-| FR-1.8 | System tray icon with menu (Show, Chat, Paper Plane, Settings, Quit) | Must | Done |
-| FR-1.9 | Position and configuration persistence (JSON to %LOCALAPPDATA%) | Must | Done |
-| FR-1.10 | Fullscreen app detection (auto-hide pet) | Should | Done |
-| FR-1.11 | DPI awareness (PerMonitorV2) | Should | Done |
-| FR-1.12 | Configurable pet size (150/200/250px) and opacity | Should | Done |
-
-### 2.2 Black Cat Companion (Phase 2)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-2.1 | Independent cat character in separate transparent window (~80x80px) | Must | Done (emoji placeholder) |
-| FR-2.2 | Cat FSM with 12 states (idle, walk, nap, groom, pounce, watch, rub, startled, purr, perch, chase, bat) | Must | Done |
-| FR-2.3 | Cat follows Aemeath with 40-80px offset and lerp delay | Must | Done |
-| FR-2.4 | Cat reacts to Aemeath events (drag, land, glitch, paper plane) | Must | Done |
-| FR-2.5 | Click on cat triggers purr reaction | Should | Done |
-| FR-2.6 | Enable/disable cat in settings | Should | Done |
-
-### 2.3 Window Edge Interaction (Phase 2b)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-2b.1 | Detect nearby window title bars using EnumWindows + DWM APIs | Must | Done |
-| FR-2b.2 | Pet can perch on window edges (position tracks window) | Must | Done |
-| FR-2b.3 | Detect window close/minimize while perched, trigger fall | Must | Done |
-| FR-2b.4 | Screen edge and taskbar proximity detection | Should | Done |
-| FR-2b.5 | SetWinEventHook for real-time window tracking | Should | Done |
-
-### 2.4 Paper Planes (Phase 3)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-3.1 | Throw paper plane from Aemeath position (parabolic + sinusoidal trajectory) | Must | Done |
-| FR-3.2 | Ambient paper planes spawn every 3-8 minutes from random screen edge | Should | Done |
-| FR-3.3 | Click on plane triggers spin + trajectory change | Should | Done |
-| FR-3.4 | Cat chases landed planes | Should | Done |
-| FR-3.5 | Configurable ambient plane frequency, enable/disable | Should | Done |
-
-### 2.5 Personality & Effects (Phase 4)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-4.1 | Digital ghost glitch effect (opacity flicker, horizontal displacement, RGB split) | Must | Done |
-| FR-4.2 | 2-5% trigger chance per 5-10 second behavior cycle, 300-800ms duration | Must | Done |
-| FR-4.3 | Particle system: music notes, hearts, sparkles, sleep Z, paw prints (max 12) | Must | Done |
-| FR-4.4 | Speech bubble with themed styling, auto-dismiss (4s normal, 8s AI) | Must | Done |
-| FR-4.5 | Streaming text display in speech bubble (typing effect) | Should | Done |
-| FR-4.6 | Time-of-day awareness: 5 periods (Morning, Day, Evening, Night, LateNight) | Should | Done |
-| FR-4.7 | Conditional behavior weights (sleep at night, sigh when low mood, laugh when happy) | Should | Done |
-
-### 2.6 AI Chat (Phase 5)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-5.1 | Claude API integration with SSE streaming | Must | Done (needs API key) |
-| FR-5.2 | Aemeath-specific system prompt with dynamic state injection | Must | Done |
-| FR-5.3 | Chat window: dark theme, 380x520, resizable, themed message bubbles | Must | Done |
-| FR-5.4 | Conversation memory with JSON persistence (200-message cap) | Must | Done |
-| FR-5.5 | Offline fallback with 75+ pre-scripted character responses | Must | Done |
-| FR-5.6 | Contextual offline responses based on stats, time, and absence | Should | Done |
-| FR-5.7 | Double-click pet to open chat window | Should | Done |
-
-### 2.7 TTS Voice (Phase 5b)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-5b.1 | ITtsService interface for pluggable TTS providers | Must | Done (interface) |
-| FR-5b.2 | GPT-SoVITS local TTS support | Should | Stub |
-| FR-5b.3 | Cloud TTS fallback (ElevenLabs / Azure) | Could | Stub |
-| FR-5b.4 | Voice settings tab in settings panel | Should | Done (UI only) |
-
-### 2.8 Screen Awareness (Phase 5c)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-5c.1 | IScreenAwarenessService interface for pluggable vision providers | Must | Done (interface) |
-| FR-5c.2 | Screenshot capture + privacy pipeline (3 tiers) | Should | Stub |
-| FR-5c.3 | Screen awareness settings tab with privacy controls | Should | Done (UI only) |
-
-### 2.9 Stats & Polish (Phase 6)
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-6.1 | Stats model: Mood, Energy, Affection (0-100) with offline decay | Must | Done |
-| FR-6.2 | Interaction effects (chat +3 mood, pet +5 mood, sing +8 mood/-5 energy) | Must | Done |
-| FR-6.3 | Stats popup with gradient bars and lifetime counters | Must | Done |
-| FR-6.4 | 6-tab settings panel (General, Appearance, Music, AI, Voice, Screen) | Must | Done |
-| FR-6.5 | Stats influence behavior weights via SetStatsContext() | Should | Done |
-
-### 2.10 Extras (Phase 7) - Future
-
-| ID | Requirement | Priority | Status |
-|----|-------------|----------|--------|
-| FR-7.1 | Mini-games (Rock-Paper-Scissors, Catch the Star, Pomodoro) | Could | Not started |
-| FR-7.2 | Special animations (transformation, dance, morning greeting) | Could | Not started |
-| FR-7.3 | Sound effects (humming, click sounds, cat purr) | Could | Not started |
-
----
-
-## 3. Non-Functional Requirements
-
-| ID | Requirement | Target | Priority |
-|----|-------------|--------|----------|
-| NFR-1 | CPU usage while idle | < 0.5% | Must |
-| NFR-2 | CPU usage during animation | < 2% | Must |
-| NFR-3 | Memory usage | < 50 MB | Must |
-| NFR-4 | Application startup time | < 3 seconds | Should |
-| NFR-5 | No Z-order flickering with other windows | Zero flicker | Must |
-| NFR-6 | Graceful offline mode (no API = offline responses) | Full offline | Must |
-| NFR-7 | No data written outside %LOCALAPPDATA%\AemeathDesktopPet\ | Strict | Must |
-| NFR-8 | Screen awareness screenshots never saved to disk | In-memory only | Must |
-| NFR-9 | Smooth 60 FPS drag movement | 60 FPS | Should |
-| NFR-10 | Animation frame rate matches source GIF (9-25 FPS) | Match source | Must |
-
----
-
-## 4. System Requirements
-
-### 4.1 Minimum
-
-| Component | Requirement |
-|-----------|-------------|
-| OS | Windows 10 version 1903 or later |
-| Runtime | .NET 8.0 Desktop Runtime |
-| RAM | 4 GB (application uses < 50 MB) |
-| Disk | ~30 MB (application + sprites) |
-| Display | 1280x720 minimum, any DPI |
-
-### 4.2 Recommended
-
-| Component | Requirement |
-|-----------|-------------|
-| OS | Windows 11 |
-| Runtime | .NET 8.0 Desktop Runtime |
-| RAM | 8 GB |
-| Display | 1920x1080, 100-150% DPI scaling |
-
-### 4.3 For AI Chat Feature
-
-| Component | Requirement |
-|-----------|-------------|
-| Internet | Required for Claude API |
-| API Key | Anthropic API key (configured in Settings > AI) |
-
-### 4.4 For TTS Feature (Future)
-
-| Component | Requirement |
-|-----------|-------------|
-| Local TTS | GPT-SoVITS running on localhost:9880 |
-| Cloud TTS | ElevenLabs or Azure API key |
-
-### 4.5 For Screen Awareness Feature (Future)
-
-| Component | Requirement |
-|-----------|-------------|
-| Local Vision | Ollama with Qwen2.5-VL-7B (8GB+ VRAM) |
-| Cloud Vision | Claude/GPT-4o API key |
-
----
-
-## 5. Dependencies
-
-### 5.1 NuGet Packages
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| Hardcodet.NotifyIcon.Wpf | 1.1.0 | System tray icon and notification |
-| System.Drawing.Common | 8.0.0 | GIF frame extraction via System.Drawing.Imaging |
-
-### 5.2 Framework Dependencies (included in .NET 8)
-
-| Component | Purpose |
-|-----------|---------|
-| System.Text.Json | Configuration and persistence serialization |
-| System.Net.Http | Claude API HTTP requests + SSE streaming |
-| WindowsBase | WPF rendering, DispatcherTimer |
-| PresentationCore | BitmapSource, WriteableBitmap, transforms |
-| PresentationFramework | Window, UserControl, data binding |
-
-### 5.3 Win32 APIs (P/Invoke)
-
-| API | Purpose |
-|-----|---------|
-| SetWindowLong / GetWindowLong | WS_EX_TOOLWINDOW (hide from Alt+Tab) |
-| EnumWindows / GetWindowRect | Window enumeration for edge detection |
-| DwmGetWindowAttribute | Accurate window bounds, cloaked detection |
-| SetWinEventHook | Real-time window move/resize tracking |
-| SHAppBarMessage | Taskbar position and size |
-
----
-
-## 6. Data & Privacy
-
-### 6.1 Local Storage
-
-All data stored in `%LOCALAPPDATA%\AemeathDesktopPet\`:
-
-| File | Content | Sensitive |
-|------|---------|-----------|
-| config.json | User preferences, pet size, toggles | No |
-| stats.json | Mood/Energy/Affection values, lifetime counters | No |
-| messages.json | Chat conversation history (up to 200 messages) | Low |
-
-### 6.2 Network Communication
-
-| Destination | When | Data Sent |
-|-------------|------|-----------|
-| api.anthropic.com | AI chat (user-initiated) | Chat messages + system context (mood, time) |
-| localhost:9880 | TTS (if configured) | Text to speak |
-| Vision API (if configured) | Screen awareness (if enabled) | Screenshot (in-memory, not saved) |
-
-### 6.3 Privacy Guarantees
-
-- No telemetry or analytics
-- No data collection without explicit user action
-- API key stored locally in plaintext config (user responsibility)
-- Screen awareness is opt-in only, disabled by default
-- Screenshots are processed in-memory and immediately discarded
-- Chat history stored locally only, never sent to third parties beyond the configured AI provider
-
----
-
-## 7. Sprite Assets
-
-### 7.1 Included (9 Aemeath GIFs + 1 Seal GIF)
-
-| File | Canvas | FPS | Type |
-|------|--------|-----|------|
-| normal.gif | 200x200 | 9 | Idle loop |
-| normal_flying.gif | 200x200 | 9 | Movement loop |
-| happy_hand_waving.gif | 200x200 | 9 | One-shot |
-| happy_jumping.gif | 200x200 | 9 | One-shot |
-| laugh.gif | 200x200 | 9 | One-shot |
-| laugh_flying.gif | 200x200 | 9 | One-shot |
-| sign.gif | 200x200 | 9 | One-shot |
-| listening_music.gif | 1000x1000 | 25 | Premium loop |
-| seal.gif | 200x200 | 9 | Loop |
-
-### 7.2 Missing (Needed for Full Experience)
-
-| Asset | Current Workaround | Spec |
-|-------|-------------------|------|
-| Black cat sprite set (12 states) | Unicode emoji placeholder | ~80x80px GIFs, matching art style |
-| Paper plane sprite | Unicode ✈ character | ~32x32px PNG or GIF |
-| System tray icon | Missing (build warning) | .ico file, 16x16 to 256x256 multi-res |
-| App icon | Missing | .ico file for window/taskbar |
-
----
-
-## 8. Testing
-
-### 8.1 Unit Tests
-
-- **Framework:** xUnit 2.6.6 + Microsoft.NET.Test.Sdk 17.8.0
-- **Test project:** `tests/AemeathDesktopPet.Tests/`
-- **Test count:** ~80 tests across 18 test classes
-
-| Area | Test Classes | Coverage |
-|------|-------------|----------|
-| Models | AemeathStatsTests, ChatMessageTests, CatStateTests, OfflineResponsesTests, PetStateTests, AnimationInfoTests, AppConfigTests | Defaults, clamp, decay math, enums, constructors |
-| Engine | BehaviorEngineTests, PhysicsEngineTests, AnimationEngineTests, TimeAwarenessTests | FSM transitions, state mappings, physics bounds, time periods |
-| Services | ConfigServiceTests, MusicServiceTests, JsonPersistenceServiceTests, StatsServiceTests, MemoryServiceTests | Round-trip persistence, interaction effects, context window |
-| ViewModels | PetViewModelTests | Property changes, state transitions, public API no-throw |
-
-### 8.2 Manual Testing Checklist
-
-- [ ] Pet appears on screen, animates, flies around
-- [ ] Drag and throw with physics bounce
-- [ ] Context menu items all function
-- [ ] Double-click opens chat window
-- [ ] Chat window sends/receives messages (offline mode)
-- [ ] Stats popup shows correct values
-- [ ] Settings changes apply immediately
-- [ ] Cat companion appears and follows pet
-- [ ] Paper planes throw and fly
-- [ ] Glitch effect triggers periodically
-- [ ] Speech bubbles appear during idle
-- [ ] System tray icon and menu work
-- [ ] Minimize to tray on close
-- [ ] Fullscreen detection hides pet
-- [ ] Settings persist across restart
-- [ ] Stats persist across restart
-
----
-
-## 9. Glossary
-
-| Term | Definition |
-|------|-----------|
-| Aemeath (爱弥斯) | Character from Wuthering Waves; digital ghost, virtual idol "Fleet Snowfluff" |
-| FSM | Finite State Machine — behavior engine pattern |
-| Glitch Effect | Signature visual: digital ghost artifact (opacity flicker, RGB split, displacement) |
-| Exostrider | Aemeath's mechanical wings, always visible in sprites |
-| GPT-SoVITS | Open-source voice cloning + TTS system |
-| SSE | Server-Sent Events — streaming protocol used by Claude API |
-| Shimeji | Genre of desktop pet applications that inspired this project's behavior engine |
+# Aemeath Desktop Pet — Product Requirements and Status
+
+**Document role:** Canonical product requirement and current-status source
+
+**Verified against:** working tree on 2026-07-22
+
+**Target platform:** Windows 10/11 x64
+
+**Primary application:** .NET 8 WPF
+
+**Optional AI sidecar:** Python 3.11+ FastAPI/LangGraph
+
+This document defines the intended product and records how much of each requirement is present in the current working tree. Detailed design documents explain implementation choices, but they must not override the requirement status recorded here. Package versions and dependency membership are authoritative only in the project manifests: `src/AemeathDesktopPet/AemeathDesktopPet.csproj`, `tests/AemeathDesktopPet.Tests/AemeathDesktopPet.Tests.csproj`, and `python-backend/pyproject.toml`. `python-backend/requirements.txt` mirrors the runtime install set used by CI and must be kept consistent with `pyproject.toml`.
+
+## 1. Status Model
+
+| Status | Meaning |
+|--------|---------|
+| **Implemented** | The behavior is present and connected to the normal application flow; verification may still require a manual or automated check. |
+| **Partial** | A meaningful implementation exists, but a required runtime connection, behavior, or verification is missing. |
+| **Planned** | The requirement is accepted but no usable implementation is present. |
+| **External dependency** | The adapter and application wiring exist, but successful operation requires an external service, API key, model, database, executable, or compatible environment. |
+| **Asset placeholder** | Behavior or state support exists, but final visual/audio assets are missing and a substitute or shared animation is used. |
+
+An implementation is not considered complete merely because an interface, engine, setting, or test double exists. The user-visible execution path must also be connected.
+
+## 2. Product Intent
+
+Aemeath Desktop Pet is a fan-made Windows companion inspired by Aemeath from *Wuthering Waves*. It presents a transparent, always-on-top animated character that reacts to the user, keeps lightweight local state, and can optionally converse, speak, listen, observe the screen, and use agent tools.
+
+The product should remain useful without the optional Python backend or cloud credentials. Advanced AI capabilities may use a locally launched Python sidecar, direct providers, local model servers, or contextual offline responses, depending on configuration and availability.
+
+### Primary user stories
+
+- As a desktop user, I want an animated companion that lives unobtrusively on my Windows desktop so that routine computer use feels more lively.
+- As a user who enables AI features, I want conversational, voice, vision, and memory behavior that reflects the pet's personality and current state.
+- As a privacy-conscious user, I want screen/activity features to be opt-in and to understand what is stored locally or transmitted externally.
+- As a user without cloud credentials, I want the pet, local interactions, and offline conversation to continue working.
+
+### User journey
+
+```mermaid
+flowchart LR
+    Start[Launch desktop pet] --> Pet[Interact with pet, cat, music, stats]
+    Pet --> Settings[Choose optional capabilities]
+    Settings --> Offline[Use local and offline behavior]
+    Settings --> Direct[Use a direct AI, TTS, STT, or vision provider]
+    Settings --> Sidecar[Start optional Python agent sidecar]
+    Sidecar --> Tools[Use tools, RAG, and memory services]
+    Direct --> Response[Show or speak a response]
+    Offline --> Response
+    Tools --> Response
+```
+
+### Scope boundary
+
+```mermaid
+flowchart TB
+    subgraph InScope[In this repository]
+        WPF[WPF desktop pet]
+        Local[Local configuration, stats, history, and memory files]
+        Sidecar[Optional FastAPI/LangGraph sidecar]
+        Bridges[Loopback REST and SSE bridges]
+        Adapters[Provider and companion-app adapters]
+    end
+    subgraph External[External dependencies]
+        Cloud[Cloud AI, TTS, STT, vision, search, and weather APIs]
+        Models[Ollama and GPT-SoVITS servers/models]
+        Sources[Optional activity database and companion applications]
+    end
+    subgraph OutOfScope[Not supplied by this repository]
+        Accounts[Provider accounts, keys, quotas, and terms]
+        FinalArt[Missing final cat, plane, and edge-pose artwork]
+        HostedService[A hosted multi-user backend]
+    end
+    WPF --> Local
+    WPF <--> Bridges
+    Bridges <--> Sidecar
+    Adapters --> Cloud
+    Adapters --> Models
+    Adapters --> Sources
+```
+
+## 3. Product Architecture Requirements
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| AR-001 | The WPF application is the desktop host and must remain operable when the Python sidecar is disabled or unavailable. | Must | **Implemented** | AC-AR-001: With Backend disabled and no API key, the pet launches and chat returns a contextual offline response. |
+| AR-002 | The optional sidecar exposes FastAPI endpoints on loopback, provides REST plus SSE agent streaming, and is intended to honor the configured backend port. | Should | **Partial** | AC-AR-002: `/health`, `/agent/invoke`, and `/agent/stream` respond at the default port; app-managed non-default ports do not work because the launcher does not pass `--port` and the CLI ignores `AEMEATH_PORT`. Packaged-release startup also remains unproven. |
+| AR-003 | WPF exposes a loopback internal API for pet stats, screen capture, music control, and pet state so agent tools can interact with the desktop host. | Should | **Implemented** | AC-AR-003: Calls to the four `/internal/*` routes return the expected data or action while WPF is running. |
+| AR-004 | Chat selection supports the sidecar when ready, otherwise a configured direct provider, and contextual offline output when the selected service is unavailable. | Must | **Partial** | AC-AR-004: Startup selection works; a sidecar request failure currently falls directly to offline output rather than retrying through the direct provider. |
+| AR-005 | Loopback APIs must bind locally by default and must not be presented as authenticated security boundaries. | Must | **Implemented** | AC-AR-005: Defaults use `localhost`/`127.0.0.1`; documentation warns that neither WPF nor FastAPI loopback routes require an auth token. |
+
+## 4. Functional Requirements
+
+### 4.1 Desktop Pet and Interaction
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| FR-PET-001 | Show a transparent, borderless, always-on-top pet window without a taskbar button and provide a system-tray menu. | Must | **Implemented** | AC-PET-001: Launching the app shows the pet, omits a taskbar entry, and exposes Show, Chat, Paper Plane, Settings, and Quit from the tray. |
+| FR-PET-002 | Decode and cache GIF frames, preserve source timing, support one-shot/loop playback, and mirror directional flight. | Must | **Implemented** | AC-PET-002: included GIFs load from `Resources/Sprites`, animate, and left flight mirrors the flying animation. |
+| FR-PET-003 | Drive pet personality through the 26-value `PetState` finite-state model with weighted idle choices and stats/time context. | Must | **Implemented** | AC-PET-003: state changes select an animation and the idle cycle varies behavior using mood, energy, and time inputs. |
+| FR-PET-004 | Support gravity, movement, collision, dragging, and release/throw behavior. | Must | **Partial** | AC-PET-004: gravity, bounds, movement, and drag work; drag release must still calculate/apply throw velocity and enter the `Thrown` path. |
+| FR-PET-005 | Provide click, hover, sing, chat, paper-plane, cat, stats, settings, tray, and configurable click-through interactions. | Must | **Implemented** | AC-PET-005: each wired menu/input action invokes its application behavior without an exception. |
+| FR-PET-006 | Provide a separately positioned black-cat companion with its 12-state behavior engine and reactions to the pet and user. | Should | **Asset placeholder** | AC-PET-006: the cat window follows and reacts, but completion requires state-specific cat sprites/animations in place of the Unicode cat. |
+| FR-PET-007 | Detect nearby windows and screen/taskbar edges, track a perched window, and enter visible edge poses. | Should | **Partial** | AC-PET-007: detection/manager tests pass; completion requires runtime event subscriptions and actual transitions/positioning for peek, perch, taskbar-hide, and cling poses. |
+| FR-PET-008 | Simulate thrown and ambient paper planes and render them in the desktop UI. | Should | **Partial** | AC-PET-008: trajectory and landing logic exist; completion requires a renderer/visual instance connected to the plane collection. |
+| FR-PET-009 | Provide glitch, particle, speech-bubble, music, and time-aware personality effects. | Should | **Implemented** | AC-PET-009: enabled effects are visible/audible in their wired states and disabled effects remain inactive. |
+| FR-PET-010 | Hide or reposition the pet when another application is fullscreen. | Should | **Partial** | AC-PET-010: fullscreen detection exists and TTS can auto-mute, but pet-window auto-hide/reposition is not wired. |
+| FR-PET-011 | Persist configuration, position, stats, and bounded chat history across restarts. | Must | **Implemented** | AC-PET-011: saved settings, position, stats, and the capped message history reload from local JSON files. |
+| FR-PET-012 | Expose mood, energy, affection, lifetime counters, offline decay, and a stats popup; feed stats into behavior selection. | Should | **Implemented** | AC-PET-012: interactions change clamped stats, the popup reflects them, and behavior receives updated mood/energy. |
+| FR-PET-013 | Provide exactly eight settings tabs: General, Appearance, Music, AI, Voice, Screen, Backend, and MCP. | Must | **Implemented** | AC-PET-013: all eight named tabs load, edit their owned settings, and save through `ConfigService`. |
+| FR-PET-014 | Integrate optionally with Pomodoro events, an external activity-monitor database, and configured companion launchers. | Could | **External dependency** | AC-PET-014: each integration remains inactive when disabled/missing and consumes events/data only when the dependency is present and configured. |
+
+### 4.2 Chat and Agent Capabilities
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| FR-AI-001 | Provide a themed chat window with persisted history and streaming display. | Must | **Implemented** | AC-AI-001: user messages and streamed chunks appear in order and the completed turn persists. |
+| FR-AI-002 | Support direct Claude, Gemini, and configurable local-proxy chat providers. | Should | **External dependency** | AC-AI-002: the selected adapter streams a response when its key/proxy is available and falls back safely otherwise. |
+| FR-AI-003 | Provide contextual scripted conversation without network access. | Must | **Implemented** | AC-AI-003: no provider credentials or backend are required to receive an in-character response. |
+| FR-AI-004 | Inject character identity plus current pet/user context into AI requests. | Must | **Implemented** | AC-AI-004: generated requests contain the character prompt and current stats/time context without exposing unrelated configuration. |
+| FR-AI-005 | Start, health-check, stop, and retry the optional Python process in auto, bundled, or development mode while honoring configured ports. | Should | **Partial** | AC-AI-005: lifecycle and health/retry work at the default port; completion requires passing the configured `--port` to the sidecar and distributing a verified bundled build with the WPF release. |
+| FR-AI-006 | Register 11 sidecar tools: `search_web`, `get_weather`, `manage_todo`, `read_screen`, `control_music`, `get_pet_stats`, `rag_retrieve`, `get_system_info`, `save_memory`, `update_user_block`, and `retrieve_memory`. | Should | **Partial** | AC-AI-006: all 11 appear in the graph; `rag_retrieve` still needs retriever configuration in normal startup, and several tools require keys or WPF loopback access. |
+| FR-AI-007 | Ingest PDF, DOCX, text, and directory content and retrieve it through hybrid semantic/BM25 search with reranking. | Could | **Partial** | AC-AI-007: RAG API ingestion/query works with installed models; completion requires production configuration of the agent's `rag_retrieve` tool and packaged dependencies. |
+| FR-AI-008 | Consume external MCP stdio servers and expose pet actions through an MCP server when configured. | Could | **Partial** | AC-AI-008: client/server classes and settings exist; completion requires application-startup lifecycle wiring and an end-to-end tool call from a live MCP peer. |
+
+### 4.3 Voice and Vision
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| FR-VOICE-001 | Synthesize and play queued speech with volume, cancellation, and fullscreen auto-mute. | Should | **Implemented** | AC-VOICE-001: an available provider produces playable audio, Stop cancels/clears playback, and fullscreen auto-mute suppresses output. |
+| FR-VOICE-002 | Offer five TTS providers: Edge TTS, GPT-SoVITS, ElevenLabs, Fish Audio, and OpenAI TTS. | Should | **External dependency** | AC-VOICE-002: selecting each provider creates its adapter; successful synthesis requires network access/API credentials or a compatible local GPT-SoVITS server. |
+| FR-VOICE-003 | Capture voice input by hotkey and transcribe through Whisper or Gemini, directly or through the sidecar. | Should | **Partial** | AC-VOICE-003: direct Whisper/Gemini paths are wired. The backend path is currently nonfunctional because WPF sends multipart `file`/`language` data while FastAPI requires JSON `audio_base64`/`provider`/`language`; the Whisper route also uses `anthropic_api_key` and defines no `openai_api_key` setting. |
+| FR-VISION-001 | Periodically capture the screen only after opt-in and produce rate-limited in-character commentary. | Should | **Implemented** | AC-VISION-001: the default is disabled; enabling starts the interval capture/comment flow and shows the configured indicator. |
+| FR-VISION-002 | Support four vision modes: Gemini, Claude, Ollama, and local/cloud hybrid (`local_hybrid` in WPF; `hybrid` in Python). | Should | **External dependency** | AC-VISION-002: each mode dispatches to the configured cloud key or local Ollama endpoint and handles dependency failure without crashing the pet. |
+| FR-VISION-003 | Apply the wired periodic-screen privacy and cost pipeline before publishing commentary. | Must | **Implemented** | AC-VISION-003: the periodic flow applies protected-window and configured app/title blacklist gates, fullscreen skip, configurable downscale, perceptual-change deduplication, approximate monthly budget tracking/gating, and response PII scanning. |
+| FR-VISION-004 | Honor the saved privacy-tier, local-prefilter, taskbar-blur, and address-bar-blur settings. | Should | **Partial** | AC-VISION-004: `PrivacyTier`, `UseLocalPreFilter`, `BlurTaskbar`, and `BlurAddressBar` must change capture/analysis behavior; they are currently stored but not consumed by `ScreenAwarenessService`. |
+
+### 4.4 Memory
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| FR-MEM-001 | Maintain local C# core profile, procedural memory, and a short-lived observation buffer in JSON. | Should | **Partial** | AC-MEM-001: files load/save and observation entries expire after 24 hours; core/procedural content still lacks a complete automatic update workflow and user controls. |
+| FR-MEM-002 | Collect opted-in screen/activity observations and attempt distillation every 30 minutes through the sidecar. | Should | **Partial** | AC-MEM-002: observations enter the buffer and successful distillation clears processed IDs; behavior without an available extraction model remains non-destructive and retryable. |
+| FR-MEM-003 | Submit completed conversation turns to `/memory/extract` and persist extracted facts/preferences/episodes in Python JSON and the `aemeath_memories` Chroma collection. | Should | **Partial** | AC-MEM-003: per-turn submission and storage paths exist; extracted updates do not yet synchronize the C# canonical core JSON. |
+| FR-MEM-004 | Inject relevant core, procedural, episodic, and recent observation context into every applicable chat provider. | Must | **Partial** | AC-MEM-004: the memory context builder is implemented, but direct C# chat providers do not call it or use the memory-aware prompt overload. |
+| FR-MEM-005 | Let the agent maintain and retrieve a persistent USER BLOCK without restart. | Should | **Partial** | AC-MEM-005: update/retrieve tools persist data; the system prompt must refresh the USER BLOCK after an update rather than retaining its startup snapshot. |
+| FR-MEM-006 | Provide user-visible inspect, correct, and forget controls with reliable query and time-range deletion. | Must | **Planned** | AC-MEM-006: the UI exposes memory contents and deletion; deletion removes matching JSON and Chroma records and honors both query and time range. |
+| FR-MEM-007 | Learn routines/preferences, consolidate sessions, summarize long histories, and persist procedural results. | Could | **Planned** | AC-MEM-007: repeated evidence updates procedural memory and session summaries without duplicating or silently discarding facts. |
+
+### 4.5 Future Enhancements
+
+| ID | Requirement | Priority | Status | Acceptance check |
+|----|-------------|----------|--------|------------------|
+| FR-FUT-001 | Mini-games such as rock-paper-scissors, catch-the-star, and a pet-integrated focus mode. | Could | **Planned** | AC-FUT-001: each game has a reachable interaction loop, visible state, and restart/exit behavior. |
+| FR-FUT-002 | Final special-purpose animations for sleep, edge poses, chat/speaking, cat interactions, and paper-plane actions. | Could | **Asset placeholder** | AC-FUT-002: every state uses a purpose-built approved asset rather than a shared fallback GIF. |
+| FR-FUT-003 | Optional interaction and companion sound effects. | Could | **Planned** | AC-FUT-003: sounds obey volume/mute settings and do not play while disabled. |
+
+## 5. Data, Network, Security, and Privacy
+
+### 5.1 Local storage
+
+WPF creates `%LOCALAPPDATA%\AemeathDesktopPet\`. Current files may include:
+
+| Data | Location | Notes |
+|------|----------|-------|
+| Application configuration and API keys | `config.json` | Keys, paths, and settings are stored in plaintext. The file is not a credential vault. |
+| Pet statistics | `stats.json` | Mood, energy, affection, and counters. |
+| Chat history | `messages.json` | Locally persisted bounded conversation history. |
+| C# memory | `core_memory.json`, `procedural_memory.json`, `observation_buffer.json` | The observation buffer has a 24-hour TTL; core/procedural automatic synchronization is incomplete. |
+| Python agent/checkpoint state | `agent_state.db` by default | Defaults to the WPF data directory on Windows, or `~/.aemeath/` when `LOCALAPPDATA` is unavailable; configurable by Python settings/environment. |
+| Python memory store and USER BLOCK | `memory_store.json`, `memory_blocks.json` | Defaults to the WPF data directory on Windows, otherwise `~/.aemeath/`. |
+| Chroma RAG and episodic memory | `data/chromadb/` by default | Relative to the sidecar working directory; `AEMEATH_CHROMADB_PATH` can override it. |
+| Agent to-do data | `data/todos.db` | Relative to the sidecar working directory and not currently exposed as a WPF setting. |
+| External activity data | User-configured SQLite path | Read only when Activity Monitor is enabled; it is outside the application data directory. |
+
+Therefore, the old claim that the application writes only beneath `%LOCALAPPDATA%\AemeathDesktopPet\` is not a valid guarantee when the Python sidecar or external integrations are enabled.
+
+### 5.2 Loopback communication
+
+- The Python sidecar defaults to `127.0.0.1:18900`; WPF calls REST endpoints for health, config, agent invoke/stream, STT, vision, RAG, and memory.
+- WPF exposes `http://localhost:18901/` by default for stats, screen, music, and pet-state routes used by sidecar tools.
+- These APIs currently have no token, session authentication, or caller authorization. Any local process able to reach the ports may attempt to call them.
+- The WPF internal port is configurable. The sidecar CLI accepts manual `--host`/`--port` overrides, but the WPF-managed `Backend.Port` setting is currently ineffective because process startup passes neither CLI option and argparse defaults to 18900. Exposing the sidecar beyond loopback is outside the supported/privacy-reviewed configuration.
+
+### 5.3 External transmission
+
+Depending on the user's explicit configuration, the application or sidecar may transmit:
+
+| Capability | Possible destination | Data that may leave the device |
+|------------|----------------------|--------------------------------|
+| Chat/agent | Anthropic, Google Gemini, or configured proxy/model provider | User messages, conversation/context, pet stats, tool outputs, and an optional screenshot. |
+| TTS | Microsoft Edge service, ElevenLabs, Fish Audio, OpenAI, or local GPT-SoVITS | Text to synthesize and provider/profile parameters; returned audio is played locally. |
+| STT | OpenAI Whisper, Google Gemini, or sidecar-selected provider | Recorded audio and language metadata. |
+| Vision | Google Gemini, Anthropic Claude, or local Ollama/hybrid pipeline | Screenshot or locally generated screen description, subject to enabled privacy preprocessing. |
+| Agent tools | Tavily and OpenWeatherMap | Search query or weather location; other tools call local WPF routes. |
+| RAG/memory embeddings | Google embedding service when selected, or a local sentence-transformer | Document chunks, memories, or queries used to create/search embeddings. |
+
+Cloud provider policies, retention, billing, and regional processing are external dependencies and are not controlled by this repository.
+
+### 5.4 Privacy requirements
+
+| ID | Requirement | Status | Acceptance check |
+|----|-------------|--------|------------------|
+| PR-001 | Screen awareness and activity monitoring are disabled by default and require explicit opt-in. | **Implemented** | Fresh configuration has both toggles off; periodic capture/database reading does not start until enabled. |
+| PR-002 | The user is visibly informed while periodic screen awareness is active. | **Implemented** | The screen-watch badge appears when enabled and configured to show. |
+| PR-003 | Screenshot processing should avoid durable screenshot files. | **Implemented** | Capture/analysis uses in-memory bytes; no screenshot file write exists in the normal path. Textual observations or memories derived from screenshots may still be persisted. |
+| PR-004 | Documentation and settings UI must disclose that secret fields are stored as plaintext local configuration, or the application must use protected credential storage. | **Partial** | This document now discloses plaintext storage; the settings UI has no equivalent warning and no protected credential store is implemented. |
+| PR-005 | Users must be able to review and delete learned memory. | **Planned** | See AC-MEM-006. |
+| PR-006 | Loopback APIs require authentication or an equivalent local authorization control before being treated as secure against other local processes. | **Planned** | Unauthorized local calls are rejected after the control is implemented. |
+
+## 6. Assets and Visual Completeness
+
+| Asset area | Current state | Status |
+|------------|---------------|--------|
+| Aemeath sprites | Eight GIFs are present: normal, flying, hand wave, happy jump, laugh, laugh flying, sigh/sign, and listening to music. Multiple FSM states intentionally reuse these files. | **Implemented** for the animation engine; **Asset placeholder** for state-specific poses. |
+| Seal sprite | One `seal.gif` is present under `Resources/Sprites/Seal/`. | **Implemented asset**, with limited product integration. |
+| Black cat | No cat sprite set; the separate window displays Unicode cat glyphs. | **Asset placeholder** |
+| Paper plane | No plane sprite and no WPF plane renderer are connected. | **Partial / Asset placeholder** |
+| Icons | `Resources/Icons/tray_icon.ico` exists, is copied to output, is used by the tray, and is configured as the application icon. | **Implemented** |
+| Edge/special poses | FSM values exist but use shared Aemeath GIFs and lack complete positioning/transitions. | **Partial / Asset placeholder** |
+
+## 7. Non-Functional Requirements
+
+The following numeric goals are retained as **unverified engineering targets**, not measured characteristics or release guarantees. Record hardware, OS build, release commit, publish mode, sidecar state, provider state, sample duration, and tool version with every result.
+
+| ID | Target | Verification method | Current evidence |
+|----|--------|---------------------|------------------|
+| NFR-001 | Idle CPU below 0.5% after warm-up | Measure a Release build for at least 10 minutes with Windows Performance Recorder/Analyzer; report normalized CPU and enabled features. | **Unverified target** |
+| NFR-002 | Active animation CPU below 2% | Measure representative idle, flight, glitch, cat, and particle scenarios with the same profiler and sampling window. | **Unverified target** |
+| NFR-003 | WPF working set below 50 MB in the base offline scenario | Record private working set after launch/warm-up with no sidecar; report sidecar/model memory separately. | **Unverified target** |
+| NFR-004 | Interactive startup below 3 seconds | Measure process start to first rendered/interactive pet using an instrumented timestamp over at least 20 cold and warm launches. | **Unverified target** |
+| NFR-005 | Drag presentation sustains 60 displayed frames per second on a 60 Hz display | Capture WPF frame timing during a scripted 30-second drag on representative 100%, 150%, and mixed-DPI displays. | **Unverified target** |
+| NFR-006 | Installed/published base WPF payload near 30 MB | Sum a clean framework-dependent Release publish directory; report self-contained WPF and packaged Python/model payloads separately. | **Unverified target** |
+| NFR-007 | Source GIF timing is preserved (currently 9 FPS standard and 25 FPS listening animation) | Compare decoder metadata/timer behavior with the included source files and check dropped frames under load. | **Implemented, runtime measurement pending** |
+| NFR-008 | Offline operation degrades gracefully without keys, network, sidecar, Ollama, GPT-SoVITS, or companion apps. | Run an offline fault matrix and verify the pet remains responsive, errors are contained, and offline chat responds. | **Partial verification** |
+| NFR-009 | Avoid visible Z-order flicker in normal desktop use. | Record manual scenarios across virtual desktops, fullscreen transitions, taskbar positions, and mixed-DPI monitors. | **Unverified target** |
+
+No fixed RAM, VRAM, disk, throughput, availability, coverage, or test-count claim should be treated as verified unless accompanied by a dated result and method.
+
+## 8. Runtime and Dependency Requirements
+
+| Area | Requirement |
+|------|-------------|
+| Base OS | Windows 10/11 x64 capable of running .NET 8 WPF. Exact minimum Windows build remains to be compatibility-tested. |
+| Base runtime | .NET 8 Desktop Runtime for framework-dependent builds, or the self-contained WPF release payload. |
+| Optional sidecar development | Python 3.11 or newer and dependencies declared in `python-backend/pyproject.toml`; CI currently exercises Python 3.12. |
+| Optional local AI | Compatible Ollama and/or GPT-SoVITS servers plus their models/assets. Model-specific RAM/VRAM needs are external and are not guaranteed here. |
+| Optional cloud AI | Network connectivity, valid provider credentials, quota, and acceptance of provider terms. |
+| C# packages | The application manifest currently declares Hardcodet.NotifyIcon.Wpf, Edge_tts_sharp, NAudio, System.Drawing.Common, and Microsoft.Data.Sqlite; exact versions belong to the `.csproj`. |
+| Python packages | FastAPI/Uvicorn, LangChain/LangGraph, provider adapters, ChromaDB, sentence-transformers, BM25/reranking, document loaders, HTTP/SSE, settings, and tooling dependencies are governed by `pyproject.toml`. |
+
+## 9. Verification Requirements
+
+Release evidence must be based on commands and manifests, not hard-coded test counts:
+
+- `dotnet build AemeathDesktopPet.sln -c Release`
+- `dotnet test tests/AemeathDesktopPet.Tests/ -c Release`
+- `dotnet format --verify-no-changes`
+- From `python-backend/`: `pytest -v --cov=aemeath_agent`
+- From `python-backend/`: `ruff check .`
+- Manual Windows verification for transparent rendering, tray behavior, drag, settings persistence, audio devices, hotkeys, DPI, fullscreen, provider integrations, and loopback security assumptions.
+
+The current CI runs Release build/tests and C# coverage on Windows, and Python tests/coverage on Ubuntu with Python 3.12. It does not enforce coverage thresholds. The format step is currently advisory (`continue-on-error`). The tag release workflow publishes only the self-contained WPF payload; it does not build or bundle the Python sidecar.
+
+## 10. Known Release Gaps
+
+The following gaps block describing the repository as a fully integrated release:
+
+1. Render paper planes and supply final plane artwork.
+2. Wire window-edge events and poses into visible runtime behavior.
+3. Apply drag-release velocity to the thrown physics path.
+4. Wire pet auto-hide/reposition for fullscreen applications.
+5. Wire MCP client/server lifecycle into application startup and shutdown.
+6. Configure the RAG retrieval tool in the live agent.
+7. Bundle and verify the Python sidecar in release artifacts.
+8. Make WPF-to-sidecar config synchronization update effective live settings, pass the configured sidecar port and correctly prefixed tool/internal-port variables, align the STT JSON contract, and add/use the proper OpenAI Whisper credential.
+9. Inject memory context into direct providers and synchronize C# and Python memory cores.
+10. Add memory inspection/correction/deletion UI and complete procedural learning, session consolidation, and reliable forget semantics.
+
+## 11. Change History
+
+- **2026-07-22:** Replaced the stale phase-completion narrative with a code-audited canonical requirement/status source. Added the optional sidecar and loopback architecture, current AI/TTS/STT/vision/RAG/MCP/memory scope, eight settings tabs, accurate assets, storage/network/privacy disclosures, manifest authority, and explicitly unverified performance targets.
+- **2026-07-22 (verification revision):** Corrected the nonfunctional backend STT contract, ineffective app-managed sidecar port setting, and dormant privacy-tier/local-prefilter/blur options; limited completed vision privacy claims to layers consumed by the periodic pipeline.
