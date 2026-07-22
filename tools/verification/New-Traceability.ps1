@@ -981,6 +981,9 @@ function Get-TraceTargets {
                 Add-TestTarget $targets $targetStep $targetLane
             }
         }
+        if ($Id -eq "RISK-012") {
+            Add-TestTarget $targets "D0.4" "V-REAL-E2E" "HOSTED-WINDOWS"
+        }
         return $targets.ToArray()
     }
 

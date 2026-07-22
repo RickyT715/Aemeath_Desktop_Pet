@@ -162,3 +162,50 @@ jobs:
           path: artifacts/ci/verification-contracts/
           if-no-files-found: error
           retention-days: 90
+
+  delivery-environment:
+    name: Delivery Environment
+    needs: delivery-contract
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out exact source SHA
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+
+      - name: Record and verify source identity
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/ci/delivery-environment | Out-Null
+          $actualSha = (git rev-parse HEAD).Trim().ToLowerInvariant()
+          [PSCustomObject]@{
+            schemaVersion = 1
+            expectedSha = $env:SOURCE_SHA.ToLowerInvariant()
+            actualSha = $actualSha
+            event = '${{ github.event_name }}'
+            runId = '${{ github.run_id }}'
+            runAttempt = '${{ github.run_attempt }}'
+          } | ConvertTo-Json | Set-Content artifacts/ci/delivery-environment/source-identity.json
+          if ($actualSha -ne $env:SOURCE_SHA.ToLowerInvariant()) {
+            throw "Checked out '$actualSha'; expected '$env:SOURCE_SHA'."
+          }
+
+      - name: Probe hosted Windows delivery capabilities
+        shell: pwsh
+        run: |
+          ./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment *>&1 |
+            Tee-Object artifacts/ci/delivery-environment/environment-readiness-tests.log
+          if (-not (Test-Path -LiteralPath artifacts/ci/delivery-environment/hosted-windows-capabilities.json -PathType Leaf)) {
+            throw "Hosted Windows capability evidence was not created."
+          }
+
+      - name: Upload delivery-environment evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: delivery-environment-${{ env.SOURCE_SHA }}
+          path: artifacts/ci/delivery-environment/
+          if-no-files-found: error
+          retention-days: 90

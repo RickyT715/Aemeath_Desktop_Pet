@@ -104,6 +104,37 @@
           "minimumBytes": 100
         }
       ]
+    },
+    {
+      "id": "delivery-environment",
+      "name": "Delivery Environment",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 25,
+        "command": "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment",
+        "rationale": "D0.4 requires at least 16 static contract probes plus nine independently counted exact-SHA hosted Windows OS, UIA, display, storage, network, cleanup, timeout, and redaction probes."
+      },
+      "artifactPrefix": "delivery-environment-",
+      "artifactPath": "artifacts/ci/delivery-environment/",
+      "minimumArtifactBytes": 500,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "environment-readiness-tests.log",
+          "minimumBytes": 100
+        },
+        {
+          "path": "hosted-windows-capabilities.json",
+          "minimumBytes": 300
+        }
+      ]
     }
   ]
 }

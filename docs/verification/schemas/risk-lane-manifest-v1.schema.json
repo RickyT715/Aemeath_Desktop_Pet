@@ -118,6 +118,52 @@
       },
       "additionalProperties": true
     },
+    "capabilityContracts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "ownerRole", "requiredForSteps", "firstBlockingStep",
+          "preflightStates", "closureStates"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^CAP-[A-Z0-9-]+$" },
+          "ownerRole": { "type": "string", "minLength": 3 },
+          "requiredForSteps": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "firstBlockingStep": { "type": ["string", "null"] },
+          "preflightStates": {
+            "type": "array", "minItems": 1, "uniqueItems": true,
+            "items": { "enum": ["ready", "blocked", "pending"] }
+          },
+          "closureStates": {
+            "type": "array", "minItems": 1, "uniqueItems": true,
+            "items": { "enum": ["ready", "blocked", "pending"] }
+          }
+        }
+      }
+    },
+    "hostedRuntimeContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId", "evidencePath", "schemaPath", "greenEvidencePath",
+        "sourceShaField", "minimumHostedDiscovery", "requiredTrueFields",
+        "observationOnlyFields"
+      ],
+      "properties": {
+        "capabilityId": { "const": "CAP-GHA-WINDOWS-CAPABILITY-PROBE" },
+        "evidencePath": { "type": "string", "pattern": "^docs/verification/evidence/.+\\.json$" },
+        "schemaPath": { "type": "string", "pattern": "^docs/verification/schemas/.+\\.schema\\.json$" },
+        "greenEvidencePath": { "type": "string", "pattern": "^docs/verification/evidence/.+\\.md$" },
+        "sourceShaField": { "const": "verifiedSourceSha" },
+        "minimumHostedDiscovery": { "type": "integer", "minimum": 1 },
+        "requiredTrueFields": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+        "observationOnlyFields": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+      }
+    },
     "owners": {
       "type": "array", "minItems": 1,
       "items": {

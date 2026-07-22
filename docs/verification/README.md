@@ -31,7 +31,7 @@ schema version may add informational parent nodes without changing this v1 denom
 Each trace entry has an explicit namespace, independent source location and statement hash,
 effective and proposed disposition, approval state, preservation-boundary mapping, design locator,
 UI locator, checklist step, stable test/probe IDs, verification lanes, and planned evidence paths.
-The graph currently contains 155 reusable planned suites, journeys, and gate probes. Multiple
+The graph currently contains 156 reusable planned suites, journeys, and gate probes. Multiple
 criteria link to the same executable owner/lane journey where one complete case supplies the
 evidence; permutations remain in smaller lanes and the E2E budgets remain enforceable. Markdown
 anchors are navigation metadata, not stable requirement identities. V1 uses only unique numbered

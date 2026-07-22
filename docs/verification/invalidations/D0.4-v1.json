@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.4-v1-invalidated-by-v2",
+  "invalidatedManifestId": "D0.4-v1",
+  "frozenArtifactPath": "docs/verification/manifests/D0.4-v1.yml",
+  "frozenArtifactSha256": "de4d61a836e30c35e2c265c76bf48509506b0b797cc1d79b5aaff7c952490959",
+  "replacementManifestId": "D0.4-v2",
+  "invalidatedAt": "2026-07-22T12:07:56Z",
+  "reason": "Runtime simulation and independent review found that v1 did not freeze exact owner/step/state semantics, repository-policy cross-fields, provenance/snapshot binding, trace backlinks, or manifest-derived CI alignment.",
+  "reviewer": "independent-verification-reviewer-role"
+}

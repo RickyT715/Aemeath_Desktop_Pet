@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.4-v2-invalidated-by-v3",
+  "invalidatedManifestId": "D0.4-v2",
+  "frozenArtifactPath": "docs/verification/manifests/D0.4-v2.yml",
+  "frozenArtifactSha256": "2f5d46d694443fc6d1c91ce594c9a4a43d03a91971773ec80e641a68bccbba0d",
+  "replacementManifestId": "D0.4-v3",
+  "invalidatedAt": "2026-07-22T12:22:00Z",
+  "reason": "Independent pre-push review proved that v2 allowed a hosted-ready state backed only by generic snapshot evidence and used a global discovery floor that hosted-specific probes could fail to satisfy independently.",
+  "reviewer": "independent-code-and-test-reviewer-role"
+}
