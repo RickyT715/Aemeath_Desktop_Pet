@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "workflowFile": ".github/workflows/ci.yml",
+  "workflowName": "CI",
+  "requiredEvent": "push",
+  "minimumRetentionDays": 90,
+  "trustedActions": [
+    {
+      "name": "actions/checkout",
+      "releaseTag": "v4.4.0",
+      "sha": "11d5960a326750d5838078e36cf38b85af677262"
+    },
+    {
+      "name": "actions/setup-dotnet",
+      "releaseTag": "v4.3.1",
+      "sha": "67a3573c9a986a3f9c594539f4ab511d57bb3ce9"
+    },
+    {
+      "name": "actions/upload-artifact",
+      "releaseTag": "v4.6.2",
+      "sha": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "delivery-contract",
+      "name": "Delivery Contract",
+      "runner": "ubuntu-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "not-applicable",
+        "minimumDiscoveredTests": 0,
+        "rationale": "Delivery Preflight validates CI mechanics before Gate 0A freezes an independent product test suite."
+      },
+      "artifactPrefix": "delivery-contract-",
+      "artifactPath": "artifacts/ci/delivery-contract/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "delivery-contract-tests.log",
+          "minimumBytes": 20
+        }
+      ]
+    },
+    {
+      "id": "dotnet-build",
+      "name": ".NET Release Build",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "not-applicable",
+        "minimumDiscoveredTests": 0,
+        "rationale": "D0.2 admits only the Release build; legacy tests stay outside the gate until the independent Gate 0A suite is frozen."
+      },
+      "artifactPrefix": "dotnet-build-",
+      "artifactPath": "artifacts/ci/dotnet-build/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "restore.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "build.log",
+          "minimumBytes": 20
+        }
+      ]
+    }
+  ]
+}

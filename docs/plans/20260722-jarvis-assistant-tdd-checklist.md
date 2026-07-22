@@ -330,12 +330,12 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 
 ### D0.1 Publish the reviewed plan and open the draft PR
 
-- [ ] Review this document set, commit only intended documentation, push the branch, and open a draft
+- [x] Review this document set, commit only intended documentation, push the branch, and open a draft
   PR so current CI behavior is observable.
-- [ ] Record current workflow trigger/checkout/job/artifact behavior and exact head/merge SHAs without
+- [x] Record current workflow trigger/checkout/job/artifact behavior and exact head/merge SHAs without
   claiming the old workflow is an exact-SHA gate.
-- [ ] Required lanes: documentation links/IDs/truth, current CI diagnostic.
-- [ ] Commit, push, and record the diagnostic run. D0.2 supplies the first enforceable exact-SHA gate.
+- [x] Required lanes: documentation links/IDs/truth, current CI diagnostic.
+- [x] Commit, push, and record the diagnostic run. D0.2 supplies the first enforceable exact-SHA gate.
 
 ### D0.2 Bootstrap exact-head-SHA CI test-first
 
@@ -345,7 +345,7 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 - [ ] Add `workflow_dispatch` and PR/implementation-branch triggers; explicitly checkout the pushed
   head SHA; expose source SHA in every result; make required bootstrap build/static/meta jobs blocking;
   and upload evidence with `if: always()`.
-- [ ] Add `tools/wait-for-ci.ps1` and a manifest validator that refuse missing/skipped/neutral/
+- [ ] Add `tools/ci/Wait-ForCi.ps1` and a manifest validator that refuse missing/skipped/neutral/
   cancelled/merge-only/mismatched results.
 - [ ] The bootstrap workflow must verify its own head SHA and probes before D0.3 starts.
 - [ ] Commit, push, and obtain exact-head-SHA CI success.

@@ -2,90 +2,119 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'agent/**'
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build, Test & Coverage
-    runs-on: windows-latest
+  delivery-contract:
+    name: Delivery Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out exact source SHA
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+
+      - name: Record and verify source identity
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/ci/delivery-contract | Out-Null
+          $actualSha = (git rev-parse HEAD).Trim().ToLowerInvariant()
+          [PSCustomObject]@{
+            schemaVersion = 1
+            expectedSha = $env:SOURCE_SHA.ToLowerInvariant()
+            actualSha = $actualSha
+            event = '${{ github.event_name }}'
+            runId = '${{ github.run_id }}'
+            runAttempt = '${{ github.run_attempt }}'
+          } | ConvertTo-Json | Set-Content artifacts/ci/delivery-contract/source-identity.json
+          if ($actualSha -ne $env:SOURCE_SHA.ToLowerInvariant()) {
+            throw "Checked out '$actualSha'; expected '$env:SOURCE_SHA'."
+          }
+
+      - name: Run delivery contract tests
+        shell: pwsh
+        run: |
+          ./tools/ci/Test-CiDelivery.ps1 *>&1 |
+            Tee-Object artifacts/ci/delivery-contract/delivery-contract-tests.log
+
+      - name: Upload delivery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: delivery-contract-${{ env.SOURCE_SHA }}
+          path: artifacts/ci/delivery-contract/
+          if-no-files-found: error
+          retention-days: 90
+
+  dotnet-build:
+    name: .NET Release Build
+    needs: delivery-contract
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out exact source SHA
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+
+      - name: Record and verify source identity
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/ci/dotnet-build | Out-Null
+          $actualSha = (git rev-parse HEAD).Trim().ToLowerInvariant()
+          [PSCustomObject]@{
+            schemaVersion = 1
+            expectedSha = $env:SOURCE_SHA.ToLowerInvariant()
+            actualSha = $actualSha
+            event = '${{ github.event_name }}'
+            runId = '${{ github.run_id }}'
+            runAttempt = '${{ github.run_attempt }}'
+          } | ConvertTo-Json | Set-Content artifacts/ci/dotnet-build/source-identity.json
+          if ($actualSha -ne $env:SOURCE_SHA.ToLowerInvariant()) {
+            throw "Checked out '$actualSha'; expected '$env:SOURCE_SHA'."
+          }
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Check code formatting
-        continue-on-error: true
-        run: dotnet format --verify-no-changes --verbosity diagnostic
-
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Test with coverage
-        run: >
-          dotnet test --no-build --configuration Release
-          --collect:"XPlat Code Coverage"
-          --results-directory ./TestResults
-          --logger trx
-
-      - name: Generate coverage report
-        uses: danielpalme/ReportGenerator-GitHub-Action@v5
-        if: success() && hashFiles('**/TestResults/**/coverage.cobertura.xml') != ''
-        with:
-          reports: '**/TestResults/**/coverage.cobertura.xml'
-          targetdir: CoverageReport
-          reporttypes: Cobertura;HtmlInline;Badges
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        if: success() && hashFiles('CoverageReport/**') != ''
-        with:
-          name: coverage-report
-          path: CoverageReport/
-          retention-days: 30
-
-  python-backend:
-    name: Python Backend Tests
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: python-backend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: python-backend/requirements.txt
-
-      - name: Install dependencies
+        shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov
+          dotnet restore AemeathDesktopPet.sln *>&1 |
+            Tee-Object artifacts/ci/dotnet-build/restore.log
 
-      - name: Run tests
-        run: pytest tests/ -v --cov=aemeath_agent --cov-report=xml --cov-report=term
+      - name: Build Release solution
+        shell: pwsh
+        run: |
+          dotnet build AemeathDesktopPet.sln --configuration Release --no-restore *>&1 |
+            Tee-Object artifacts/ci/dotnet-build/build.log
 
-      - name: Upload Python coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload .NET build evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: python-coverage
-          path: python-backend/coverage.xml
-          retention-days: 30
+          name: dotnet-build-${{ env.SOURCE_SHA }}
+          path: artifacts/ci/dotnet-build/
+          if-no-files-found: error
+          retention-days: 90
