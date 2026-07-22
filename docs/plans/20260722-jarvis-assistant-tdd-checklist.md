@@ -363,15 +363,15 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 
 ### D0.4 Provision and prove required delivery environments
 
-- [ ] Freeze owners and readiness evidence for GitHub-hosted jobs, resettable interactive Windows
+- [x] Freeze owners and readiness evidence for GitHub-hosted jobs, resettable interactive Windows
   10/11 workers, runner labels/capabilities, artifact archive, signing access, branch-protection
   permissions, pilot hardware/participants, and provider terms/credentials.
-- [ ] Write a failing capability probe before registering/configuring each absent runner or archive;
+- [x] Write a failing capability probe before registering/configuring each absent runner or archive;
   probe OS build, interactive session, UIA, DPI/display, assistive technology, cleanup/reset, storage,
   network policy, and timeout behavior without collecting personal data.
-- [ ] Configure required checks/branch protection where authorized. An unavailable required external
+- [x] Configure required checks/branch protection where authorized. An unavailable required external
   prerequisite blocks the first step that needs it; it cannot be relabeled optional after failure.
-- [ ] Commit the redacted capability manifest, push, and obtain exact-head-SHA CI success.
+- [x] Commit the redacted capability manifest, push, and obtain exact-head-SHA CI success.
 
 ### D0.5 Freeze clean-install dependency evidence without changing production manifests
 

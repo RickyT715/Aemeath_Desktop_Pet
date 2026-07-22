@@ -538,14 +538,17 @@ Assert-MutationRejected "owner and required-step drift" {
 Assert-MutationRejected "false branch readiness" {
     param($value)
     $target = @($value.capabilities | Where-Object id -eq "CAP-BRANCH-PROTECTION")[0]
-    $target.state = "ready"
-    $target.firstBlockingStep = $null
-    $target.verifiedAt = "2026-07-22T12:00:00Z"
-    $target.evidenceRefs = @("docs/verification/evidence/D0.4-github-snapshot.md")
-    $target.blockerReason = $null
-    $target.remediation = $null
-    $value.summary.blocked--
-    $value.summary.ready++
+    if ($target.state -eq "ready") {
+        $value.repository.branchProtected = $false
+    } else {
+        $target.state = "ready"
+        $target.verifiedAt = "2026-07-22T12:00:00Z"
+        $target.evidenceRefs = @("docs/verification/evidence/D0.4-github-snapshot.md")
+        $target.blockerReason = $null
+        $target.remediation = $null
+        $value.summary.blocked--
+        $value.summary.ready++
+    }
 } "READINESS-BRANCH-POLICY" $readiness
 
 Assert-MutationRejected "false self-hosted readiness" {
@@ -564,13 +567,15 @@ Assert-MutationRejected "false self-hosted readiness" {
 Assert-MutationRejected "false hosted-Windows readiness without runtime evidence" {
     param($value)
     $target = @($value.capabilities | Where-Object id -eq "CAP-GHA-WINDOWS-CAPABILITY-PROBE")[0]
-    $target.state = "ready"
-    $target.verifiedAt = "2026-07-22T12:00:00Z"
     $target.evidenceRefs = @("docs/verification/evidence/D0.4-github-snapshot.md")
-    $target.blockerReason = $null
-    $target.remediation = $null
-    $value.summary.pending--
-    $value.summary.ready++
+    if ($target.state -ne "ready") {
+        $target.state = "ready"
+        $target.verifiedAt = "2026-07-22T12:00:00Z"
+        $target.blockerReason = $null
+        $target.remediation = $null
+        $value.summary.pending--
+        $value.summary.ready++
+    }
 } "READINESS-HOSTED-RUNTIME-EVIDENCE" $readiness
 
 $hostedDiscoveryMutation = @(Get-DiscoveryFailures 100 8 "HostedWindows")
