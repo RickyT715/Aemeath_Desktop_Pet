@@ -54,6 +54,15 @@ function Copy-Manifest {
     return $manifestText | ConvertFrom-Json
 }
 
+function Normalize-DiagnosticText {
+    param([string]$Text)
+
+    $escape = [string][char]27
+    $withoutAnsi = [regex]::Replace($Text, "$escape\[[0-?]*[ -/]*[@-~]", "")
+    $withoutMargins = [regex]::Replace($withoutAnsi, '\s+\|\s+', ' ')
+    return [regex]::Replace($withoutMargins, '\s+', ' ').Trim()
+}
+
 function Assert-StaticMutationRejected {
     param(
         [string]$Name,
@@ -63,7 +72,9 @@ function Assert-StaticMutationRejected {
     )
 
     $result = Invoke-StaticContract -WorkflowContent $WorkflowContent -Manifest $Manifest
-    if ($result.ExitCode -eq 0 -or $result.Output -notmatch [regex]::Escape($ExpectedMessage)) {
+    $normalizedOutput = Normalize-DiagnosticText $result.Output
+    if ($result.ExitCode -eq 0 -or
+        $normalizedOutput.IndexOf($ExpectedMessage, [StringComparison]::Ordinal) -lt 0) {
         throw "Static mutation '$Name' was not rejected with '$ExpectedMessage'. Output: $($result.Output)"
     }
 
@@ -147,6 +158,15 @@ function Assert-ResultMutationRejected {
 }
 
 try {
+    $wrappedDiagnostic = ([char]27).ToString() +
+        "[31;1mtop-level SOURCE_SHA must select pull-request`n | head or github.sha" +
+        ([char]27).ToString() + "[0m"
+    $normalizedDiagnostic = Normalize-DiagnosticText $wrappedDiagnostic
+    if ($normalizedDiagnostic -ne "top-level SOURCE_SHA must select pull-request head or github.sha") {
+        throw "PowerShell diagnostic normalization failed: '$normalizedDiagnostic'"
+    }
+    Write-Host "PASS wrapped/ANSI diagnostic normalization"
+
     $baseline = Invoke-StaticContract -WorkflowContent $workflow -Manifest (Copy-Manifest)
     if ($baseline.ExitCode -ne 0) {
         throw "Valid static CI contract failed: $($baseline.Output)"
