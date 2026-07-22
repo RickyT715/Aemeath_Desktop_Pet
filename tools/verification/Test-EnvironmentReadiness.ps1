@@ -59,10 +59,16 @@ function Write-HostedProbePass {
     Write-ProbePass $Message
 }
 
+function Get-NormalizedTextContent {
+    param([string]$Path)
+
+    return (Get-Content -Raw -Encoding UTF8 -LiteralPath $Path).Replace("`r`n", "`n").Replace("`r", "`n")
+}
+
 function Get-NormalizedTextHash {
     param([string]$Path)
 
-    $content = (Get-Content -Raw -Encoding UTF8 -LiteralPath $Path).Replace("`r`n", "`n").Replace("`r", "`n")
+    $content = Get-NormalizedTextContent $Path
     $sha = [Security.Cryptography.SHA256]::Create()
     try {
         return ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($content)))).Replace("-", "").ToLowerInvariant()
@@ -105,8 +111,9 @@ function Copy-JsonObject {
 function Test-RedEvidenceChronology {
     param([string]$Content, [DateTimeOffset]$ExpectedFrozenAt)
 
-    $frozenMatch = [regex]::Match($Content, '(?m)^- Frozen at: `([^`]+)`$')
-    $redMatch = [regex]::Match($Content, '(?m)^- RED completed at: `([^`]+)`$')
+    $normalizedContent = $Content.Replace("`r`n", "`n").Replace("`r", "`n")
+    $frozenMatch = [regex]::Match($normalizedContent, '(?m)^- Frozen at: `([^`]+)`$')
+    $redMatch = [regex]::Match($normalizedContent, '(?m)^- RED completed at: `([^`]+)`$')
     $frozenAt = [DateTimeOffset]::MinValue
     $redAt = [DateTimeOffset]::MinValue
     return $frozenMatch.Success -and $redMatch.Success -and
@@ -370,15 +377,20 @@ if ($invalidationV1.recordId -cne "D0.4-v1-invalidated-by-v2" -or
 }
 Write-ProbePass "immutable D0.4 v1-v3 manifest/invalidation chain"
 
-$v1RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $riskManifestV1RedEvidencePath
-$v2RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $riskManifestV2RedEvidencePath
-$v3RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $riskManifestV3RedEvidencePath
+$v1RedEvidence = Get-NormalizedTextContent $riskManifestV1RedEvidencePath
+$v2RedEvidence = Get-NormalizedTextContent $riskManifestV2RedEvidencePath
+$v3RedEvidence = Get-NormalizedTextContent $riskManifestV3RedEvidencePath
 $v1ChronologyMutation = $v1RedEvidence -replace '(?m)^- Frozen at: `[^`]+`$', '- Frozen at: `2099-01-01T00:00:00Z`'
 $v1FrozenAt = [DateTimeOffset]::Parse("2026-07-22T11:55:09Z")
 if (Test-RedEvidenceChronology $v1ChronologyMutation $v1FrozenAt) {
     throw "D0.4-v1 chronology mutation was accepted."
 }
 Write-ProbePass "D0.4-v1 RED chronology mutation"
+$v1CrlfEvidence = $v1RedEvidence.Replace("`n", "`r`n")
+if (-not (Test-RedEvidenceChronology $v1CrlfEvidence $v1FrozenAt)) {
+    throw "D0.4-v1 CRLF chronology control was rejected."
+}
+Write-ProbePass "D0.4 RED provenance CRLF normalization"
 $v2FrozenAtMatch = [regex]::Match($v2RedEvidence, '(?m)^- Frozen at: `([^`]+)`$')
 $v2FirstRedMatch = [regex]::Match($v2RedEvidence, '(?m)^- RED completed at: `([^`]+)`$')
 $parsedFrozenAt = [DateTimeOffset]::MinValue
@@ -423,7 +435,7 @@ if ($baselineFailures.Count -gt 0) {
 }
 Write-ProbePass "12-capability owner/state/blocker inventory"
 
-$snapshot = Get-Content -Raw -Encoding UTF8 -LiteralPath $snapshotPath
+$snapshot = Get-NormalizedTextContent $snapshotPath
 $expectedProtectionFact = if ($readiness.repository.branchProtected) {
     '`200 protected`'
 } else {
@@ -452,7 +464,7 @@ if ($hostedCapability.state -eq "ready") {
         throw "Committed delivery source identity fails its frozen schema."
     }
     $committedSourceIdentity = Get-Content -Raw -Encoding UTF8 -LiteralPath $sourceIdentityPath | ConvertFrom-Json
-    $greenContent = Get-Content -Raw -Encoding UTF8 -LiteralPath ([string]$activeRiskManifest.hostedRuntimeContract.greenEvidencePath)
+    $greenContent = Get-NormalizedTextContent ([string]$activeRiskManifest.hostedRuntimeContract.greenEvidencePath)
     $bindingFailures = @(Get-HostedBindingFailures $readiness $committedRuntime $committedSourceIdentity $greenContent)
     if ($bindingFailures.Count -gt 0) {
         throw "Committed hosted evidence source/run binding failed: $($bindingFailures -join ', ')."
