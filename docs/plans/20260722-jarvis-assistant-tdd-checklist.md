@@ -339,16 +339,16 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 
 ### D0.2 Bootstrap exact-head-SHA CI test-first
 
-- [ ] Freeze a workflow risk manifest, then write a failing executable probe for branch/head checkout,
+- [x] Freeze a workflow risk manifest, then write a failing executable probe for branch/head checkout,
   missing job, zero discovery, reduced matrix, advisory failure, absent artifact, merge-SHA
   substitution, and timeout/cancellation.
-- [ ] Add `workflow_dispatch` and PR/implementation-branch triggers; explicitly checkout the pushed
+- [x] Add `workflow_dispatch` and PR/implementation-branch triggers; explicitly checkout the pushed
   head SHA; expose source SHA in every result; make required bootstrap build/static/meta jobs blocking;
   and upload evidence with `if: always()`.
-- [ ] Add `tools/ci/Wait-ForCi.ps1` and a manifest validator that refuse missing/skipped/neutral/
+- [x] Add `tools/ci/Wait-ForCi.ps1` and a manifest validator that refuse missing/skipped/neutral/
   cancelled/merge-only/mismatched results.
-- [ ] The bootstrap workflow must verify its own head SHA and probes before D0.3 starts.
-- [ ] Commit, push, and obtain exact-head-SHA CI success.
+- [x] The bootstrap workflow must verify its own head SHA and probes before D0.3 starts.
+- [x] Commit, push, and obtain exact-head-SHA CI success.
 
 ### D0.3 Establish qualified traceability and manifest schemas
 
