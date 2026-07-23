@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.5-v2-invalidated-by-v3",
+  "invalidatedManifestId": "D0.5-v2",
+  "frozenArtifactPath": "docs/verification/manifests/D0.5-v2.yml",
+  "frozenArtifactSha256": "96d9dc5d2029846b0447b2bfb5f09f5e0a30699915138713ec1c6a84249197c4",
+  "replacementManifestId": "D0.5-v3",
+  "invalidatedAt": "2026-07-23T06:01:37Z",
+  "reason": "Independent v2 review proved that the installed distribution was not bound to the downloaded wheel through PEP 610 runtime provenance, Python install-log success and actual pip argument behavior were under-tested, descendant termination was incomplete and unproven, external git and fallback schema-validator calls were not uniformly bounded, and the claimed Ubuntu static probe was not executed by CI with a truthful pwsh command.",
+  "reviewer": "independent-v2-test-reviewer-role"
+}

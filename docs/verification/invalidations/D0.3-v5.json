@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.3-v5-invalidated-by-v6",
+  "invalidatedManifestId": "D0.3-v5",
+  "frozenArtifactPath": "docs/verification/manifests/D0.3-v5.yml",
+  "frozenArtifactSha256": "6434bee4fdacd897863a2bc5dabe83affe6b862b91cecda7fdd8e3f178f5f61e",
+  "replacementManifestId": "D0.3-v6",
+  "invalidatedAt": "2026-07-23T06:12:19Z",
+  "reason": "D0.5-v3 truthfully requires a separate Ubuntu pwsh static-evidence log in the existing Verification Contracts artifact. The frozen v5 exact two-file artifact contract rejected that third owned file, so the active D0.3 contract must expand by exactly that file without weakening older history or other verification semantics.",
+  "reviewer": "cross-contract-verification-owner-role"
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.5-v1",
+  "revision": 1,
+  "previousManifestId": null,
+  "invalidationReason": null,
+  "stepId": "D0.5",
+  "status": "frozen-before-red",
+  "baselineSha": "b7eafb683d37d80bd60b59e850311acd79d2a569",
+  "scope": "Qualify ordinary .NET restore and Python editable development installation on unchanged production manifests, then inject only langgraph-checkpoint-sqlite 3.1.0 into the disposable qualification environment, prove imports and dependency consistency, and retain a complete resolved environment plus exact wheel provenance without claiming lock-file reproducibility.",
+  "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-013", "PB-017"],
+  "risks": [
+    { "id": "D0.5-R01", "outcome": "Qualification changes a production dependency manifest, uses dirty source, or silently adds a lock-mode requirement before Gate 0B.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R02", "outcome": "The declared .NET restore or Python editable development install fails on an isolated copy of the unchanged source.", "laneIds": ["V-PACKAGE"], "probeIds": ["D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R03", "outcome": "The environment-only SQLite checkpointer is installed before the declared environment, at a different version, or is mistaken for a valid behavioral RED or product-manifest repair.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R04", "outcome": "Resolved packages, the downloaded checkpoint wheel, tool versions, import outcomes, or pip consistency are incomplete, unhashed, unsanitized, or not bound to the exact source SHA.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R05", "outcome": "The CI job, discovery floor, evidence file set, retention, trace backlink, or source identity drifts from the frozen D0.5 contract.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] }
+  ],
+  "lanes": [
+    { "id": "V-STATIC", "required": true, "rationale": "Validate frozen source hashes, command ordering, dependency-gap classification, evidence schemas and hashes, redaction, mutation sensitivity, trace backlinks, and CI alignment.", "riskIds": ["D0.5-R01", "D0.5-R03", "D0.5-R04", "D0.5-R05"], "probeIds": ["D0.5-V-STATIC-CONTRACT"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"] },
+    { "id": "V-PACKAGE", "required": true, "rationale": "Run ordinary .NET restore and a disposable Python clean install from an exact source archive, add the environment-only checkpoint dependency afterward, and exercise package/import consistency.", "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05"], "probeIds": ["D0.5-V-PACKAGE-CLEAN-INSTALL"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"] }
+  ],
+  "probes": [
+    {
+      "id": "D0.5-V-STATIC-CONTRACT",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-DependencyQualification.ps1 -Mode Static",
+      "minimumDiscovery": 24,
+      "redOracle": "The newly frozen D0.5 manifest introduces a dependency-qualification contract and requires evidence/schema/verifier inputs that do not yet exist, so schema validation and evidence discovery must fail before implementation.",
+      "riskIds": ["D0.5-R01", "D0.5-R03", "D0.5-R04", "D0.5-R05"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 24, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.5-V-PACKAGE-CLEAN-INSTALL",
+      "command": "./tools/verification/Test-DependencyQualification.ps1 -Mode Qualify -EvidenceDirectory artifacts/ci/dependency-qualification",
+      "minimumDiscovery": 10,
+      "redOracle": "A real disposable install must fail unless ordinary restore/install, ordered checkpoint injection, wheel hashing, complete freeze, pip consistency, and application/checkpointer imports all succeed on the exact unchanged source.",
+      "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05"],
+      "laneIds": ["V-PACKAGE"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 10, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumInstallFailures": 0, "maximumImportFailures": 0 }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1", "purpose": "Freeze the oracle, record valid RED, and execute an isolated local clean-install qualification." },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+", "purpose": "Run architecture-neutral static schema, provenance, mutation, and workflow-contract probes." },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+", "purpose": "Re-run the disposable .NET/Python package qualification at the exact pushed SHA." }
+  ],
+  "fixtures": [],
+  "services": ["NuGet package index", "Python Package Index", "GitHub Actions", "GitHub artifact storage"],
+  "thresholds": { "minimumDiscovery": 24, "minimumStaticDiscovery": 24, "minimumPackageDiscovery": 10, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "artifactRetentionDays": 90 },
+  "dependencyQualificationContract": {
+    "frozenAt": "2026-07-22T13:28:31Z",
+    "sourceArchiveMode": "git-archive-head",
+    "dotnetRestoreCommand": "dotnet restore AemeathDesktopPet.sln",
+    "declaredPythonInstallCommand": "python -m pip install -e \".[dev]\"",
+    "supplementalPythonInstallCommand": "python -m pip install langgraph-checkpoint-sqlite==3.1.0",
+    "forbiddenArguments": ["--locked-mode", "--require-hashes"],
+    "supplementalPackage": { "name": "langgraph-checkpoint-sqlite", "version": "3.1.0", "declaredInProductManifest": false, "repairStep": "P0B.1d", "classification": "known-blocking-dependency-gap", "behavioralRed": false },
+    "requiredImportProbes": ["aemeath_agent.main", "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver"],
+    "productManifests": [
+      { "path": "global.json", "hashMode": "normalized-text", "sha256": "2a99f94f1002fd18c866ea6d2a0bbb4ffa7679001646507f38b9b17003d7d8e1" },
+      { "path": "AemeathDesktopPet.sln", "hashMode": "normalized-text", "sha256": "e95cc7e48637309a9e3751d0a3ffdf3a9476ff7a5ddd54f8d80ed23931c4a2f7" },
+      { "path": "src/AemeathDesktopPet/AemeathDesktopPet.csproj", "hashMode": "normalized-text", "sha256": "9a511ec1cf257d03e64c59e582826df3bcf7a0cbf5707e9fd5cec9449a6afc0d" },
+      { "path": "python-backend/pyproject.toml", "hashMode": "normalized-text", "sha256": "77d075128aab40d3349f764c1a78b8f3d0bb9a7e028566dea817efc11514f5c1" }
+    ],
+    "committedEvidenceDirectory": "docs/verification/dependencies/D0.5-clean-install-v1",
+    "qualificationSchemaPath": "docs/verification/schemas/dependency-qualification-v1.schema.json",
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "verification owner", "accountability": "Freeze and challenge source integrity, command order, complete environment capture, import oracles, mutation sensitivity, and evidence redaction." },
+    { "role": "delivery owner", "accountability": "Run the exact-SHA disposable qualification, retain the complete evidence packet, and keep the required check blocking." },
+    { "role": "Gate 0B dependency owner", "accountability": "Repair the missing product declaration and introduce deliberate lock files only in P0B.1d under valid RED tests." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "dependency-qualification-tests.log", "dependency-qualification.json", "tool-versions.json", "dotnet-restore.log", "python-install.log", "python-freeze.txt", "checkpoint-wheel.sha256.json", "pip-check.log", "import-smoke.log"]
+}

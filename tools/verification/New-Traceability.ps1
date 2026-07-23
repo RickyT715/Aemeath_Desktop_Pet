@@ -143,6 +143,7 @@ $stepAnchors = @{
     "D0.2" = "d02-bootstrap-exact-head-sha-ci-test-first"
     "D0.3" = "d03-establish-qualified-traceability-and-manifest-schemas"
     "D0.4" = "d04-provision-and-prove-required-delivery-environments"
+    "D0.5" = "d05-freeze-clean-install-dependency-evidence-without-changing-production-manifests"
     "H0.1" = "h01-validate-selected-sources-action-routes-retention-and-hardware-tiers"
     "H0.3" = "h03-protocolreadiness-proof"
     "H0.5" = "h05-sidecar-distribution-bake-off-and-selection"
@@ -895,6 +896,10 @@ function Get-TraceTargets {
         if ($Id -eq "GATE-0-03") { Add-GateZeroLaneTargets $targets @("V-UNIT", "V-COMPONENT", "V-WPF", "V-UIA", "V-FIXTURE-E2E", "V-REAL-E2E") }
         if ($Id -eq "GATE-0-04") { Add-GateZeroLaneTargets $targets @("V-CONTRACT", "V-SECURITY", "V-ACCESS", "V-PERF", "V-PACKAGE", "V-STATIC") }
         if ($Id -eq "GATE-0-06") { Add-GateZeroLaneTargets $targets @("V-STATIC", "V-LEGACY") }
+        if ($Id -eq "GATE-0-07") {
+            Add-TestTarget $targets "D0.5" "V-STATIC"
+            Add-TestTarget $targets "D0.5" "V-PACKAGE"
+        }
         if ($Id -eq "GATE-A-05") {
             Add-TestTarget $targets "P1.5" "V-STATIC"
             Add-TestTarget $targets "P11.1a" "V-PACKAGE"
@@ -971,9 +976,9 @@ function Get-TraceTargets {
             "RISK-005" = @("P2.2|V-CONTRACT", "P11.1a|V-PACKAGE")
             "RISK-007" = @("P3.6|V-COMPONENT", "P4.2|V-WPF", "P8.4|V-REAL-E2E")
             "RISK-010" = @("P0A.3b|V-UNIT", "P0A.3b|V-STATIC", "P0A.9|V-LEGACY")
-            "RISK-011" = @("D0.2|V-STATIC", "D0.3|V-STATIC")
+            "RISK-011" = @("D0.2|V-STATIC", "D0.3|V-STATIC", "D0.5|V-STATIC")
             "RISK-012" = @("D0.4|V-STATIC"); "RISK-013" = @("D0.3|V-STATIC")
-            "RISK-014" = @("D0.3|V-STATIC", "P11.4|V-STATIC")
+            "RISK-014" = @("D0.3|V-STATIC", "D0.5|V-PACKAGE", "P11.4|V-STATIC")
         }
         if ($riskAdditionalTargets.ContainsKey($Id)) {
             foreach ($targetSpec in @($riskAdditionalTargets[$Id])) {

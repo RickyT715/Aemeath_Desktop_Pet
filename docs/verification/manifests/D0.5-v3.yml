@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.5-v3",
+  "revision": 3,
+  "previousManifestId": "D0.5-v2",
+  "invalidationReason": null,
+  "stepId": "D0.5",
+  "status": "frozen-before-red",
+  "baselineSha": "b7eafb683d37d80bd60b59e850311acd79d2a569",
+  "scope": "Qualify ordinary .NET restore and Python editable development installation on one explicitly captured unchanged source SHA; bind the exact downloaded SQLite-checkpointer wheel to installed-distribution PEP 610 archive metadata without retaining its local URL; semantically prove both Python install phases and their actual pip argument behavior; bound every external git and fallback schema-validator command; terminate and verify every captured descendant on Windows and Linux; and execute the architecture-neutral static contract under truthful Windows PowerShell and GitHub-hosted Ubuntu pwsh environments.",
+  "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-013", "PB-017"],
+  "risks": [
+    { "id": "D0.5-R01", "outcome": "Qualification changes a production dependency manifest, uses dirty source, archives a different SHA from the reported source, or silently adds a lock-mode requirement before Gate 0B.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R02", "outcome": "An external git, schema-validator, restore, install, capture, or import operation hangs, retries without authorization, or leaves any captured descendant alive after timeout on Windows or Linux.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R03", "outcome": "The environment-only SQLite checkpointer is installed before the declared environment, installed through index resolution rather than the actual downloaded-wheel argument, installed from a wheel whose SHA differs from installed-distribution PEP 610 archive metadata, or mistaken for a valid behavioral RED or product-manifest repair.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R04", "outcome": "Resolved packages, wheel provenance, PEP 610 metadata, tool versions, Python install processing/success logs, operation attempts, import outcomes, or pip consistency are incomplete, semantically false, unhashed, schema-invalid, or not bound to the captured source SHA.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R05", "outcome": "Generated or partial-failure evidence exposes PEP 610 local URLs, URL credentials, proxy/index authorization, tokens, machine or user identity, worktree paths, or temporary paths, or CI uploads before a complete privacy/source audit.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R06", "outcome": "The Windows package job, actual Ubuntu static invocation, per-environment command, discovery floor, exact evidence file set, retention, trace backlink, source identity, audit gate, or upload condition drifts from the frozen D0.5 contract.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU", "D0.5-V-PACKAGE-CLEAN-INSTALL"] }
+  ],
+  "lanes": [
+    { "id": "V-STATIC", "required": true, "rationale": "Validate frozen source hashes, PEP 610 exact-wheel provenance, actual pip arguments, Python install-log semantics, command ordering, uniformly bounded git/schema validation, cross-platform descendant termination, complete schemas, privacy, mutation sensitivity, trace backlinks, and a real Ubuntu pwsh CI invocation.", "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"], "probeIds": ["D0.5-V-STATIC-WINDOWS", "D0.5-V-STATIC-UBUNTU"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"] },
+    { "id": "V-PACKAGE", "required": true, "rationale": "Run bounded, single-attempt ordinary .NET restore and disposable Python installation from one explicitly captured source SHA, install the exact downloaded wheel, inspect installed-distribution PEP 610 provenance, and exercise package/import consistency before a final evidence audit.", "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"], "probeIds": ["D0.5-V-PACKAGE-CLEAN-INSTALL"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"] }
+  ],
+  "probes": [
+    {
+      "id": "D0.5-V-STATIC-WINDOWS",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-DependencyQualification.ps1 -Mode Static",
+      "minimumDiscovery": 45,
+      "redOracle": "The v2 implementation does not bind installed-distribution PEP 610 archive metadata to the downloaded wheel, does not semantically prove Python install processing/success or actual pip argument behavior, does not bound every external git/schema-validator call or prove parent-and-child timeout cleanup, and cannot satisfy the separately frozen Ubuntu pwsh probe.",
+      "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 45, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "maximumAttemptsPerOperation": 1, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.5-V-STATIC-UBUNTU",
+      "command": "pwsh -NoProfile -File tools/verification/Test-DependencyQualification.ps1 -Mode Static",
+      "minimumDiscovery": 45,
+      "redOracle": "The GitHub-hosted Ubuntu Verification Contracts job must execute this exact architecture-neutral static verifier and archive its separate log; a Windows-only or merely declared probe is RED.",
+      "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-GHA-UBUNTU"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 45, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "maximumAttemptsPerOperation": 1, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.5-V-PACKAGE-CLEAN-INSTALL",
+      "command": "./tools/verification/Test-DependencyQualification.ps1 -Mode Qualify -EvidenceDirectory artifacts/ci/dependency-qualification",
+      "minimumDiscovery": 15,
+      "redOracle": "A real disposable install must fail unless one captured SHA is archived and remains stable, every operation ends within its frozen bound on one recorded attempt, the actual pip install arguments name the exact hashed local wheel, installed-distribution PEP 610 archive metadata independently matches that SHA without retaining its URL, both install logs prove processing and success, all schemas and semantics pass, and the final packet passes privacy and source-identity audit.",
+      "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"],
+      "laneIds": ["V-PACKAGE"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 15, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumInstallFailures": 0, "maximumImportFailures": 0, "maximumAttemptsPerOperation": 1 }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1", "purpose": "Freeze the oracle, record valid RED, prove parent-and-child timeout cleanup, execute an isolated local clean-install qualification, and promote only a newly audited packet." },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+ pwsh", "purpose": "Execute the exact architecture-neutral D0.5 static schema, provenance, mutation, privacy, workflow, and Linux descendant-termination probe in the Verification Contracts job." },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+ pwsh", "purpose": "Re-run the bounded disposable .NET/Python qualification at the exact pushed SHA and upload only an audited packet." }
+  ],
+  "fixtures": [],
+  "services": ["NuGet package index", "Python package index selected by pip configuration", "GitHub Actions", "GitHub artifact storage"],
+  "thresholds": { "minimumDiscovery": 45, "minimumStaticDiscovery": 45, "minimumPackageDiscovery": 15, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "maximumAttemptsPerOperation": 1, "artifactRetentionDays": 90 },
+  "dependencyQualificationContract": {
+    "frozenAt": "2026-07-23T06:01:37Z",
+    "sourceArchiveMode": "git-archive-explicit-sha",
+    "dotnetRestoreCommand": "dotnet restore AemeathDesktopPet.sln",
+    "declaredPythonInstallCommand": "python -m pip install -e \".[dev]\"",
+    "supplementalPythonInstallCommand": "python -m pip install <DOWNLOADED_CHECKPOINT_WHEEL>",
+    "forbiddenArguments": ["--locked-mode", "--require-hashes"],
+    "supplementalPackage": { "name": "langgraph-checkpoint-sqlite", "version": "3.1.0", "declaredInProductManifest": false, "repairStep": "P0B.1d", "classification": "known-blocking-dependency-gap", "behavioralRed": false },
+    "requiredImportProbes": ["aemeath_agent.main", "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver"],
+    "productManifests": [
+      { "path": "global.json", "hashMode": "normalized-text", "sha256": "2a99f94f1002fd18c866ea6d2a0bbb4ffa7679001646507f38b9b17003d7d8e1" },
+      { "path": "AemeathDesktopPet.sln", "hashMode": "normalized-text", "sha256": "e95cc7e48637309a9e3751d0a3ffdf3a9476ff7a5ddd54f8d80ed23931c4a2f7" },
+      { "path": "src/AemeathDesktopPet/AemeathDesktopPet.csproj", "hashMode": "normalized-text", "sha256": "9a511ec1cf257d03e64c59e582826df3bcf7a0cbf5707e9fd5cec9449a6afc0d" },
+      { "path": "python-backend/pyproject.toml", "hashMode": "normalized-text", "sha256": "77d075128aab40d3349f764c1a78b8f3d0bb9a7e028566dea817efc11514f5c1" }
+    ],
+    "operationPolicy": {
+      "retryPolicy": "none",
+      "maximumAttemptsPerOperation": 1,
+      "processTreeTerminationRequired": true,
+      "timeoutsSeconds": {
+        "schema-validation": 60,
+        "source-identity": 30,
+        "source-archive": 120,
+        "python-venv": 180,
+        "dotnet-restore": 600,
+        "python-declared-install": 1200,
+        "checkpoint-wheel-download": 180,
+        "python-supplemental-install": 300,
+        "installed-wheel-provenance": 120,
+        "pip-check": 120,
+        "import-smoke": 120,
+        "environment-capture": 120,
+        "tool-version-capture": 60,
+        "process-tree-negative-control": 10
+      }
+    },
+    "evidencePrivacyPolicy": {
+      "auditGeneratedAndPartialEvidence": true,
+      "uploadRequiresAuditSuccess": true,
+      "forbiddenClasses": ["pep610-local-url", "url-credentials", "proxy-or-index-auth", "token-or-secret", "machine-identity", "user-identity", "worktree-path", "temporary-path"]
+    },
+    "committedEvidenceDirectory": "docs/verification/dependencies/D0.5-clean-install-v3",
+    "qualificationSchemaPath": "docs/verification/schemas/dependency-qualification-v3.schema.json",
+    "toolVersionsSchemaPath": "docs/verification/schemas/dependency-tool-versions-v1.schema.json",
+    "wheelEvidenceSchemaPath": "docs/verification/schemas/dependency-wheel-evidence-v2.schema.json",
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "verification owner", "accountability": "Freeze and challenge source integrity, runtime PEP 610 exact-wheel provenance, actual pip arguments, install-log semantics, uniformly bounded external calls, cross-platform descendant termination, mutation sensitivity, and evidence privacy." },
+    { "role": "delivery owner", "accountability": "Run the Ubuntu static and Windows exact-SHA disposable qualifications, audit complete and partial evidence before upload, retain the exact evidence packet, and keep required checks blocking." },
+    { "role": "Gate 0B dependency owner", "accountability": "Repair the missing product declaration and introduce deliberate lock files only in P0B.1d under valid RED tests." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "dependency-qualification-tests.log", "dependency-qualification.json", "tool-versions.json", "dotnet-restore.log", "python-install.log", "python-freeze.txt", "checkpoint-wheel.sha256.json", "pip-check.log", "import-smoke.log"]
+}

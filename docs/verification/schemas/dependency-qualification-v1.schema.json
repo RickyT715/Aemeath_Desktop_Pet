@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/dependency-qualification-v1.schema.json",
+  "title": "Aemeath clean-install dependency qualification v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "documentType", "qualificationId", "baselineSha", "sourceSha",
+    "archiveMode", "commandSequence", "supplementalDependency", "operations", "imports",
+    "resolvedPackageCount", "checkpointWheelSha256", "evidenceHashes", "unexpectedSkips"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "dependency-qualification" },
+    "qualificationId": { "const": "D0.5-CLEAN-INSTALL-v1" },
+    "baselineSha": {
+      "description": "Immutable production-manifest baseline commit. This is not the qualification execution commit.",
+      "const": "b7eafb683d37d80bd60b59e850311acd79d2a569"
+    },
+    "sourceSha": {
+      "description": "Exact commit archived and executed by this qualification run.",
+      "$ref": "#/$defs/gitSha"
+    },
+    "archiveMode": { "const": "git-archive-head" },
+    "commandSequence": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "prefixItems": [
+        { "const": "dotnet restore AemeathDesktopPet.sln" },
+        { "const": "python -m pip install -e \".[dev]\"" },
+        { "const": "python -m pip download --only-binary=:all: --no-deps langgraph-checkpoint-sqlite==3.1.0" },
+        { "const": "python -m pip install langgraph-checkpoint-sqlite==3.1.0" },
+        { "const": "python -m pip check" },
+        { "const": "python import smoke" },
+        { "const": "python -m pip list --format=freeze" }
+      ]
+    },
+    "supplementalDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name", "version", "declaredInProductManifest", "repairStep",
+        "classification", "behavioralRed"
+      ],
+      "properties": {
+        "name": { "const": "langgraph-checkpoint-sqlite" },
+        "version": { "const": "3.1.0" },
+        "declaredInProductManifest": { "const": false },
+        "repairStep": { "const": "P0B.1d" },
+        "classification": { "const": "known-blocking-dependency-gap" },
+        "behavioralRed": { "const": false }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "exitCode"],
+        "properties": {
+          "name": {
+            "enum": [
+              "dotnet-restore", "python-declared-install", "checkpoint-wheel-download",
+              "python-supplemental-install", "pip-check", "import-smoke", "environment-capture"
+            ]
+          },
+          "status": { "const": "success" },
+          "exitCode": { "const": 0 }
+        }
+      }
+    },
+    "imports": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "enum": ["aemeath_agent.main", "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver"] },
+          "status": { "const": "success" }
+        }
+      }
+    },
+    "resolvedPackageCount": { "type": "integer", "minimum": 40 },
+    "checkpointWheelSha256": { "$ref": "#/$defs/sha256" },
+    "evidenceHashes": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "unexpectedSkips": { "const": 0 }
+  },
+  "$defs": {
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

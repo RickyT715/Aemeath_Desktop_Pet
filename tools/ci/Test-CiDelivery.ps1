@@ -63,6 +63,17 @@ function Normalize-DiagnosticText {
     return [regex]::Replace($withoutMargins, '\s+', ' ').Trim()
 }
 
+function Get-WorkflowJobText {
+    param([string]$JobId, [string]$Content)
+
+    $pattern = "(?ms)^  $([regex]::Escape($JobId)):\s*\r?\n.*?(?=^  [A-Za-z0-9_-]+:\s*\r?$|\z)"
+    $match = [regex]::Match($Content, $pattern)
+    if (-not $match.Success) {
+        throw "Workflow job '$JobId' is absent from the mutation fixture."
+    }
+    return $match.Value
+}
+
 function Assert-StaticMutationRejected {
     param(
         [string]$Name,
@@ -181,6 +192,20 @@ try {
         -WorkflowContent ($workflow -replace '(?m)^\s+ref:\s*\$\{\{\s*env\.SOURCE_SHA\s*\}\}\s*$', '') `
         -Manifest (Copy-Manifest) -ExpectedMessage "checkout must use SOURCE_SHA"
 
+    foreach ($jobId in @("verification-contracts", "dependency-qualification")) {
+        $jobText = Get-WorkflowJobText $jobId $workflow
+        $shallowJobText = [regex]::Replace(
+            $jobText, '(?m)^(\s+fetch-depth:)\s*0\s*$', '$1 1', 1
+        )
+        if ($shallowJobText -ceq $jobText) {
+            throw "Could not create full-history checkout mutation for '$jobId'."
+        }
+        Assert-StaticMutationRejected -Name "shallow historical checkout in $jobId" `
+            -WorkflowContent ($workflow.Replace($jobText, $shallowJobText)) `
+            -Manifest (Copy-Manifest) `
+            -ExpectedMessage "historical-baseline checkout must fetch full history: $jobId"
+    }
+
     $mergeShaSource = $workflow.Replace(
         '  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}',
         '  SOURCE_SHA: ${{ github.sha }}'
@@ -206,6 +231,14 @@ try {
     Assert-StaticMutationRejected -Name "always condition moved off upload step" `
         -WorkflowContent $relocatedAlways -Manifest (Copy-Manifest) `
         -ExpectedMessage "upload step does not use if: always()"
+
+    $unauditedDependencyUpload = $workflow.Replace(
+        "if: always() && steps.evidence_audit.outcome == 'success'",
+        "if: always()"
+    )
+    Assert-StaticMutationRejected -Name "dependency evidence uploaded without audit success" `
+        -WorkflowContent $unauditedDependencyUpload -Manifest (Copy-Manifest) `
+        -ExpectedMessage "upload step does not require successful evidence audit: dependency-qualification"
 
     Assert-StaticMutationRejected -Name "short artifact retention" `
         -WorkflowContent ($workflow -replace 'retention-days: 90', 'retention-days: 30') `

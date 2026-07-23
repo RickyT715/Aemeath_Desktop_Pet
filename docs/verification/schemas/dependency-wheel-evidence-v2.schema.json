@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/dependency-wheel-evidence-v2.schema.json",
+  "title": "Aemeath installed checkpoint wheel provenance v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "package", "version", "fileName", "sha256",
+    "installMode", "installedFromFileName", "installedWheelSha256", "downloadResolver",
+    "installedDistributionName", "installedDistributionVersion", "pep610ArchiveSha256",
+    "pep610UrlScheme", "pep610UrlRetained", "installInvocation"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "package": { "const": "langgraph-checkpoint-sqlite" },
+    "version": { "const": "3.1.0" },
+    "fileName": { "pattern": "^langgraph_checkpoint_sqlite-3\\.1\\.0-py3-none-any\\.whl$" },
+    "sha256": { "$ref": "#/$defs/sha256" },
+    "installMode": { "const": "local-downloaded-wheel" },
+    "installedFromFileName": { "pattern": "^langgraph_checkpoint_sqlite-3\\.1\\.0-py3-none-any\\.whl$" },
+    "installedWheelSha256": { "$ref": "#/$defs/sha256" },
+    "downloadResolver": { "const": "pip-configured-index" },
+    "installedDistributionName": { "const": "langgraph-checkpoint-sqlite" },
+    "installedDistributionVersion": { "const": "3.1.0" },
+    "pep610ArchiveSha256": { "$ref": "#/$defs/sha256" },
+    "pep610UrlScheme": { "const": "file" },
+    "pep610UrlRetained": { "const": false },
+    "installInvocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executable", "arguments", "requirementKind", "indexResolutionAllowed"
+      ],
+      "properties": {
+        "executable": { "const": "venv-python" },
+        "arguments": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            { "const": "-m" },
+            { "const": "pip" },
+            { "const": "install" },
+            { "const": "<DOWNLOADED_CHECKPOINT_WHEEL>" }
+          ]
+        },
+        "requirementKind": { "const": "local-wheel-file" },
+        "indexResolutionAllowed": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

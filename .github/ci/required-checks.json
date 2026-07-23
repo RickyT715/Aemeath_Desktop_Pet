@@ -16,6 +16,11 @@
       "sha": "67a3573c9a986a3f9c594539f4ab511d57bb3ce9"
     },
     {
+      "name": "actions/setup-python",
+      "releaseTag": "v6.2.0",
+      "sha": "a309ff8b426b58ec0e2a45f0f869d46889d02405"
+    },
+    {
       "name": "actions/upload-artifact",
       "releaseTag": "v4.6.2",
       "sha": "ea165f8d65b6e75b540449e92b4886f43607fa02"
@@ -86,9 +91,9 @@
       "expectedInstances": 1,
       "discovery": {
         "kind": "powershell-probe",
-        "minimumDiscoveredTests": 23,
+        "minimumDiscoveredTests": 24,
         "command": "./tools/verification/Test-VerificationContracts.ps1",
-        "rationale": "D0.3-v5 freezes at least 23 counted semantic probes covering trace semantics, regeneration, mutations, executable schemas, linked manifests, measured semantic negatives, and measured schema negatives."
+        "rationale": "D0.3-v6 freezes at least 24 counted semantic probes covering trace semantics, regeneration, mutations, executable schemas, linked manifests, measured semantic/schema negatives, and the exact separate D0.5 Ubuntu static evidence expansion."
       },
       "artifactPrefix": "verification-contracts-",
       "artifactPath": "artifacts/ci/verification-contracts/",
@@ -102,6 +107,10 @@
         {
           "path": "verification-contract-tests.log",
           "minimumBytes": 100
+        },
+        {
+          "path": "dependency-qualification-static-tests.log",
+          "minimumBytes": 500
         }
       ]
     },
@@ -133,6 +142,65 @@
         {
           "path": "hosted-windows-capabilities.json",
           "minimumBytes": 300
+        }
+      ]
+    },
+    {
+      "id": "dependency-qualification",
+      "name": "Dependency Qualification",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 60,
+        "command": "./tools/verification/Invoke-DependencyQualification.ps1 -EvidenceDirectory artifacts/ci/dependency-qualification",
+        "rationale": "D0.5-v3 requires at least 45 static schema, runtime-provenance, actual-argument mutation, privacy, source-binding, cross-platform process-tree, trace, and workflow probes plus 15 bounded real clean-install package probes."
+      },
+      "artifactPrefix": "dependency-qualification-",
+      "artifactPath": "artifacts/ci/dependency-qualification/",
+      "minimumArtifactBytes": 1000,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "dependency-qualification-tests.log",
+          "minimumBytes": 500
+        },
+        {
+          "path": "dependency-qualification.json",
+          "minimumBytes": 500
+        },
+        {
+          "path": "tool-versions.json",
+          "minimumBytes": 100
+        },
+        {
+          "path": "dotnet-restore.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "python-install.log",
+          "minimumBytes": 1000
+        },
+        {
+          "path": "python-freeze.txt",
+          "minimumBytes": 1000
+        },
+        {
+          "path": "checkpoint-wheel.sha256.json",
+          "minimumBytes": 100
+        },
+        {
+          "path": "pip-check.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "import-smoke.log",
+          "minimumBytes": 50
         }
       ]
     }

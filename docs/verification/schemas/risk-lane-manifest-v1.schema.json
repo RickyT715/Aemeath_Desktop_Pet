@@ -164,6 +164,96 @@
         "observationOnlyFields": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
       }
     },
+    "dependencyQualificationContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frozenAt", "sourceArchiveMode", "dotnetRestoreCommand",
+        "declaredPythonInstallCommand", "supplementalPythonInstallCommand",
+        "forbiddenArguments", "supplementalPackage", "requiredImportProbes",
+        "productManifests", "committedEvidenceDirectory",
+        "qualificationSchemaPath", "artifactRetentionDays"
+      ],
+      "properties": {
+        "frozenAt": { "type": "string", "format": "date-time" },
+        "sourceArchiveMode": { "enum": ["git-archive-head", "git-archive-explicit-sha"] },
+        "dotnetRestoreCommand": { "type": "string", "minLength": 1 },
+        "declaredPythonInstallCommand": { "type": "string", "minLength": 1 },
+        "supplementalPythonInstallCommand": { "type": "string", "minLength": 1 },
+        "forbiddenArguments": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+        "supplementalPackage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name", "version", "declaredInProductManifest", "repairStep",
+            "classification", "behavioralRed"
+          ],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "version": { "type": "string", "minLength": 1 },
+            "declaredInProductManifest": { "type": "boolean" },
+            "repairStep": { "type": "string", "minLength": 1 },
+            "classification": { "type": "string", "minLength": 1 },
+            "behavioralRed": { "type": "boolean" }
+          }
+        },
+        "requiredImportProbes": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+        "productManifests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "hashMode", "sha256"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "hashMode": { "const": "normalized-text" },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          }
+        },
+        "operationPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "retryPolicy", "maximumAttemptsPerOperation",
+            "processTreeTerminationRequired", "timeoutsSeconds"
+          ],
+          "properties": {
+            "retryPolicy": { "const": "none" },
+            "maximumAttemptsPerOperation": { "const": 1 },
+            "processTreeTerminationRequired": { "const": true },
+            "timeoutsSeconds": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1200
+              },
+              "minProperties": 1
+            }
+          }
+        },
+        "evidencePrivacyPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "auditGeneratedAndPartialEvidence", "uploadRequiresAuditSuccess",
+            "forbiddenClasses"
+          ],
+          "properties": {
+            "auditGeneratedAndPartialEvidence": { "const": true },
+            "uploadRequiresAuditSuccess": { "const": true },
+            "forbiddenClasses": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+          }
+        },
+        "committedEvidenceDirectory": { "type": "string", "minLength": 1 },
+        "qualificationSchemaPath": { "type": "string", "pattern": "^docs/verification/schemas/.+\\.schema\\.json$" },
+        "toolVersionsSchemaPath": { "type": "string", "pattern": "^docs/verification/schemas/.+\\.schema\\.json$" },
+        "wheelEvidenceSchemaPath": { "type": "string", "pattern": "^docs/verification/schemas/.+\\.schema\\.json$" },
+        "artifactRetentionDays": { "type": "integer", "minimum": 1 }
+      }
+    },
     "owners": {
       "type": "array", "minItems": 1,
       "items": {

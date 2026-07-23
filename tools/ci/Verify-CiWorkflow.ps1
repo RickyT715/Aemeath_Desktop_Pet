@@ -225,6 +225,12 @@ if (-not (Test-Path -LiteralPath $RequiredChecksPath -PathType Leaf)) {
             Assert-ContractMatch "required job name is absent: $($job.name)" "(?m)^\s{4}name:\s*$([regex]::Escape($job.name))\s*$" $jobBlock
             Assert-ContractMatch "required runner differs for $($job.id)" "(?m)^\s{4}runs-on:\s*$([regex]::Escape($job.runner))\s*$" $jobBlock
             Assert-ContractMatch "required job does not check out SOURCE_SHA: $($job.id)" "(?ms)uses:\s*actions/checkout@[0-9a-f]{40}.+?with:\s*\r?\n\s+ref:\s*\$\{\{\s*env\.SOURCE_SHA\s*\}\}" $jobBlock
+            if ($job.id -in @("verification-contracts", "dependency-qualification")) {
+                Assert-ContractMatch `
+                    "historical-baseline checkout must fetch full history: $($job.id)" `
+                    "(?ms)uses:\s*actions/checkout@[0-9a-f]{40}.+?with:\s*\r?\n\s+ref:\s*\$\{\{\s*env\.SOURCE_SHA\s*\}\}\s*\r?\n\s+fetch-depth:\s*0\s*$" `
+                    $jobBlock
+            }
             Assert-ContractNotMatch "required job is advisory: $($job.id)" "continue-on-error:\s*true" $jobBlock
 
             if ($job.executionModel -ne "single" -or [int]$job.expectedInstances -ne 1) {
@@ -275,7 +281,22 @@ if (-not (Test-Path -LiteralPath $RequiredChecksPath -PathType Leaf)) {
                 Add-ContractFailure "required job must contain exactly one reviewed upload step: $($job.id)"
             } else {
                 $uploadStep = $uploadSteps[0]
-                Assert-ContractMatch "upload step does not use if: always(): $($job.id)" "(?m)^\s{8}if:\s*always\(\)\s*$" $uploadStep
+                if ($job.id -eq "dependency-qualification") {
+                    Assert-ContractMatch `
+                        "upload step does not require successful evidence audit: $($job.id)" `
+                        "(?m)^\s{8}if:\s*always\(\)\s*&&\s*steps\.evidence_audit\.outcome\s*==\s*'success'\s*$" `
+                        $uploadStep
+                    Assert-ContractMatch `
+                        "dependency evidence audit step is missing or not unconditional" `
+                        "(?ms)^\s{6}-\s+name:\s*Audit complete or partial dependency evidence\s*\r?\n\s{8}id:\s*evidence_audit\s*\r?\n\s{8}if:\s*always\(\)\s*$" `
+                        $jobBlock
+                    Assert-ContractMatch `
+                        "dependency evidence audit does not execute AuditEvidence mode" `
+                        "(?m)^\s+-Mode\s+AuditEvidence(?:\s|$)" `
+                        $jobBlock
+                } else {
+                    Assert-ContractMatch "upload step does not use if: always(): $($job.id)" "(?m)^\s{8}if:\s*always\(\)\s*$" $uploadStep
+                }
                 Assert-ContractMatch "upload step does not fail on missing evidence: $($job.id)" "(?m)^\s+if-no-files-found:\s*error\s*$" $uploadStep
                 Assert-ContractMatch "upload step has the wrong artifact name: $($job.id)" "(?m)^\s+name:\s*$([regex]::Escape($job.artifactPrefix))\$\{\{\s*env\.SOURCE_SHA\s*\}\}\s*$" $uploadStep
                 Assert-ContractMatch "upload step has the wrong artifact path: $($job.id)" "(?m)^\s+path:\s*$([regex]::Escape($job.artifactPath))\s*$" $uploadStep

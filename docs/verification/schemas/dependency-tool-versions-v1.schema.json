@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/dependency-tool-versions-v1.schema.json",
+  "title": "Aemeath dependency qualification tool versions v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "sourceSha", "os", "architecture", "powershell",
+    "dotnetSdk", "python", "pip", "git"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "os": { "type": "string", "minLength": 3 },
+    "architecture": { "enum": ["X64", "Arm64", "X86", "Arm"] },
+    "powershell": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+){0,2}$" },
+    "dotnetSdk": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$" },
+    "python": { "type": "string", "pattern": "^Python [0-9]+\\.[0-9]+\\.[0-9]+(?:[0-9A-Za-z.+-]*)$" },
+    "pip": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:[0-9A-Za-z.+-]*)$" },
+    "git": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[0-9A-Za-z.+-]*)$" }
+  }
+}

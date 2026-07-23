@@ -375,9 +375,9 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
 
 ### D0.5 Freeze clean-install dependency evidence without changing production manifests
 
-- [ ] Record .NET/Python/tool versions and ordinary restore/install/import results on the unchanged
+- [x] Record .NET/Python/tool versions and ordinary restore/install/import results on the unchanged
   source. Do not use `--locked-mode` until lock files are deliberately added post-Gate-0A.
-- [ ] For unchanged-source Python qualification only, install
+- [x] For unchanged-source Python qualification only, install
   `langgraph-checkpoint-sqlite==3.1.0` after `pip install -e ".[dev]"`, capture the complete resolved
   environment and wheel hash in the manifest, and keep the product manifests untouched. Record the
   missing declaration as a Gate 0B repair, not a valid behavioral RED or silent product fix.

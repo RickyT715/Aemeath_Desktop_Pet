@@ -24,11 +24,14 @@ $manifestV2Path = "docs/verification/manifests/D0.3-v2.yml"
 $manifestV3Path = "docs/verification/manifests/D0.3-v3.yml"
 $manifestV4Path = "docs/verification/manifests/D0.3-v4.yml"
 $manifestV5Path = "docs/verification/manifests/D0.3-v5.yml"
+$manifestV6Path = "docs/verification/manifests/D0.3-v6.yml"
 $manifestV1InvalidationPath = "docs/verification/invalidations/D0.3-v1.json"
 $manifestV2InvalidationPath = "docs/verification/invalidations/D0.3-v2.json"
 $manifestV3InvalidationPath = "docs/verification/invalidations/D0.3-v3.json"
 $manifestV4InvalidationPath = "docs/verification/invalidations/D0.3-v4.json"
+$manifestV5InvalidationPath = "docs/verification/invalidations/D0.3-v5.json"
 $manifestV5RedEvidencePath = "docs/verification/evidence/D0.3-v5-red.md"
+$manifestV6RedEvidencePath = "docs/verification/evidence/D0.3-v6-red.md"
 $generatorPath = "tools/verification/New-Traceability.ps1"
 $schemaFallbackPath = "tools/verification/Validate-JsonSchema.py"
 $requiredFixtureMutations = @(
@@ -702,7 +705,7 @@ function Test-RiskManifestLinks {
                 if ($traceRequirementIds -notcontains $id) { throw "Probe '$($probe.id)' references unknown requirement '$id'." }
             }
         }
-        if ($Manifest.manifestId -eq "D0.3-v5") {
+        if ($Manifest.manifestId -in @("D0.3-v5", "D0.3-v6")) {
             $catalogIds = @($Traceability.testCatalog | Where-Object { $_.ownerStep -eq "D0.3" } | ForEach-Object { $_.id } | Sort-Object)
             $manifestProbeIds = @($Manifest.probes | ForEach-Object { $_.id } | Sort-Object)
             if (($catalogIds -join '|') -ne ($manifestProbeIds -join '|')) {
@@ -839,8 +842,10 @@ function Test-InvalidationSemantics {
 $requiredInputPaths = @(
     $TraceabilityPath, $generatorPath, $schemaFallbackPath,
     $manifestV1Path, $manifestV2Path, $manifestV3Path, $manifestV4Path, $manifestV5Path,
+    $manifestV6Path,
     $manifestV1InvalidationPath, $manifestV2InvalidationPath, $manifestV3InvalidationPath,
-    $manifestV4InvalidationPath, $manifestV5RedEvidencePath
+    $manifestV4InvalidationPath, $manifestV5InvalidationPath,
+    $manifestV5RedEvidencePath, $manifestV6RedEvidencePath
 ) + $requiredSchemaPaths
 $requiredInputPaths += $invalidationSchemaPath
 foreach ($pair in $schemaInstancePairs) { $requiredInputPaths += $pair[1] }
@@ -848,7 +853,7 @@ foreach ($mutation in $requiredFixtureMutations) { $requiredInputPaths += (Join-
 $missingFiles = @($requiredInputPaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
 if ($missingFiles.Count -gt 0) { throw "Verification contract inputs are missing: $($missingFiles -join ', ')." }
 
-$activeManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV5Path | ConvertFrom-Json
+$activeManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV6Path | ConvertFrom-Json
 $requiredChecks = Get-Content -Raw -Encoding UTF8 -LiteralPath ".github/ci/required-checks.json" | ConvertFrom-Json
 $verificationJobs = @($requiredChecks.jobs | Where-Object { $_.id -eq "verification-contracts" })
 $manifestMinimum = [int]$activeManifest.thresholds.minimumDiscovery
@@ -935,7 +940,9 @@ Assert-SemanticRejection "filter and legacy exact-SHA contradictions" { Test-Exa
 Write-ProbePass "semantic negative exact-SHA contradictions"
 
 $riskSchema = $requiredSchemaPaths[1]
-foreach ($path in @($manifestV2Path, $manifestV3Path, $manifestV4Path, $manifestV5Path)) {
+foreach ($path in @(
+    $manifestV2Path, $manifestV3Path, $manifestV4Path, $manifestV5Path, $manifestV6Path
+)) {
     if (-not (Test-InstanceAgainstSchema $riskSchema $path)) { throw "D0.3 manifest fails schema: $path" }
     $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $path | ConvertFrom-Json
     Test-RiskManifestLinks $manifest $traceability
@@ -953,15 +960,19 @@ $frozenV2Hash = "09e73b9d7f9345d4c362555401298d24ce3b6021194f37f26e5e101c18e2957
 $frozenV3Hash = "aa04d55e8127ef48e0ef1699c41e07d73a0ef5e5d3a3e10d28b879022c21a15c"
 $frozenV4Hash = "686633384964721365efb45d564dc1093ad1d7a13a5ac77c4c1a4a4ebf334c2e"
 $frozenV5Hash = "6434bee4fdacd897863a2bc5dabe83affe6b862b91cecda7fdd8e3f178f5f61e"
+$frozenV6Hash = "98a61360198f4d0b7c553ef86ed1bdcdd81010936b81d35b991d4284b069268e"
 $manifestV2 = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV2Path | ConvertFrom-Json
 $manifestV3 = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV3Path | ConvertFrom-Json
 $manifestV4 = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV4Path | ConvertFrom-Json
+$manifestV5 = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV5Path | ConvertFrom-Json
 $v5FrozenAtForChronology = [DateTimeOffset]::Parse("2026-07-22T11:29:39Z")
+$v6FrozenAtForChronology = [DateTimeOffset]::Parse("2026-07-23T06:12:19Z")
 $invalidationRecords = @(
     @($manifestV1InvalidationPath, "D0.3-v1", $frozenV1Hash, "D0.3-v2", $manifestV1Path),
     @($manifestV2InvalidationPath, "D0.3-v2", $frozenV2Hash, "D0.3-v3", $manifestV2Path),
     @($manifestV3InvalidationPath, "D0.3-v3", $frozenV3Hash, "D0.3-v4", $manifestV3Path),
-    @($manifestV4InvalidationPath, "D0.3-v4", $frozenV4Hash, "D0.3-v5", $manifestV4Path)
+    @($manifestV4InvalidationPath, "D0.3-v4", $frozenV4Hash, "D0.3-v5", $manifestV4Path),
+    @($manifestV5InvalidationPath, "D0.3-v5", $frozenV5Hash, "D0.3-v6", $manifestV5Path)
 )
 $previousInvalidationAt = [DateTimeOffset]::MinValue
 foreach ($recordSpec in $invalidationRecords) {
@@ -970,6 +981,8 @@ foreach ($recordSpec in $invalidationRecords) {
     $record = Get-Content -Raw -Encoding UTF8 -LiteralPath $recordPath | ConvertFrom-Json
     $replacementFrozenAt = if ($recordSpec[3] -eq "D0.3-v5") {
         $v5FrozenAtForChronology
+    } elseif ($recordSpec[3] -eq "D0.3-v6") {
+        $v6FrozenAtForChronology
     } else {
         [DateTimeOffset]::MaxValue
     }
@@ -1000,11 +1013,14 @@ Write-ProbePass "semantic negative invalidation identity and chronology"
 if ($historicalV1.manifestId -ne "D0.3-v1" -or $historicalV1.status -ne "frozen-before-red" -or
     @($historicalV1.risks).Count -ne 5 -or $manifestV2.previousManifestId -ne "D0.3-v1" -or
     $manifestV3.previousManifestId -ne "D0.3-v2" -or $manifestV4.previousManifestId -ne "D0.3-v3" -or
-    $activeManifest.previousManifestId -ne "D0.3-v4" -or $activeManifest.status -ne "frozen-before-red" -or
-    (Get-NormalizedTextHash $manifestV5Path "normalized-text") -cne $frozenV5Hash) {
+    $manifestV5.previousManifestId -ne "D0.3-v4" -or
+    $activeManifest.previousManifestId -ne "D0.3-v5" -or
+    $activeManifest.status -ne "frozen-before-red" -or
+    (Get-NormalizedTextHash $manifestV5Path "normalized-text") -cne $frozenV5Hash -or
+    (Get-NormalizedTextHash $manifestV6Path "normalized-text") -cne $frozenV6Hash) {
     throw "D0.3 manifest invalidation chain is incomplete."
 }
-Write-ProbePass "immutable v1-v5 payload and invalidation chain"
+Write-ProbePass "immutable v1-v6 payload and invalidation chain"
 
 $v5RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV5RedEvidencePath
 $frozenAtMatch = [regex]::Match($v5RedEvidence, '(?m)^- Frozen at: `([^`]+)`$')
@@ -1022,6 +1038,27 @@ if ($v5RedEvidence -notmatch '(?m)^- Frozen manifest: `D0\.3-v5`$' -or
     throw "D0.3-v5 RED evidence does not bind the exact frozen manifest bytes and chronology."
 }
 Write-ProbePass "v5 frozen-before-red provenance"
+
+$v6RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV6RedEvidencePath
+$v6FrozenAtMatch = [regex]::Match($v6RedEvidence, '(?m)^- Frozen at: `([^`]+)`$')
+$v6RedCompletedMatch = [regex]::Match($v6RedEvidence, '(?m)^- RED completed at: `([^`]+)`$')
+$v6FrozenAt = [DateTimeOffset]::MinValue
+$v6RedCompletedAt = [DateTimeOffset]::MinValue
+if ($v6RedEvidence -notmatch
+        '(?m)^- Frozen manifest: `docs/verification/manifests/D0\.3-v6\.yml`$' -or
+    $v6RedEvidence -notmatch "(?m)^- Frozen manifest SHA-256: ``$frozenV6Hash``$" -or
+    -not $v6FrozenAtMatch.Success -or -not $v6RedCompletedMatch.Success -or
+    -not [DateTimeOffset]::TryParse(
+        $v6FrozenAtMatch.Groups[1].Value, [ref]$v6FrozenAt
+    ) -or
+    -not [DateTimeOffset]::TryParse(
+        $v6RedCompletedMatch.Groups[1].Value, [ref]$v6RedCompletedAt
+    ) -or
+    $v6FrozenAt -gt $v6RedCompletedAt -or
+    $v6RedEvidence -notmatch '(?m)^- Exit code: `1` \(expected RED\)$') {
+    throw "D0.3-v6 RED evidence does not bind the exact frozen manifest bytes and chronology."
+}
+Write-ProbePass "v6 exact third-artifact frozen-before-red provenance"
 
 $negativePairs = @(
     @($requiredSchemaPaths[0], $TraceabilityPath),

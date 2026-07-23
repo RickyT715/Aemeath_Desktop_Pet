@@ -130,6 +130,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
 
       - name: Record and verify source identity
         shell: pwsh
@@ -153,6 +154,12 @@ jobs:
         run: |
           ./tools/verification/Test-VerificationContracts.ps1 *>&1 |
             Tee-Object artifacts/ci/verification-contracts/verification-contract-tests.log
+
+      - name: Run D0.5 static probes on Ubuntu
+        shell: pwsh
+        run: |
+          ./tools/verification/Test-DependencyQualification.ps1 -Mode Static *>&1 |
+            Tee-Object artifacts/ci/verification-contracts/dependency-qualification-static-tests.log
 
       - name: Upload verification contract evidence
         if: always()
@@ -207,5 +214,87 @@ jobs:
         with:
           name: delivery-environment-${{ env.SOURCE_SHA }}
           path: artifacts/ci/delivery-environment/
+          if-no-files-found: error
+          retention-days: 90
+
+  dependency-qualification:
+    name: Dependency Qualification
+    needs: delivery-contract
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out exact source SHA
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+
+      - name: Record and verify source identity
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/ci/dependency-qualification | Out-Null
+          $actualSha = (git rev-parse HEAD).Trim().ToLowerInvariant()
+          [PSCustomObject]@{
+            schemaVersion = 1
+            expectedSha = $env:SOURCE_SHA.ToLowerInvariant()
+            actualSha = $actualSha
+            event = '${{ github.event_name }}'
+            runId = '${{ github.run_id }}'
+            runAttempt = '${{ github.run_attempt }}'
+          } | ConvertTo-Json | Set-Content artifacts/ci/dependency-qualification/source-identity.json
+          if ($actualSha -ne $env:SOURCE_SHA.ToLowerInvariant()) {
+            throw "Checked out '$actualSha'; expected '$env:SOURCE_SHA'."
+          }
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Run dependency qualification
+        shell: pwsh
+        run: |
+          ./tools/verification/Invoke-DependencyQualification.ps1 -EvidenceDirectory artifacts/ci/dependency-qualification *>&1 |
+            Tee-Object artifacts/ci/dependency-qualification/dependency-qualification-tests.log
+          $requiredEvidence = @(
+            "source-identity.json",
+            "dependency-qualification-tests.log",
+            "dependency-qualification.json",
+            "tool-versions.json",
+            "dotnet-restore.log",
+            "python-install.log",
+            "python-freeze.txt",
+            "checkpoint-wheel.sha256.json",
+            "pip-check.log",
+            "import-smoke.log"
+          )
+          $actualEvidence = @(Get-ChildItem artifacts/ci/dependency-qualification -File |
+            ForEach-Object Name | Sort-Object)
+          if (($actualEvidence -join "|") -cne (($requiredEvidence | Sort-Object) -join "|")) {
+            throw "Dependency qualification did not produce the exact ten-file artifact contract."
+          }
+
+      - name: Audit complete or partial dependency evidence
+        id: evidence_audit
+        if: always()
+        shell: pwsh
+        run: |
+          ./tools/verification/Test-DependencyQualification.ps1 `
+            -Mode AuditEvidence `
+            -EvidenceDirectory artifacts/ci/dependency-qualification `
+            -ExpectedSourceSha $env:SOURCE_SHA
+
+      - name: Upload dependency-qualification evidence
+        if: always() && steps.evidence_audit.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dependency-qualification-${{ env.SOURCE_SHA }}
+          path: artifacts/ci/dependency-qualification/
           if-no-files-found: error
           retention-days: 90
