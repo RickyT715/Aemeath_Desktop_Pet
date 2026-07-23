@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$WorkflowPath = ".github/workflows/ci.yml",
-    [string]$RequiredChecksPath = ".github/ci/required-checks.json"
+    [string]$RequiredChecksPath = ".github/ci/required-checks.json",
+    [string]$AttributesPath = ".gitattributes"
 )
 
 $ErrorActionPreference = "Stop"
@@ -107,6 +108,21 @@ Assert-ContractMatch "checkout identity must be verified" "git rev-parse HEAD" $
 Assert-ContractMatch "delivery contract self-tests must run in CI" "tools/ci/Test-CiDelivery\.ps1" $workflow
 Assert-ContractNotMatch "continue-on-error is forbidden in required jobs" "continue-on-error:\s*true" $workflow
 Assert-ContractNotMatch "pull_request_target is forbidden" "(?m)^\s{2}pull_request_target:\s*$" $workflow
+
+if (-not (Test-Path -LiteralPath $AttributesPath -PathType Leaf)) {
+    Add-ContractFailure "dependency evidence Git attribute file is missing: $AttributesPath"
+} else {
+    $attributeLines = @(Get-Content -Encoding UTF8 -LiteralPath $AttributesPath |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -and -not $_.StartsWith("#") })
+    $dependencyAttributeLines = @($attributeLines | Where-Object {
+            $_ -match '^docs/verification/dependencies/\*\*\s+'
+        })
+    if ($dependencyAttributeLines.Count -ne 1 -or
+        $dependencyAttributeLines[0] -cne "docs/verification/dependencies/** -text") {
+        Add-ContractFailure "dependency evidence must be declared -text"
+    }
+}
 
 if (-not (Test-Path -LiteralPath $RequiredChecksPath -PathType Leaf)) {
     Add-ContractFailure "required-check manifest is missing: $RequiredChecksPath"
@@ -346,6 +362,7 @@ if (-not (Test-Path -LiteralPath $RequiredChecksPath -PathType Leaf)) {
 foreach ($requiredPath in @(
         "tools/ci/Wait-ForCi.ps1",
         "tools/ci/Test-CiDelivery.ps1",
+        "tools/ci/Test-DependencyEvidenceAttributes.ps1",
         "tools/ci/CiDeliveryContract.psm1"
     )) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {

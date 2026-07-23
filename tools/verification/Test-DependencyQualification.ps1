@@ -25,6 +25,8 @@ $invalidationV2Path = "docs/verification/invalidations/D0.5-v2.json"
 $workflowPath = ".github/workflows/ci.yml"
 $requiredChecksPath = ".github/ci/required-checks.json"
 $tracePath = "docs/verification/traceability-v1.yml"
+$attributesPath = ".gitattributes"
+$evidenceAttributeTestPath = "tools/ci/Test-DependencyEvidenceAttributes.ps1"
 $frozenManifestSha256 = "990073c5256b333e6845c54b1376325df6042884d656d42d7cde11563da736f6"
 $frozenManifestV1Sha256 = "3ba590b540db3838e69ade6a9f298bc139ecc567f9feccae630fd940e103a716"
 $frozenManifestV2Sha256 = "96d9dc5d2029846b0447b2bfb5f09f5e0a30699915138713ec1c6a84249197c4"
@@ -95,6 +97,21 @@ function Get-NormalizedTextHash {
 function Get-FileSha256 {
     param([string]$Path)
     return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
+}
+
+function Get-DependencyAttributeContractFailures {
+    param([AllowEmptyString()][string]$Content)
+
+    $activeLines = @($Content -split "\r?\n" | ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -and -not $_.StartsWith("#") })
+    $dependencyLines = @($activeLines | Where-Object {
+            $_ -match '^docs/verification/dependencies/\*\*\s+'
+        })
+    if ($dependencyLines.Count -ne 1 -or
+        $dependencyLines[0] -cne "docs/verification/dependencies/** -text") {
+        return @("EVIDENCE-GIT-ATTRIBUTE")
+    }
+    return @()
 }
 
 function Get-WorkflowJobBlock {
@@ -909,6 +926,38 @@ function Test-CommittedEvidence {
     Assert-Condition (($actualFiles -join "|") -ceq (($expectedCommittedFiles | Sort-Object) -join "|")) "Committed D0.5 v3 evidence file set is incomplete or contains extras."
     Write-StaticPass "committed evidence has the exact eight-file contract"
 
+    Assert-Condition (Test-Path -LiteralPath $attributesPath -PathType Leaf) (
+        "Dependency evidence Git attribute file is missing."
+    )
+    $attributes = Get-Content -Raw -Encoding UTF8 -LiteralPath $attributesPath
+    Assert-Condition (@(Get-DependencyAttributeContractFailures $attributes).Count -eq 0) (
+        "Generated dependency evidence is not declared byte-preserved."
+    )
+    & $evidenceAttributeTestPath -AttributesPath $attributesPath `
+        -EvidenceDirectory $committedEvidenceDirectory
+    Write-StaticPass "Git attributes preserve every generated dependency-evidence byte"
+
+    $missingAttributeMutant = $attributes.Replace(
+        "docs/verification/dependencies/** -text", ""
+    )
+    Assert-Condition (
+        @(Get-DependencyAttributeContractFailures $missingAttributeMutant).Contains(
+            "EVIDENCE-GIT-ATTRIBUTE"
+        )
+    ) "Missing dependency-evidence Git attribute mutant survived."
+    Write-StaticPass "negative control rejects missing dependency-evidence byte preservation"
+
+    $textAttributeMutant = $attributes.Replace(
+        "docs/verification/dependencies/** -text",
+        "docs/verification/dependencies/** text"
+    )
+    Assert-Condition (
+        @(Get-DependencyAttributeContractFailures $textAttributeMutant).Contains(
+            "EVIDENCE-GIT-ATTRIBUTE"
+        )
+    ) "Text-normalizing dependency-evidence Git attribute mutant survived."
+    Write-StaticPass "negative control rejects text-normalized dependency evidence"
+
     $resultPath = Join-Path $committedEvidenceDirectory "dependency-qualification.json"
     $toolsPath = Join-Path $committedEvidenceDirectory "tool-versions.json"
     $wheelPath = Join-Path $committedEvidenceDirectory "checkpoint-wheel.sha256.json"
@@ -955,8 +1004,15 @@ function Test-CommittedEvidence {
         $red.Contains("all three newly frozen") -and
         $red.Contains("D0.5 v3 review RED (2 blocking gaps)") -and
         $red.Contains("V3-HISTORICAL-CHECKOUT") -and
-        $red.Contains("V3-INVALIDATION-CHAIN")) "D0.5 v3 RED evidence is not cryptographically and chronologically bound."
-    Write-StaticPass "RED evidence binds original and delivery-review gaps to frozen v3"
+        $red.Contains("V3-INVALIDATION-CHAIN") -and
+        $red.Contains("8d6ea68696bfd7818c51bb85ed60cfd9dc6357e5") -and
+        $red.Contains("29986425811") -and
+        $red.Contains("Evidence hash mismatch for 'tool-versions.json'.") -and
+        $red.Contains("Evidence hash mismatch for 'dotnet-restore.log'.") -and
+        $red.Contains("Test-DependencyEvidenceAttributes.ps1")) (
+        "D0.5 v3 RED evidence is not cryptographically and chronologically bound."
+    )
+    Write-StaticPass "RED evidence binds review and exact-SHA byte-delivery gaps to frozen v3"
 
     $trace = Get-Content -Raw -Encoding UTF8 -LiteralPath $tracePath | ConvertFrom-Json
     foreach ($id in @("PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014")) {

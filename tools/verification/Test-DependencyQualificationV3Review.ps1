@@ -9,6 +9,10 @@ $invalidationPath = "docs/verification/invalidations/D0.5-v2.json"
 $implementationPath = "tools/verification/Test-DependencyQualification.ps1"
 $workflowPath = ".github/workflows/ci.yml"
 $requiredChecksPath = ".github/ci/required-checks.json"
+$attributesPath = ".gitattributes"
+$attributeTestPath = "tools/ci/Test-DependencyEvidenceAttributes.ps1"
+$ciDeliveryTestPath = "tools/ci/Test-CiDelivery.ps1"
+$ciVerifierPath = "tools/ci/Verify-CiWorkflow.ps1"
 $expectedManifestHash = "990073c5256b333e6845c54b1376325df6042884d656d42d7cde11563da736f6"
 $expectedManifestV1Hash = "3ba590b540db3838e69ade6a9f298bc139ecc567f9feccae630fd940e103a716"
 $expectedManifestV2Hash = "96d9dc5d2029846b0447b2bfb5f09f5e0a30699915138713ec1c6a84249197c4"
@@ -74,6 +78,21 @@ $invalidation = Get-Content -Raw -Encoding UTF8 -LiteralPath $invalidationPath |
 $implementation = Get-Content -Raw -Encoding UTF8 -LiteralPath $implementationPath
 $workflow = Get-Content -Raw -Encoding UTF8 -LiteralPath $workflowPath
 $requiredChecks = Get-Content -Raw -Encoding UTF8 -LiteralPath $requiredChecksPath
+$attributes = if (Test-Path -LiteralPath $attributesPath -PathType Leaf) {
+    Get-Content -Raw -Encoding UTF8 -LiteralPath $attributesPath
+} else {
+    ""
+}
+$attributeTest = if (Test-Path -LiteralPath $attributeTestPath -PathType Leaf) {
+    Get-Content -Raw -Encoding UTF8 -LiteralPath $attributeTestPath
+} else {
+    ""
+}
+$dependencyAttributeLines = @($attributes -split "\r?\n" |
+    ForEach-Object { $_.Trim() } |
+    Where-Object { $_ -match '^docs/verification/dependencies/\*\*\s+' })
+$ciDeliveryTest = Get-Content -Raw -Encoding UTF8 -LiteralPath $ciDeliveryTestPath
+$ciVerifier = Get-Content -Raw -Encoding UTF8 -LiteralPath $ciVerifierPath
 $verificationJob = Get-WorkflowJobBlock "verification-contracts" $workflow
 $qualificationJob = Get-WorkflowJobBlock "dependency-qualification" $workflow
 
@@ -145,6 +164,22 @@ Test-ReviewCondition `
         $implementation.Contains("immutable v1-v3 payload and invalidation chain")) `
     "V3-INVALIDATION-CHAIN" `
     "actual v1/v2 bytes, both schemas, full chronology, and historical-byte mutation are enforced"
+
+Test-ReviewCondition `
+    ($dependencyAttributeLines.Count -eq 1 -and
+        $dependencyAttributeLines[0] -ceq "docs/verification/dependencies/** -text" -and
+        $attributeTest.Contains("git check-attr text") -and
+        $attributeTest.Contains("git hash-object") -and
+        $attributeTest.Contains("Missing dependency-evidence attribute mutation survived") -and
+        $attributeTest.Contains("Text-normalizing dependency-evidence attribute mutation survived") -and
+        $implementation.Contains("Get-DependencyAttributeContractFailures") -and
+        $implementation.Contains("missing dependency-evidence byte preservation") -and
+        $implementation.Contains("text-normalized dependency evidence") -and
+        $ciDeliveryTest.Contains("missing dependency-evidence byte-preservation rule") -and
+        $ciDeliveryTest.Contains("text-normalized dependency evidence") -and
+        $ciVerifier.Contains("dependency evidence must be declared -text")) `
+    "V3-BYTE-PRESERVATION" `
+    "raw generated evidence bytes survive Git checkout and missing/text mutations are rejected"
 
 if ($failures.Count -gt 0) {
     throw "D0.5 v3 review RED ($($failures.Count) blocking gaps): $($failures -join '; ')"

@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$WorkflowPath = ".github/workflows/ci.yml",
-    [string]$RequiredChecksPath = ".github/ci/required-checks.json"
+    [string]$RequiredChecksPath = ".github/ci/required-checks.json",
+    [string]$AttributesPath = ".gitattributes"
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,11 +10,13 @@ Set-StrictMode -Version Latest
 
 $repositoryRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
 $verifyScript = Join-Path $PSScriptRoot "Verify-CiWorkflow.ps1"
+$evidenceAttributeTest = Join-Path $PSScriptRoot "Test-DependencyEvidenceAttributes.ps1"
 $contractModule = Join-Path $PSScriptRoot "CiDeliveryContract.psm1"
 Import-Module $contractModule -Force
 
 $workflow = Get-Content -Raw -LiteralPath $WorkflowPath
 $manifestText = Get-Content -Raw -LiteralPath $RequiredChecksPath
+$attributes = Get-Content -Raw -LiteralPath $AttributesPath
 $requiredChecks = $manifestText | ConvertFrom-Json
 $enginePath = (Get-Process -Id $PID).Path
 $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("aemeath-ci-contract-" + [guid]::NewGuid().ToString("N"))
@@ -22,7 +25,8 @@ New-Item -ItemType Directory -Path $tempRoot | Out-Null
 function Invoke-StaticContract {
     param(
         [string]$WorkflowContent,
-        [object]$Manifest
+        [object]$Manifest,
+        [string]$AttributesContent = $script:attributes
     )
 
     $caseId = [guid]::NewGuid().ToString("N")
@@ -30,14 +34,17 @@ function Invoke-StaticContract {
     New-Item -ItemType Directory -Path $caseRoot | Out-Null
     $workflowFile = Join-Path $caseRoot "ci.yml"
     $manifestFile = Join-Path $caseRoot "required-checks.json"
+    $attributesFile = Join-Path $caseRoot ".gitattributes"
     Set-Content -LiteralPath $workflowFile -Value $WorkflowContent -Encoding UTF8
     $Manifest | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $manifestFile -Encoding UTF8
+    Set-Content -LiteralPath $attributesFile -Value $AttributesContent -Encoding UTF8
 
     $previousErrorAction = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
         $output = & $enginePath -NoProfile -ExecutionPolicy Bypass -File $verifyScript `
-            -WorkflowPath $workflowFile -RequiredChecksPath $manifestFile 2>&1
+            -WorkflowPath $workflowFile -RequiredChecksPath $manifestFile `
+            -AttributesPath $attributesFile 2>&1
         $exitCode = $LASTEXITCODE
         $global:LASTEXITCODE = 0
     } finally {
@@ -79,10 +86,12 @@ function Assert-StaticMutationRejected {
         [string]$Name,
         [string]$WorkflowContent,
         [object]$Manifest,
-        [string]$ExpectedMessage
+        [string]$ExpectedMessage,
+        [string]$AttributesContent = $script:attributes
     )
 
-    $result = Invoke-StaticContract -WorkflowContent $WorkflowContent -Manifest $Manifest
+    $result = Invoke-StaticContract -WorkflowContent $WorkflowContent -Manifest $Manifest `
+        -AttributesContent $AttributesContent
     $normalizedOutput = Normalize-DiagnosticText $result.Output
     if ($result.ExitCode -eq 0 -or
         $normalizedOutput.IndexOf($ExpectedMessage, [StringComparison]::Ordinal) -lt 0) {
@@ -183,6 +192,21 @@ try {
         throw "Valid static CI contract failed: $($baseline.Output)"
     }
     Write-Host "PASS valid static contract"
+
+    & $evidenceAttributeTest -AttributesPath $AttributesPath
+
+    Assert-StaticMutationRejected -Name "missing dependency-evidence byte-preservation rule" `
+        -WorkflowContent $workflow -Manifest (Copy-Manifest) `
+        -AttributesContent ($attributes.Replace(
+            "docs/verification/dependencies/** -text", ""
+        )) -ExpectedMessage "dependency evidence must be declared -text"
+
+    Assert-StaticMutationRejected -Name "text-normalized dependency evidence" `
+        -WorkflowContent $workflow -Manifest (Copy-Manifest) `
+        -AttributesContent ($attributes.Replace(
+            "docs/verification/dependencies/** -text",
+            "docs/verification/dependencies/** text"
+        )) -ExpectedMessage "dependency evidence must be declared -text"
 
     Assert-StaticMutationRejected -Name "missing implementation-branch trigger" `
         -WorkflowContent ($workflow -replace '(?m)^\s*-\s+[''"]agent/\*\*[''"]\s*$', '') `
