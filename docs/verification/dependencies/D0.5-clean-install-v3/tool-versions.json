@@ -1,0 +1,11 @@
+﻿{
+    "schemaVersion":  1,
+    "sourceSha":  "2b962f7cde827a6304c79d867621ec54f54af4a0",
+    "os":  "Microsoft Windows NT 10.0.26200.0",
+    "architecture":  "X64",
+    "powershell":  "5.1.26100.8875",
+    "dotnetSdk":  "8.0.418",
+    "python":  "Python 3.12.10",
+    "pip":  "25.0.1",
+    "git":  "2.50.0.windows.1"
+}

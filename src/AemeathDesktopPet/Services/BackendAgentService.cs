@@ -16,17 +16,18 @@ public class BackendAgentService : IChatService
     private readonly BackendProcessManager _backend;
     private readonly HttpClient _http;
     private readonly Func<AemeathStats> _getStats;
-    private readonly string _threadId = Guid.NewGuid().ToString("N")[..12];
+    private readonly string _threadId;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public BackendAgentService(BackendProcessManager backend, Func<AemeathStats> getStats)
+    public BackendAgentService(BackendProcessManager backend, Func<AemeathStats> getStats, string threadId)
     {
         _backend = backend;
         _getStats = getStats;
+        _threadId = threadId;
         _http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
     }
 

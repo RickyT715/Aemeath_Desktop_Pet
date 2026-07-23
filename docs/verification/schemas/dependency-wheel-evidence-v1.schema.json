@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/dependency-wheel-evidence-v1.schema.json",
+  "title": "Aemeath checkpoint wheel provenance v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "package", "version", "fileName", "sha256",
+    "installMode", "installedFromFileName", "installedWheelSha256", "downloadResolver"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "package": { "const": "langgraph-checkpoint-sqlite" },
+    "version": { "const": "3.1.0" },
+    "fileName": { "pattern": "^langgraph_checkpoint_sqlite-3\\.1\\.0-py3-none-any\\.whl$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "installMode": { "const": "local-downloaded-wheel" },
+    "installedFromFileName": { "pattern": "^langgraph_checkpoint_sqlite-3\\.1\\.0-py3-none-any\\.whl$" },
+    "installedWheelSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "downloadResolver": { "const": "pip-configured-index" }
+  }
+}

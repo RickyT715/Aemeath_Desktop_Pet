@@ -108,3 +108,114 @@ class VisionRequest(BaseModel):
     image_base64: str
     prompt: str = "Describe what you see in this image."
     provider: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Memory endpoints
+# ---------------------------------------------------------------------------
+
+
+class MemoryExtractRequest(BaseModel):
+    """Request to extract facts from a conversation turn."""
+
+    user_message: str
+    assistant_response: str
+    thread_id: str = "default"
+
+
+class ExtractedFact(BaseModel):
+    """A single fact extracted from conversation."""
+
+    fact: str
+    confidence: float = 0.5
+    category: str = "general"
+
+
+class MemoryExtractResponse(BaseModel):
+    """Response from memory extraction."""
+
+    facts: list[ExtractedFact] = Field(default_factory=list)
+    events: list[dict[str, Any]] = Field(default_factory=list)
+    preferences: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class MemoryRetrieveResult(BaseModel):
+    """A single result from memory retrieval."""
+
+    content: str
+    type: str = ""
+    created_at: str = ""
+    importance: float = 0.0
+
+
+class MemoryRetrieveResponse(BaseModel):
+    """Response from memory retrieval."""
+
+    memories: list[MemoryRetrieveResult] = Field(default_factory=list)
+
+
+class ObservationItem(BaseModel):
+    """A single raw observation to distill."""
+
+    timestamp: str
+    source: str
+    content: str
+    activity_context: str = ""
+
+
+class MemoryDistillRequest(BaseModel):
+    """Request to distill observations into durable memories."""
+
+    observations: list[ObservationItem]
+
+
+class DistilledMemory(BaseModel):
+    """A single distilled memory from observations."""
+
+    content: str
+    type: str = "observation"
+    importance: float = 0.5
+
+
+class MemoryDistillResponse(BaseModel):
+    """Response from observation distillation."""
+
+    distilled: list[DistilledMemory] = Field(default_factory=list)
+    patterns: list[str] = Field(default_factory=list)
+
+
+class MemoryCoreUpdateRequest(BaseModel):
+    """Request to update core memory from extraction results."""
+
+    user_facts: list[dict[str, Any]] = Field(default_factory=list)
+    events: list[dict[str, Any]] = Field(default_factory=list)
+    preferences: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class MemoryCoreUpdateResponse(BaseModel):
+    """Response from core memory update."""
+
+    updated: list[str] = Field(default_factory=list)
+    conflicts: list[str] = Field(default_factory=list)
+
+
+class MemoryStatusResponse(BaseModel):
+    """Memory system health status."""
+
+    episodic_count: int = 0
+    core_last_updated: str = ""
+    store_size_bytes: int = 0
+    blocks: dict[str, str] = Field(default_factory=dict)
+
+
+class MemoryForgetRequest(BaseModel):
+    """Request to forget/delete memories."""
+
+    query: str | None = None
+    time_range: dict[str, str] | None = None
+
+
+class MemoryForgetResponse(BaseModel):
+    """Response from memory forget operation."""
+
+    deleted_count: int = 0

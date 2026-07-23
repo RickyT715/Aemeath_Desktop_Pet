@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.3-v3-invalidated-by-v4",
+  "invalidatedManifestId": "D0.3-v3",
+  "frozenArtifactPath": "docs/verification/manifests/D0.3-v3.yml",
+  "frozenArtifactSha256": "aa04d55e8127ef48e0ef1699c41e07d73a0ef5e5d3a3e10d28b879022c21a15c",
+  "replacementManifestId": "D0.3-v4",
+  "invalidatedAt": "2026-07-22T11:20:00Z",
+  "reason": "The revision was created after its implementation changes and therefore lacked a frozen-before-change RED attributable to v3; review also found missing journey minima and semantic mappings.",
+  "reviewer": "independent-verification-reviewer-role"
+}

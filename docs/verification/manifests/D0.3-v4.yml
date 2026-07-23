@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.3-v4",
+  "revision": 4,
+  "previousManifestId": "D0.3-v3",
+  "invalidationReason": null,
+  "stepId": "D0.3",
+  "status": "frozen-before-red",
+  "baselineSha": "a6c15496cf2893a24e560c01ef4e598a635859cc",
+  "scope": "Implementable 352-node traceability with reusable bounded journeys, complete aggregate hashes, executable manifest semantics, and exact-SHA CI enforcement.",
+  "requirementIds": [
+    "PRD:AC-FR-022-01", "PRD:AC-FR-022-02", "PRD:AC-FR-022-03", "PRD:AC-FR-022-04",
+    "PRD:AC-FR-022-06", "PRD:AC-FR-022-12", "PRD:AC-FR-022-13", "PRD:AC-FR-022-14",
+    "PRD:AC-FR-023-01", "PRD:AC-FR-023-02", "PRD:AC-FR-023-03", "PRD:AC-FR-023-04",
+    "PRD:AC-FR-023-05", "PRD:AC-FR-023-06", "PRD:AC-FR-024-01", "PRD:AC-FR-024-02",
+    "PRD:AC-FR-024-03", "PRD:AC-FR-024-04", "PRD:AC-FR-024-05", "PRD:AC-FR-024-06",
+    "PRD:AC-FR-024-07", "PRD:AC-FR-024-08", "PRD:NFR-JA-008", "PRD:NFR-JA-008-01",
+    "PRD:NFR-JA-008-02", "PRD:NFR-JA-008-03", "PRD:NFR-JA-008-04", "PRD:NFR-JA-008-05",
+    "PRD:RISK-011", "PRD:RISK-013", "PRD:RISK-014"
+  ],
+  "dispositionIds": [
+    "REQMAP-CURRENT-V1", "APP-001", "APP-002", "APP-003", "APP-004", "APP-005",
+    "APP-006", "APP-007", "APP-008", "APP-009"
+  ],
+  "boundaryIds": ["PB-017", "PB-018"],
+  "risks": [
+    { "id": "D0.3-R01", "outcome": "A normative item or represented source section is missing, duplicated, ambiguously qualified, or stale.", "laneIds": ["V-STATIC"], "probeIds": ["D0.3-V-STATIC-001"] },
+    { "id": "D0.3-R02", "outcome": "A count-complete mapping omits an implementation owner, lane, PB, design/UI locator, or current disposition control.", "laneIds": ["V-STATIC"], "probeIds": ["D0.3-V-STATIC-001"] },
+    { "id": "D0.3-R03", "outcome": "Journey sharing removes a required scenario, exceeds an E2E budget, or leaves an executable checklist child without a planned case.", "laneIds": ["V-STATIC"], "probeIds": ["D0.3-V-STATIC-001"] },
+    { "id": "D0.3-R04", "outcome": "A schema-valid but cross-field-contradictory risk, phase-evidence, exact-SHA, or invalidation record is accepted.", "laneIds": ["V-STATIC"], "probeIds": ["D0.3-V-STATIC-001"] },
+    { "id": "D0.3-R05", "outcome": "Frozen thresholds, active probe metadata, CI discovery, artifacts, or immutable manifest history differ from measured reality.", "laneIds": ["V-STATIC"], "probeIds": ["D0.3-V-STATIC-001"] }
+  ],
+  "lanes": [
+    {
+      "id": "V-STATIC",
+      "required": true,
+      "rationale": "D0.3 changes versioned verification metadata, generators, schemas, and executable meta-tests only.",
+      "riskIds": ["D0.3-R01", "D0.3-R02", "D0.3-R03", "D0.3-R04", "D0.3-R05"],
+      "probeIds": ["D0.3-V-STATIC-001"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"]
+    }
+  ],
+  "probes": [
+    {
+      "id": "D0.3-V-STATIC-001",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-VerificationContracts.ps1",
+      "minimumDiscovery": 20,
+      "redOracle": "The pre-v4 implementation fails semantic assertions for selected journey minima, cross-boundary mappings, PB inference, executable-child coverage, measured thresholds, active probe scope, or immutable history.",
+      "riskIds": ["D0.3-R01", "D0.3-R02", "D0.3-R03", "D0.3-R04", "D0.3-R05"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": [
+        "PRD:AC-FR-022-01", "PRD:AC-FR-022-02", "PRD:AC-FR-022-03", "PRD:AC-FR-022-04",
+        "PRD:AC-FR-022-06", "PRD:AC-FR-022-12", "PRD:AC-FR-022-13", "PRD:AC-FR-022-14",
+        "PRD:AC-FR-023-01", "PRD:AC-FR-023-02", "PRD:AC-FR-023-03", "PRD:AC-FR-023-04",
+        "PRD:AC-FR-023-05", "PRD:AC-FR-023-06", "PRD:AC-FR-024-01", "PRD:AC-FR-024-02",
+        "PRD:AC-FR-024-03", "PRD:AC-FR-024-04", "PRD:AC-FR-024-05", "PRD:AC-FR-024-06",
+        "PRD:AC-FR-024-07", "PRD:AC-FR-024-08", "PRD:NFR-JA-008", "PRD:NFR-JA-008-01",
+        "PRD:NFR-JA-008-02", "PRD:NFR-JA-008-03", "PRD:NFR-JA-008-04", "PRD:NFR-JA-008-05",
+        "PRD:RISK-011", "PRD:RISK-013", "PRD:RISK-014"
+      ],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": [
+        "FIX-MISSING-REQUIREMENT", "FIX-DUPLICATE-REQUIREMENT", "FIX-STALE-SOURCE-HASH",
+        "FIX-STALE-ENTRY-HASH", "FIX-INVALID-DISPOSITION", "FIX-ORPHAN-TEST",
+        "FIX-ORPHAN-AC", "FIX-BARE-NFR"
+      ],
+      "thresholds": {
+        "normativeNodes": 352,
+        "minimumCatalogItems": 138,
+        "minimumDiscovery": 20,
+        "requiredKnownBadFixtures": 8,
+        "requiredSchemaNegativeControls": 4,
+        "requiredSemanticNegativeControls": 3,
+        "requiredP9FixtureJourneys": 3,
+        "requiredP0A2RealJourneys": 2,
+        "requiredMcpRealJourneys": 2,
+        "maximumUnexpectedSkips": 0
+      }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1 plus pinned Python jsonschema fallback", "purpose": "Local RED/GREEN and deterministic regeneration" },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+ Test-Json", "purpose": "Blocking exact-source-SHA schema and semantic validation" }
+  ],
+  "fixtures": [
+    { "id": "FIX-BARE-NFR", "path": "tests/fixtures/verification/v1/invalid/bare-nfr-reference.json", "sha256": "47b852a802f601bad99ec8c5e07fa00e5d3845472f8ced0a0911f61f256a2bed" },
+    { "id": "FIX-DUPLICATE-REQUIREMENT", "path": "tests/fixtures/verification/v1/invalid/duplicate-requirement.json", "sha256": "54f68c9a45c48a9776ade01d50932ef504049d91d59bbb65ed918f763489b61f" },
+    { "id": "FIX-INVALID-DISPOSITION", "path": "tests/fixtures/verification/v1/invalid/invalid-disposition.json", "sha256": "fc5ce6115a25d0cf2511eb0229d1b98af3a8ec753078f97b3d499d3afa38e2f7" },
+    { "id": "FIX-MISSING-REQUIREMENT", "path": "tests/fixtures/verification/v1/invalid/missing-requirement.json", "sha256": "cc7dd057066dfefba9c56b0c7fdc40edc0ad33f4343784bce3101a9e7187b408" },
+    { "id": "FIX-ORPHAN-AC", "path": "tests/fixtures/verification/v1/invalid/orphan-acceptance-criterion.json", "sha256": "452c53895c8c02be7f1660f9c03a302e702038a74873b718a2379e525c203584" },
+    { "id": "FIX-ORPHAN-TEST", "path": "tests/fixtures/verification/v1/invalid/orphan-test.json", "sha256": "a51bff7ab9a235febf2ee2ac6624b6c957725de0450671a6e31034a9576fe579" },
+    { "id": "FIX-STALE-ENTRY-HASH", "path": "tests/fixtures/verification/v1/invalid/stale-entry-hash.json", "sha256": "fb9cf5dce7699536ad89e16f98de3926203fa47f3cbe1f624d556241d9e7d105" },
+    { "id": "FIX-STALE-SOURCE-HASH", "path": "tests/fixtures/verification/v1/invalid/stale-source-hash.json", "sha256": "fa66456e0e6bb93ef93f0cea6be728caacf1f128bb3a980d79113b49dbad4397" }
+  ],
+  "services": [],
+  "thresholds": {
+    "normativeNodes": 352,
+    "minimumCatalogItems": 138,
+    "minimumDiscovery": 20,
+    "requiredKnownBadFixtures": 8,
+    "requiredSchemaNegativeControls": 4,
+    "requiredSemanticNegativeControls": 3,
+    "requiredP9FixtureJourneys": 3,
+    "requiredP0A2RealJourneys": 2,
+    "requiredMcpRealJourneys": 2,
+    "maximumUnexpectedSkips": 0,
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "delivery owner", "accountability": "Own the generator, local GREEN, push, and exact-SHA gate." },
+    { "role": "independent verification reviewer", "accountability": "Challenge count-complete but false mappings, journey collapse, threshold drift, and schema loopholes." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "verification-contract-tests.log"]
+}

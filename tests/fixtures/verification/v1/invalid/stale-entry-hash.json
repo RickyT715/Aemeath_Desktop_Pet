@@ -1,0 +1,6 @@
+{
+  "mutation": "replace-entry-hash",
+  "target": "CURRENT:LOC-STORAGE",
+  "expectedCode": "TRACE-STALE-ENTRY-HASH",
+  "description": "Changing an aggregate section entry hash must be detected independently of the whole-source hash."
+}

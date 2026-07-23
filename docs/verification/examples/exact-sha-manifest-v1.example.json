@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "exact-sha-gate",
+  "repository": "owner/repository",
+  "branch": "agent/example-step",
+  "baselineSha": "1111111111111111111111111111111111111111",
+  "sourceSha": "2222222222222222222222222222222222222222",
+  "checkedOutSha": "2222222222222222222222222222222222222222",
+  "requiredChecksManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "workflow": {
+    "file": ".github/workflows/ci.yml",
+    "ref": "2222222222222222222222222222222222222222",
+    "runId": 123456,
+    "runUrl": "https://github.com/owner/repository/actions/runs/123456",
+    "event": "push",
+    "attempt": 1
+  },
+  "filters": {
+    "pathFiltersApplied": false,
+    "selectedRef": "agent/example-step",
+    "selectedEvent": "push"
+  },
+  "jobs": [
+    {
+      "name": "Example required job",
+      "jobId": 654321,
+      "result": "success",
+      "expectedInstances": 1,
+      "actualInstances": 1,
+      "matrixExpected": [{ "os": "windows-latest" }],
+      "matrixActual": [{ "os": "windows-latest" }]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "V-UNIT",
+      "testIds": ["P1.1-V-UNIT-EXAMPLE-001"],
+      "commands": ["dotnet test --filter FullyQualifiedName~Example"],
+      "minimumDiscovery": 1,
+      "actualDiscovery": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "localCommands": ["dotnet test --filter FullyQualifiedName~Example"],
+  "ciCommands": ["dotnet test --filter FullyQualifiedName~Example"],
+  "environment": {
+    "os": "Windows Server hosted image/build recorded by the job",
+    "runnerClass": "github-hosted",
+    "architecture": "x64",
+    "tools": { "dotnet": "8.0.x" },
+    "locks": {},
+    "fixtures": ["fixture-v1"],
+    "capabilities": ["deterministic-unit"],
+    "configuration": "Release",
+    "seed": null
+  },
+  "artifactsExpected": ["example-2222222222222222222222222222222222222222"],
+  "artifactsActual": [
+    {
+      "name": "example-2222222222222222222222222222222222222222",
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "retentionDays": 90,
+      "downloadLocation": "https://github.com/owner/repository/actions/runs/123456"
+    }
+  ],
+  "evidence": {
+    "red": "docs/verification/evidence/P1.1-red.json",
+    "green": "docs/verification/evidence/P1.1-green.json",
+    "verify": "docs/verification/evidence/P1.1-verify.json",
+    "legacy": null
+  },
+  "legacyRegression": {
+    "required": false,
+    "result": "not-applicable",
+    "combinedWithIndependentMetric": false
+  },
+  "gate": {
+    "status": "pass",
+    "reviewer": "independent-reviewer-role",
+    "reviewedAt": "2026-07-22T00:03:00Z",
+    "invalidates": []
+  }
+}

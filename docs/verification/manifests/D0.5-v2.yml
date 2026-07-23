@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.5-v2",
+  "revision": 2,
+  "previousManifestId": "D0.5-v1",
+  "invalidationReason": null,
+  "stepId": "D0.5",
+  "status": "frozen-before-red",
+  "baselineSha": "b7eafb683d37d80bd60b59e850311acd79d2a569",
+  "scope": "Qualify ordinary .NET restore and Python editable development installation on one explicitly captured unchanged source SHA; download, hash, and install the same langgraph-checkpoint-sqlite 3.1.0 wheel only in the disposable environment; bound every external operation; retain attempt, result, tool, wheel, import, dependency, source-drift, and privacy-safe evidence; and make CI upload conditional on a final evidence audit without claiming lock-file reproducibility.",
+  "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-013", "PB-017"],
+  "risks": [
+    { "id": "D0.5-R01", "outcome": "Qualification changes a production dependency manifest, uses dirty source, archives a different SHA from the reported source, or silently adds a lock-mode requirement before Gate 0B.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R02", "outcome": "The declared .NET restore or Python editable development install fails, hangs, retries without authorization, or leaves a descendant process on an isolated copy of the unchanged source.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R03", "outcome": "The environment-only SQLite checkpointer is installed before the declared environment, installed from a different artifact than the hashed wheel, installed at a different version, or mistaken for a valid behavioral RED or product-manifest repair.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R04", "outcome": "Resolved packages, wheel provenance, tool versions, success logs, operation attempts, import outcomes, or pip consistency are incomplete, semantically false, unhashed, schema-invalid, or not bound to the captured source SHA.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R05", "outcome": "Generated or partial-failure evidence exposes URL credentials, proxy/index authorization, tokens, machine or user identity, worktree paths, or temporary paths, or CI uploads before a complete privacy/source audit.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] },
+    { "id": "D0.5-R06", "outcome": "The CI job, discovery floor, exact evidence file set, retention, trace backlink, source identity, audit gate, or upload condition drifts from the frozen D0.5 contract.", "laneIds": ["V-STATIC", "V-PACKAGE"], "probeIds": ["D0.5-V-STATIC-CONTRACT", "D0.5-V-PACKAGE-CLEAN-INSTALL"] }
+  ],
+  "lanes": [
+    { "id": "V-STATIC", "required": true, "rationale": "Validate frozen source hashes, exact-wheel installation, command ordering, timeout/no-retry policy, complete schemas and semantic logs, evidence hashes, partial-failure privacy, mutation sensitivity, trace backlinks, and audited CI upload.", "riskIds": ["D0.5-R01", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"], "probeIds": ["D0.5-V-STATIC-CONTRACT"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"] },
+    { "id": "V-PACKAGE", "required": true, "rationale": "Run bounded, single-attempt ordinary .NET restore and disposable Python installation from one explicitly captured source SHA, install the exact downloaded wheel, and exercise package/import consistency before a final evidence audit.", "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"], "probeIds": ["D0.5-V-PACKAGE-CLEAN-INSTALL"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"] }
+  ],
+  "probes": [
+    {
+      "id": "D0.5-V-STATIC-CONTRACT",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-DependencyQualification.ps1 -Mode Static",
+      "minimumDiscovery": 40,
+      "redOracle": "The v1 implementation hashes one wheel but installs another index resolution, has no per-operation bounds/attempt record, does not audit partial output before upload, accepts semantically empty or drifted evidence, and archives HEAD separately from later source reporting.",
+      "riskIds": ["D0.5-R01", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 40, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "maximumAttemptsPerOperation": 1, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.5-V-PACKAGE-CLEAN-INSTALL",
+      "command": "./tools/verification/Test-DependencyQualification.ps1 -Mode Qualify -EvidenceDirectory artifacts/ci/dependency-qualification",
+      "minimumDiscovery": 14,
+      "redOracle": "A real disposable install must fail unless one captured SHA is archived and remains stable, every operation ends within its frozen bound on one recorded attempt, the exact hashed wheel is installed, logs prove success, all schemas and semantics pass, and the final packet passes privacy and source-identity audit.",
+      "riskIds": ["D0.5-R01", "D0.5-R02", "D0.5-R03", "D0.5-R04", "D0.5-R05", "D0.5-R06"],
+      "laneIds": ["V-PACKAGE"],
+      "requirementIds": ["PRD:GATE-0-07", "PRD:RISK-011", "PRD:RISK-014"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 14, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumInstallFailures": 0, "maximumImportFailures": 0, "maximumAttemptsPerOperation": 1 }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1", "purpose": "Freeze the oracle, record valid RED, execute an isolated local clean-install qualification, and promote only a newly audited packet." },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+", "purpose": "Run architecture-neutral static schema, provenance, mutation, privacy, and workflow-contract probes." },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+", "purpose": "Re-run the bounded disposable .NET/Python qualification at the exact pushed SHA and upload only an audited packet." }
+  ],
+  "fixtures": [],
+  "services": ["NuGet package index", "Python package index selected by pip configuration", "GitHub Actions", "GitHub artifact storage"],
+  "thresholds": { "minimumDiscovery": 40, "minimumStaticDiscovery": 40, "minimumPackageDiscovery": 14, "minimumResolvedPackages": 40, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "maximumAttemptsPerOperation": 1, "artifactRetentionDays": 90 },
+  "dependencyQualificationContract": {
+    "frozenAt": "2026-07-23T05:11:38Z",
+    "sourceArchiveMode": "git-archive-explicit-sha",
+    "dotnetRestoreCommand": "dotnet restore AemeathDesktopPet.sln",
+    "declaredPythonInstallCommand": "python -m pip install -e \".[dev]\"",
+    "supplementalPythonInstallCommand": "python -m pip install <DOWNLOADED_CHECKPOINT_WHEEL>",
+    "forbiddenArguments": ["--locked-mode", "--require-hashes"],
+    "supplementalPackage": { "name": "langgraph-checkpoint-sqlite", "version": "3.1.0", "declaredInProductManifest": false, "repairStep": "P0B.1d", "classification": "known-blocking-dependency-gap", "behavioralRed": false },
+    "requiredImportProbes": ["aemeath_agent.main", "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver"],
+    "productManifests": [
+      { "path": "global.json", "hashMode": "normalized-text", "sha256": "2a99f94f1002fd18c866ea6d2a0bbb4ffa7679001646507f38b9b17003d7d8e1" },
+      { "path": "AemeathDesktopPet.sln", "hashMode": "normalized-text", "sha256": "e95cc7e48637309a9e3751d0a3ffdf3a9476ff7a5ddd54f8d80ed23931c4a2f7" },
+      { "path": "src/AemeathDesktopPet/AemeathDesktopPet.csproj", "hashMode": "normalized-text", "sha256": "9a511ec1cf257d03e64c59e582826df3bcf7a0cbf5707e9fd5cec9449a6afc0d" },
+      { "path": "python-backend/pyproject.toml", "hashMode": "normalized-text", "sha256": "77d075128aab40d3349f764c1a78b8f3d0bb9a7e028566dea817efc11514f5c1" }
+    ],
+    "operationPolicy": {
+      "retryPolicy": "none",
+      "maximumAttemptsPerOperation": 1,
+      "processTreeTerminationRequired": true,
+      "timeoutsSeconds": {
+        "source-identity": 30,
+        "source-archive": 120,
+        "python-venv": 180,
+        "dotnet-restore": 600,
+        "python-declared-install": 1200,
+        "checkpoint-wheel-download": 180,
+        "python-supplemental-install": 300,
+        "pip-check": 120,
+        "import-smoke": 120,
+        "environment-capture": 120,
+        "tool-version-capture": 60
+      }
+    },
+    "evidencePrivacyPolicy": {
+      "auditGeneratedAndPartialEvidence": true,
+      "uploadRequiresAuditSuccess": true,
+      "forbiddenClasses": ["url-credentials", "proxy-or-index-auth", "token-or-secret", "machine-identity", "user-identity", "worktree-path", "temporary-path"]
+    },
+    "committedEvidenceDirectory": "docs/verification/dependencies/D0.5-clean-install-v2",
+    "qualificationSchemaPath": "docs/verification/schemas/dependency-qualification-v2.schema.json",
+    "toolVersionsSchemaPath": "docs/verification/schemas/dependency-tool-versions-v1.schema.json",
+    "wheelEvidenceSchemaPath": "docs/verification/schemas/dependency-wheel-evidence-v1.schema.json",
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "verification owner", "accountability": "Freeze and challenge source integrity, exact-wheel installation, timeouts, attempt records, success semantics, mutation sensitivity, and evidence privacy." },
+    { "role": "delivery owner", "accountability": "Run the exact-SHA disposable qualification, audit complete and partial evidence before upload, retain the exact evidence packet, and keep the required check blocking." },
+    { "role": "Gate 0B dependency owner", "accountability": "Repair the missing product declaration and introduce deliberate lock files only in P0B.1d under valid RED tests." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "dependency-qualification-tests.log", "dependency-qualification.json", "tool-versions.json", "dotnet-restore.log", "python-install.log", "python-freeze.txt", "checkpoint-wheel.sha256.json", "pip-check.log", "import-smoke.log"]
+}

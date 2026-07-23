@@ -267,6 +267,35 @@ public class PetViewModelTests
     }
 
     [Fact]
+    public void CoreMemory_IsNotNull()
+    {
+        var vm = new PetViewModel();
+        Assert.NotNull(vm.CoreMemory);
+    }
+
+    [Fact]
+    public void ProceduralMemory_IsNotNull()
+    {
+        var vm = new PetViewModel();
+        Assert.NotNull(vm.ProceduralMemory);
+    }
+
+    [Fact]
+    public void ObservationBuffer_IsNotNull()
+    {
+        var vm = new PetViewModel();
+        Assert.NotNull(vm.ObservationBuffer);
+    }
+
+    [Fact]
+    public void MemoryBridge_NullBeforeInitialize()
+    {
+        var vm = new PetViewModel();
+        // MemoryBridge is only created during Initialize(), so it's null before that
+        Assert.Null(vm.MemoryBridge);
+    }
+
+    [Fact]
     public void OnDragStart_SetsStateToDrag()
     {
         var vm = new PetViewModel();

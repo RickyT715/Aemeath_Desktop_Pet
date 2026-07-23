@@ -1,0 +1,46 @@
+step: D0.2
+status: frozen-before-red
+baseline_sha: 94903d9c01570aeb600522a9433596e93ceb2bc1
+requirements:
+  - PRD:AC-FR-022-12
+  - PRD:AC-FR-022-14
+  - PRD:AC-FR-024-01
+  - PRD:AC-FR-024-05
+  - PRD:AC-FR-024-06
+  - PRD:NFR-JA-007-01
+  - PRD:NFR-JA-007-02
+  - PRD:NFR-JA-008-02
+risks:
+  - id: D0.2-R01
+    outcome: A feature-branch push does not start CI.
+  - id: D0.2-R02
+    outcome: A pull-request run validates a synthetic merge tree instead of the pushed head.
+  - id: D0.2-R03
+    outcome: A missing, skipped, advisory, cancelled, or zero-discovery check is accepted.
+  - id: D0.2-R04
+    outcome: Required logs/manifests are absent when a job fails.
+  - id: D0.2-R05
+    outcome: A successful run for another SHA is mistaken for this gate.
+required_lanes:
+  - V-STATIC
+  - V-COMPONENT
+tests_and_probes:
+  - id: D0.2-V-STATIC-001
+    command: pwsh -NoProfile -File tools/ci/Verify-CiWorkflow.ps1
+    red_oracle: The current workflow reports missing dispatch, agent push, exact checkout, required-job manifest, fail-closed result rules, and wait tooling.
+  - id: D0.2-V-STATIC-002
+    command: pwsh -NoProfile -File tools/ci/Test-CiDelivery.ps1
+    green_oracle: Known-bad workflow and result mutations for missing/skipped/neutral/cancelled jobs, zero discovery, reduced execution sets, advisory failures, mutable actions, absent or incomplete artifacts, merge substitution, SHA mismatch, and shortened retention are all rejected.
+  - id: D0.2-V-COMPONENT-001
+    command: pwsh -NoProfile -File tools/ci/Wait-ForCi.ps1 -Sha <pushed-sha>
+    green_oracle: The exact pushed SHA has every configured required job and artifact with conclusion success.
+required_jobs:
+  - Delivery Contract
+  - .NET Release Build
+required_event: push
+expected_artifacts:
+  - delivery-contract-<sha>
+  - dotnet-build-<sha>
+red_evidence: docs/verification/evidence/D0.2-red.md
+green_evidence: docs/verification/evidence/D0.2-green.md
+rollback: Revert the focused workflow/tooling commit; no product or user data changes.

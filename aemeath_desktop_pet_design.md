@@ -1,5 +1,14 @@
 # Aemeath Desktop Pet - Requirements, Design & UI Specification
 
+> [!IMPORTANT]
+> **Historical design source, not the current implementation contract.** This draft records the
+> product and visual intent as of 2026-02-11. Names, schemas, status tables, performance targets,
+> privacy proposals, and examples below may differ from the working application. Use
+> [`README.md`](README.md) for user-facing setup, [`REQUIREMENTS.md`](REQUIREMENTS.md) for the
+> maintained requirement/status ledger, [`docs/architecture.md`](docs/architecture.md) for the
+> canonical runtime architecture, and
+> [`docs/memory_system_design.md`](docs/memory_system_design.md) for memory-specific status.
+
 **Version:** 1.1 Draft
 **Date:** 2026-02-11
 **Based on:** `desktop_pet_design.md` (tech stack foundation)
@@ -1395,91 +1404,16 @@ At 1 screenshot per 60 seconds, 8 hours/day active use:
 
 ## Appendix D: Implementation Status
 
-*Last updated: 2026-02-11*
+This appendix originally carried a point-in-time feature inventory. It became stale as direct AI,
+voice, screen awareness, the Python sidecar, memory services, tests, and settings evolved, and it
+also treated isolated engines as completed user-visible features.
 
-### D.1 Fully Implemented Features
+Use the maintained documents instead:
 
-These features have complete source code and are ready to build once a .NET 8 SDK is installed:
+- [`README.md`](README.md) — user-facing setup and feature guide
+- [`REQUIREMENTS.md`](REQUIREMENTS.md) — requirement and implementation-status ledger
+- [`docs/architecture.md`](docs/architecture.md) — canonical current runtime architecture and known limitations
+- [`docs/memory_system_design.md`](docs/memory_system_design.md) — memory design and partial-implementation matrix
 
-| Feature | Key Files | Notes |
-|---------|-----------|-------|
-| Transparent always-on-top pet window | `Views/PetWindow.xaml(.cs)` | WPF layered window with hit-test-visible sprite |
-| GIF animation engine | `Engine/AnimationEngine.cs` | Frame decode, cache, mirror, configurable FPS |
-| 26-state FSM with weighted transitions | `Engine/BehaviorEngine.cs` | All states mapped, conditional weights by mood/energy/time |
-| Physics (gravity, bounce, drag, flying) | `Engine/PhysicsEngine.cs` | Screen-edge collision, throw velocity, ground detection |
-| Environment detection | `Engine/EnvironmentDetector.cs` | Screen bounds, fullscreen detection, window enumeration |
-| JSON config load/save | `Services/ConfigService.cs` | `%LOCALAPPDATA%\AemeathDesktopPet\config.json` |
-| Music playback | `Services/MusicService.cs` | Folder scan, shuffle, MediaPlayer |
-| Stats system (Mood/Energy/Affection) | `Models/AemeathStats.cs`, `Services/StatsService.cs` | Offline decay with diminishing returns, interaction effects, periodic timer |
-| Conversation memory | `Services/MemoryService.cs` | 200-message cap, context window, JSON persistence |
-| JSON persistence | `Services/JsonPersistenceService.cs` | Stats + messages to `%LOCALAPPDATA%` |
-| Digital ghost glitch effect | `Engine/GlitchEffect.cs` | Opacity flicker, horizontal displacement, RGB split flag |
-| Particle system | `Engine/ParticleSystem.cs` | 6 types (♪ ♥ ✦ Z 🐾 •), max 12 particles, Canvas rendering |
-| Paper plane system | `Engine/PaperPlaneSystem.cs` | Thrown (parabolic) + ambient (edge spawn), click interaction |
-| Black cat companion FSM | `Engine/CatBehaviorEngine.cs` | 12 states, follows Aemeath, reacts to events |
-| Cat companion window | `Views/CatWindow.xaml(.cs)` | Separate transparent window, Unicode emoji placeholder |
-| Window edge detection | `Engine/WindowEdgeManager.cs` | Title bar proximity, SetWinEventHook, perch tracking |
-| Time-of-day awareness | `Engine/TimeAwareness.cs` | 5 periods, sleep conditions, used by behavior engine |
-| Offline character responses | `Models/OfflineResponses.cs` | 75+ pre-scripted lines, contextual selection by stats/time |
-| Speech bubble | `Views/SpeechBubble.xaml(.cs)` | Streaming text, auto-dismiss, themed styling |
-| Chat window | `Views/ChatWindow.xaml(.cs)`, `ViewModels/ChatViewModel.cs` | Dark theme, message history, streaming display |
-| Stats popup | `Views/StatsPopup.xaml(.cs)` | Gradient stat bars, lifetime counters, Aemeath comment |
-| Settings (6-tab) | `Views/SettingsWindow.xaml(.cs)` | General, Appearance, Music, AI, Voice, Screen tabs |
-| Full context menu | `Views/PetWindow.xaml.cs` | Sing, Chat, Paper Plane, Call Cat, How's Aemeath?, Settings, Quit |
-| System tray with expanded menu | `Views/PetWindow.xaml.cs` | Show, Chat, Paper Plane, Settings, Quit |
-| Themed UI (AemeathTheme) | `Themes/AemeathTheme.xaml` | 11 named colors + brushes, dark palette |
-
-### D.2 Interface Stubs (Awaiting External Dependencies)
-
-These features have proper interfaces and stub implementations that compile and run but return "unavailable":
-
-| Feature | Interface | Stub | What's Needed |
-|---------|-----------|------|---------------|
-| AI Chat (Claude API) | `Services/IChatService.cs` | `Services/ClaudeApiService.cs` | Anthropic API key in Settings → AI tab. Code is complete — just needs a valid key. |
-| TTS Voice | `Services/ITtsService.cs` | `Services/TtsServiceStub.cs` | GPT-SoVITS server running locally, or cloud TTS provider. Implement `ITtsService` with real provider. |
-| Screen Awareness | `Services/IScreenAwarenessService.cs` | `Services/ScreenAwarenessStub.cs` | Vision LLM API (local or cloud). Implement `IScreenAwarenessService` with privacy pipeline from Appendix C. |
-
-### D.3 Assets Needed
-
-| Asset | Current State | Required |
-|-------|--------------|----------|
-| Aemeath sprites (9 GIFs) | Present in `Resources/Sprites/Aemeath/` | Working |
-| Seal transformation sprite | Present in `Resources/Sprites/Seal/` | Working |
-| Black cat sprites | **Missing** — using Unicode emoji placeholder | Need GIF set: idle, walk, nap, groom, pounce, watch, rub, startled, purr, perch, chase, bat |
-| Paper plane sprite | **Missing** — using Unicode ✈ placeholder | Need small GIF or PNG (~32x32) |
-| System tray icon | **Missing** — needs `aemeath.ico` | Need .ico file in `Resources/` |
-| App icon | **Missing** | Need .ico for window/taskbar |
-
-### D.4 Build Requirements
-
-- **.NET 8 SDK** (not just runtime) — currently only .NET 8.0.21 runtime is installed
-- No additional NuGet packages needed beyond existing (`Hardcodet.NotifyIcon.Wpf`, `System.Drawing.Common`)
-- Build: `dotnet build src/AemeathDesktopPet/AemeathDesktopPet.csproj`
-- Test: `dotnet test tests/AemeathDesktopPet.Tests/`
-
-### D.5 Architecture Summary
-
-```
-src/AemeathDesktopPet/
-├── Models/          AemeathStats, AppConfig, CatState, ChatMessage, OfflineResponses, PetState
-├── Engine/          AnimationEngine, BehaviorEngine, CatBehaviorEngine, EnvironmentDetector,
-│                    GlitchEffect, PaperPlaneSystem, ParticleSystem, PhysicsEngine,
-│                    TimeAwareness, WindowEdgeManager
-├── Services/        ClaudeApiService, ConfigService, IChatService, IScreenAwarenessService,
-│                    ITtsService, JsonPersistenceService, MemoryService, MusicService,
-│                    ScreenAwarenessStub, StatsService, TtsServiceStub
-├── ViewModels/      ChatViewModel, PetViewModel
-├── Views/           CatWindow, ChatWindow, PetWindow, SettingsWindow, SpeechBubble, StatsPopup
-├── Interop/         Win32Api
-├── Themes/          AemeathTheme.xaml
-└── Resources/Sprites/  Aemeath/ (9 GIFs), Seal/ (1 GIF)
-
-tests/AemeathDesktopPet.Tests/
-├── Models/          AemeathStatsTests, ChatMessageTests, CatStateTests, OfflineResponsesTests
-├── Engine/          BehaviorEngineTests, TimeAwarenessTests
-├── Services/        JsonPersistenceServiceTests, MemoryServiceTests, StatsServiceTests
-└── ViewModels/      PetViewModelTests
-```
-
-**Total source files:** ~40 (.cs) + ~10 (.xaml)
-**Total test files:** 10 test classes, ~80 test methods
+The historical requirements, UI specifications, and asset direction in the main body remain useful
+as design intent. They do not override those current-state references.

@@ -66,6 +66,7 @@ def create_app() -> FastAPI:
     from aemeath_agent.api.routes_agent import router as agent_router
     from aemeath_agent.api.routes_config import router as config_router
     from aemeath_agent.api.routes_health import router as health_router
+    from aemeath_agent.api.routes_memory import router as memory_router
     from aemeath_agent.api.routes_rag import router as rag_router
     from aemeath_agent.api.routes_stt import router as stt_router
     from aemeath_agent.api.routes_vision import router as vision_router
@@ -76,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(stt_router)
     app.include_router(vision_router)
     app.include_router(rag_router)
+    app.include_router(memory_router)
 
     return app
 

@@ -1,5 +1,12 @@
 # Building a full-featured desktop pet for Windows
 
+> [!IMPORTANT]
+> **Archived research foundation.** This report predates the present Aemeath implementation and
+> compares possible technologies and patterns; it is not a source of truth for current features,
+> dependencies, storage, performance, or security. Treat all project/version counts and benchmark
+> claims as historical research. See [`docs/architecture.md`](docs/architecture.md),
+> [`README.md`](README.md), and [`REQUIREMENTS.md`](REQUIREMENTS.md) for maintained project facts.
+
 **C# with WPF or WinForms backed by Win32 interop is the proven, optimal tech stack** for a desktop pet application—delivering transparent click-through windows, smooth sprite animation at under 50 MB RAM, and native system tray integration. This conclusion is validated by eSheep64bit (~1,000 GitHub stars, available on the Microsoft Store), which uses exactly this approach. Combined with a data-driven animation state machine, Claude API for personality-rich chat, SQLite persistence, and a plugin architecture via .NET's Managed Extensibility Framework, a full-featured desktop pet can be built that runs all day at less than 1% CPU.
 
 This report synthesizes findings across existing projects, tech stacks, animation systems, AI integration, UX patterns, plugin architecture, persistence, and performance—providing the foundation for SRS, SDD, and UI/UX design documents.

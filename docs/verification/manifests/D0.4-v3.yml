@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.4-v3",
+  "revision": 3,
+  "previousManifestId": "D0.4-v2",
+  "invalidationReason": null,
+  "stepId": "D0.4",
+  "status": "frozen-before-red",
+  "baselineSha": "b7eafb683d37d80bd60b59e850311acd79d2a569",
+  "scope": "Prove hosted delivery capabilities with exact capability contracts, immutable exact-SHA runtime evidence, independent static/hosted discovery floors, repository-policy cross-fields, hash-bound snapshots and RED provenance, trace backlinks, and manifest-derived CI alignment while keeping absent later prerequisites fail-closed.",
+  "requirementIds": ["PRD:RISK-012"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-017"],
+  "risks": [
+    { "id": "D0.4-R01", "outcome": "A required delivery capability has the wrong owner, required step, first blocking step, phase state, evidence, or closure decision.", "laneIds": ["V-STATIC"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "D0.4-R02", "outcome": "The hosted Windows probe fails to observe or truthfully record OS, architecture, session, UIA, display/DPI, assistive technology, storage, cleanup, network, timeout, or data handling, or a ready state is not bound to the exact runtime artifact and source SHA.", "laneIds": ["V-REAL-E2E"], "probeIds": ["D0.4-V-REAL-E2E-HOSTED-WINDOWS"] },
+    { "id": "D0.4-R03", "outcome": "An absent self-hosted runner, archive, signing identity, pilot resource, or provider prerequisite is mislabeled ready or optional.", "laneIds": ["V-STATIC"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "D0.4-R04", "outcome": "Capability evidence exposes secret/personal data, contradicts the public GitHub snapshot, or is not hash-bound to its source.", "laneIds": ["V-STATIC", "V-REAL-E2E"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT", "D0.4-V-REAL-E2E-HOSTED-WINDOWS"] },
+    { "id": "D0.4-R05", "outcome": "Trace backlinks, required-check metadata, workflow runner, probe command, per-lane discovery, evidence files, or retention differ from the frozen manifest.", "laneIds": ["V-STATIC", "V-REAL-E2E"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT", "D0.4-V-REAL-E2E-HOSTED-WINDOWS"] }
+  ],
+  "lanes": [
+    { "id": "V-STATIC", "required": true, "rationale": "Validate exact capability/phase contracts, provenance, trace backlinks, redaction, repository state, runtime-evidence readiness binding, and CI alignment.", "riskIds": ["D0.4-R01", "D0.4-R03", "D0.4-R04", "D0.4-R05"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"] },
+    { "id": "V-REAL-E2E", "required": true, "rationale": "Execute at least nine independently counted observation probes on the actual disposable GitHub-hosted Windows image without treating an absent interactive desktop as ready.", "riskIds": ["D0.4-R02", "D0.4-R04", "D0.4-R05"], "probeIds": ["D0.4-V-REAL-E2E-HOSTED-WINDOWS"], "environmentIds": ["ENV-GHA-WINDOWS"] }
+  ],
+  "probes": [
+    {
+      "id": "D0.4-V-STATIC-STATIC-CONTRACT",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-EnvironmentReadiness.ps1 -Mode Static",
+      "minimumDiscovery": 16,
+      "redOracle": "The v2 verifier accepts hosted readiness backed only by a generic snapshot and does not independently enforce a hosted-runtime discovery floor.",
+      "riskIds": ["D0.4-R01", "D0.4-R03", "D0.4-R04", "D0.4-R05"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:RISK-012"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 16, "minimumStaticDiscovery": 16, "requiredCapabilities": 12, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.4-V-REAL-E2E-HOSTED-WINDOWS",
+      "command": "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment",
+      "minimumDiscovery": 9,
+      "redOracle": "The hosted runner must execute at least nine independently counted runtime probes, block on required base capabilities, bind ready status to the exact-SHA artifact, and record rather than overclaim session/display/assistive observations.",
+      "riskIds": ["D0.4-R02", "D0.4-R04", "D0.4-R05"],
+      "laneIds": ["V-REAL-E2E"],
+      "requirementIds": ["PRD:RISK-012"],
+      "environmentIds": ["ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 9, "minimumHostedDiscovery": 9, "minimumFreeBytes": 5368709120, "maximumUnexpectedSkips": 0, "maximumPersonalDataFields": 0 }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1", "purpose": "Local static RED/GREEN and disposable hosted-probe simulation" },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+", "purpose": "Existing exact-SHA delivery and schema validation" },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+", "purpose": "Disposable hosted Windows capability observation" },
+    { "id": "ENV-INTERACTIVE-WIN10", "os": "Windows 10 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later real desktop and assistive-technology evidence" },
+    { "id": "ENV-INTERACTIVE-WIN11", "os": "Windows 11 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later UIA, real desktop, and assistive-technology evidence" }
+  ],
+  "fixtures": [],
+  "services": ["GitHub Actions", "GitHub artifact storage", "Windows code signing", "pilot coordination", "provider account controls"],
+  "thresholds": { "minimumDiscovery": 16, "minimumStaticDiscovery": 16, "minimumHostedDiscovery": 9, "requiredCapabilities": 12, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "artifactRetentionDays": 90 },
+  "capabilityContracts": [
+    { "id": "CAP-BRANCH-PROTECTION", "ownerRole": "repository administrator", "requiredForSteps": ["D0.4", "P0A.9", "P11.4"], "firstBlockingStep": "D0.4 closure", "preflightStates": ["blocked", "pending", "ready"], "closureStates": ["ready"] },
+    { "id": "CAP-CI-ARTIFACT-RETENTION", "ownerRole": "delivery owner", "requiredForSteps": ["D0.4", "P0A.1", "P0A.2"], "firstBlockingStep": null, "preflightStates": ["ready"], "closureStates": ["ready"] },
+    { "id": "CAP-CODE-SIGNING", "ownerRole": "release owner", "requiredForSteps": ["P11.1"], "firstBlockingStep": "P11.1 signed package release", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-GHA-UBUNTU-EXACT-SHA", "ownerRole": "delivery owner", "requiredForSteps": ["D0.4", "P0A.1"], "firstBlockingStep": null, "preflightStates": ["ready"], "closureStates": ["ready"] },
+    { "id": "CAP-GHA-WINDOWS-CAPABILITY-PROBE", "ownerRole": "delivery owner", "requiredForSteps": ["D0.4", "P0A.2"], "firstBlockingStep": "D0.4 closure", "preflightStates": ["pending", "ready"], "closureStates": ["ready"] },
+    { "id": "CAP-GHA-WINDOWS-RELEASE-BUILD", "ownerRole": "delivery owner", "requiredForSteps": ["D0.4", "P0A.1", "P0A.2"], "firstBlockingStep": null, "preflightStates": ["ready"], "closureStates": ["ready"] },
+    { "id": "CAP-INTERACTIVE-WIN10", "ownerRole": "infrastructure owner", "requiredForSteps": ["P0A.8", "P11.1"], "firstBlockingStep": "P0A.8 Windows 10 real-boundary lane", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-INTERACTIVE-WIN11", "ownerRole": "infrastructure owner", "requiredForSteps": ["P0A.7", "P0A.8", "P11.1"], "firstBlockingStep": "P0A.7 process UI Automation lane when hosted Windows is not interactive", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-LONG-TERM-ARCHIVE", "ownerRole": "infrastructure owner", "requiredForSteps": ["P0A.9", "P11.1", "P11.4"], "firstBlockingStep": "P0A.9 signed baseline archive", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-PILOT-HARDWARE-PARTICIPANTS", "ownerRole": "product owner", "requiredForSteps": ["P11.2"], "firstBlockingStep": "P11.2 bounded pilot", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-PROVIDER-TERMS-CREDENTIALS", "ownerRole": "product owner", "requiredForSteps": ["H0.1", "P9.1", "P9.2", "P10.3"], "firstBlockingStep": "H0.1 provider route and retention validation", "preflightStates": ["blocked"], "closureStates": ["blocked"] },
+    { "id": "CAP-SELF-HOSTED-RUNNER-LABELS", "ownerRole": "infrastructure owner", "requiredForSteps": ["P0A.7", "P0A.8", "P11.1"], "firstBlockingStep": "P0A.7 process UI Automation lane when hosted Windows is not interactive", "preflightStates": ["blocked"], "closureStates": ["blocked"] }
+  ],
+  "hostedRuntimeContract": {
+    "capabilityId": "CAP-GHA-WINDOWS-CAPABILITY-PROBE",
+    "evidencePath": "docs/verification/evidence/D0.4-hosted-windows-capabilities.json",
+    "schemaPath": "docs/verification/schemas/hosted-windows-capabilities-v1.schema.json",
+    "greenEvidencePath": "docs/verification/evidence/D0.4-green.md",
+    "sourceShaField": "verifiedSourceSha",
+    "minimumHostedDiscovery": 9,
+    "requiredTrueFields": ["uiaAssembliesLoaded", "isolatedStorageRoundTrip", "cleanupVerified", "githubNetworkAllowed", "timeoutEnforced", "personalDataCollectedFalse", "secretValuesCollectedFalse"],
+    "observationOnlyFields": ["userInteractive", "displayProbeAvailable", "narratorObserved"]
+  },
+  "owners": [
+    { "role": "delivery owner", "accountability": "Collect redacted capability evidence, maintain required checks, and keep absent prerequisites fail-closed." },
+    { "role": "infrastructure owner", "accountability": "Provision/reset interactive workers, archive, signing, and protected GitHub settings before their first blocking step." },
+    { "role": "product owner", "accountability": "Provide pilot authorization and approve provider terms before live-provider or pilot evidence." },
+    { "role": "independent verification reviewer", "accountability": "Challenge false readiness, state/step drift, secret exposure, unsupported runner claims, and blocker downgrades." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "environment-readiness-tests.log", "hosted-windows-capabilities.json"]
+}

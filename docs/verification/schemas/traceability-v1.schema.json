@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/traceability-v1.schema.json",
+  "title": "Aemeath requirement traceability v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "documentType", "generatedDate", "baselineSha",
+    "currentRequirementsOriginSha", "scopeNotes", "sources", "dispositionMaps", "entries", "testCatalog"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "requirement-traceability" },
+    "generatedDate": { "type": "string", "format": "date" },
+    "baselineSha": { "$ref": "#/$defs/sha" },
+    "currentRequirementsOriginSha": { "$ref": "#/$defs/sha" },
+    "scopeNotes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path", "revision", "hashMode", "sha256"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z][A-Z0-9:-]+$" },
+          "path": { "type": "string", "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))[^/].*\\.md$" },
+          "revision": { "$ref": "#/$defs/sha" },
+          "hashMode": { "enum": ["normalized-text", "normalized-checkbox-text"] },
+          "sha256": { "$ref": "#/$defs/contentHash" }
+        }
+      }
+    },
+    "dispositionMaps": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "sourceId", "sourceRevision", "baselineSha", "entryCount", "recordsSha256", "effectiveDefault", "approvalIds"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^REQMAP-[A-Z0-9-]+-V[0-9]+$" },
+          "sourceId": { "type": "string", "minLength": 1 },
+          "sourceRevision": { "$ref": "#/$defs/sha" },
+          "baselineSha": { "$ref": "#/$defs/sha" },
+          "entryCount": { "type": "integer", "minimum": 1 },
+          "recordsSha256": { "$ref": "#/$defs/contentHash" },
+          "effectiveDefault": { "const": "preserve" },
+          "approvalIds": {
+            "type": "array", "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^APP-[0-9]{3}$" }
+          }
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 352,
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "testCatalog": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/testCatalogEntry" }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "contentHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "step": {
+      "type": "string",
+      "pattern": "^(D0\\.[1-5]|H0\\.[1-6]|P0[AB]\\.[1-9][a-z]?|P[1-9][0-9]*\\.[1-9][0-9]*[a-z]?)$"
+    },
+    "lane": {
+      "enum": [
+        "V-UNIT", "V-COMPONENT", "V-CONTRACT", "V-WPF", "V-UIA", "V-FIXTURE-E2E",
+        "V-REAL-E2E", "V-SECURITY", "V-ACCESS", "V-PERF", "V-PACKAGE", "V-STATIC",
+        "V-MANUAL-WIN", "V-LEGACY"
+      ]
+    },
+    "qualifiedRequirementId": {
+      "type": "string",
+      "pattern": "^(CURRENT:((AR|FR-(PET|AI|VOICE|VISION|MEM|FUT)|PR|NFR)-[0-9]{3}|AC-(AR|PET|AI|VOICE|VISION|MEM|FUT)-[0-9]{3}|LOC-[A-Z]+)|PRD:(AC-FR-[0-9]{3}-[0-9]{2}|NFR-JA-[0-9]{3}(-[0-9]{2})?|GATE-(0|[A-E])-[0-9]{2}|RISK-[0-9]{3}))$"
+    },
+    "testId": {
+      "type": "string",
+      "pattern": "^(D0\\.[1-5]|H0\\.[1-6]|P0[AB]\\.[1-9][a-z]?|P[1-9][0-9]*\\.[1-9][0-9]*[a-z]?)-V-[A-Z0-9-]+-[A-Z0-9-]+$"
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "namespace", "sourceId", "sourcePath", "sourceLine", "sourceEndLine",
+        "sourceToken", "sourceTextSha256", "mapId", "currentStatus", "disposition",
+        "proposedDisposition", "approvalId", "approvalStatus", "baselineTreatment",
+        "behaviorIds", "designSections", "uiSections", "checklistSteps", "testIds", "lanes",
+        "evidencePaths"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/qualifiedRequirementId" },
+        "namespace": { "enum": ["CURRENT", "PRD"] },
+        "sourceId": { "type": "string", "minLength": 1 },
+        "sourcePath": { "type": "string", "minLength": 1 },
+        "sourceLine": { "type": "integer", "minimum": 1 },
+        "sourceEndLine": { "type": "integer", "minimum": 1 },
+        "sourceToken": { "type": "string", "minLength": 1 },
+        "sourceTextSha256": { "$ref": "#/$defs/contentHash" },
+        "mapId": { "type": ["string", "null"] },
+        "currentStatus": { "type": ["string", "null"] },
+        "disposition": { "enum": ["preserve", "change", "defer", "remove", "target"] },
+        "proposedDisposition": { "enum": ["preserve", "change", "defer", "remove", "target"] },
+        "approvalId": { "type": ["string", "null"], "pattern": "^APP-[0-9]{3}$" },
+        "approvalStatus": { "enum": ["not-required", "pending", "approved", "rejected"] },
+        "baselineTreatment": {
+          "enum": ["baseline-qualification", "baseline-plus-future-red", "future-red-only", "contextual-section", "not-applicable"]
+        },
+        "behaviorIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^PB-(00[1-9]|01[0-8])$" }
+        },
+        "designSections": { "$ref": "#/$defs/locators" },
+        "uiSections": { "$ref": "#/$defs/locators" },
+        "checklistSteps": { "$ref": "#/$defs/locators" },
+        "testIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/testId" }
+        },
+        "lanes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/lane" }
+        },
+        "evidencePaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^docs/verification/evidence/[a-z0-9./-]+\\.(json|md)$" }
+        }
+      }
+    },
+    "testCatalogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "status", "ownerStep", "lane", "testKind", "requirementIds", "behaviorIds", "tddMode",
+        "executionExpectation", "commandStatus", "oracleStatus", "environmentStatus"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/testId" },
+        "status": { "enum": ["planned", "implemented", "retired"] },
+        "ownerStep": { "$ref": "#/$defs/step" },
+        "lane": { "$ref": "#/$defs/lane" },
+        "testKind": { "enum": ["suite", "journey", "gate-probe"] },
+        "requirementIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/qualifiedRequirementId" }
+        },
+        "behaviorIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^PB-(00[1-9]|01[0-8])$" }
+        },
+        "tddMode": { "enum": ["red-first", "characterization-first", "legacy-regression"] },
+        "executionExpectation": { "enum": ["expected-red-before-implementation", "passing-baseline-or-explicit-gap", "separate-legacy-regression"] },
+        "commandStatus": { "const": "freeze-in-step-manifest-before-red" },
+        "oracleStatus": { "const": "freeze-in-step-manifest-before-red" },
+        "environmentStatus": { "const": "freeze-in-step-manifest-before-red" }
+      }
+    },
+    "locators": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[^#]+\\.md#[a-z0-9][a-z0-9-]*$" }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.3-v1",
+  "stepId": "D0.3",
+  "status": "frozen-before-red",
+  "baselineSha": "a6c15496cf2893a24e560c01ef4e598a635859cc",
+  "scope": "Qualified traceability plus risk/lane, RED-GREEN-VERIFY, and exact-SHA manifest schemas.",
+  "risks": [
+    {
+      "id": "D0.3-R01",
+      "outcome": "A current or future normative requirement is missing, duplicated, or ambiguously qualified."
+    },
+    {
+      "id": "D0.3-R02",
+      "outcome": "A source document changes without invalidating its traceability evidence."
+    },
+    {
+      "id": "D0.3-R03",
+      "outcome": "A requirement has no design, UI, checklist, planned-test, lane, or evidence mapping."
+    },
+    {
+      "id": "D0.3-R04",
+      "outcome": "An unknown test or acceptance criterion is accepted as covered."
+    },
+    {
+      "id": "D0.3-R05",
+      "outcome": "Later steps publish incomplete or structurally ambiguous verification manifests."
+    }
+  ],
+  "lanes": [
+    {
+      "id": "V-STATIC",
+      "required": true,
+      "rationale": "D0.3 changes verification metadata and executable meta-tests only."
+    }
+  ],
+  "probes": [
+    {
+      "id": "D0.3-V-STATIC-001",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-VerificationContracts.ps1",
+      "minimumDiscovery": 1,
+      "redOracle": "The probe rejects the missing traceability document, schemas, examples, and known-bad fixture set."
+    }
+  ],
+  "expectedArtifacts": [
+    "verification-contract-tests.log"
+  ]
+}

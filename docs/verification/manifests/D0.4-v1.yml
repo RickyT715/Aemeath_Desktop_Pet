@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.4-v1",
+  "revision": 1,
+  "previousManifestId": null,
+  "invalidationReason": null,
+  "stepId": "D0.4",
+  "status": "frozen-before-red",
+  "baselineSha": "b7eafb683d37d80bd60b59e850311acd79d2a569",
+  "scope": "Prove hosted delivery capabilities and fail closed on every absent interactive Windows, archive, signing, branch-protection, pilot, or provider prerequisite without storing personal data or secret values.",
+  "requirementIds": ["PRD:RISK-012"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-017"],
+  "risks": [
+    { "id": "D0.4-R01", "outcome": "A required delivery capability has no accountable owner, state, evidence, or blocking step.", "laneIds": ["V-STATIC"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "D0.4-R02", "outcome": "A GitHub-hosted Windows image lacks the declared OS, architecture, UIA, isolated storage, network, or timeout capabilities.", "laneIds": ["V-REAL-E2E"], "probeIds": ["D0.4-V-REAL-E2E-HOSTED-WINDOWS"] },
+    { "id": "D0.4-R03", "outcome": "An absent self-hosted runner, archive, signing identity, pilot resource, or provider prerequisite is mislabeled ready or optional.", "laneIds": ["V-STATIC"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "D0.4-R04", "outcome": "Capability evidence exposes a secret value, personal data, machine-unique user path, or unredacted credential material.", "laneIds": ["V-STATIC", "V-REAL-E2E"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT", "D0.4-V-REAL-E2E-HOSTED-WINDOWS"] },
+    { "id": "D0.4-R05", "outcome": "Required-check metadata, workflow runner, probe command, evidence files, or retention differs from the frozen readiness contract.", "laneIds": ["V-STATIC"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"] }
+  ],
+  "lanes": [
+    { "id": "V-STATIC", "required": true, "rationale": "Validate the redacted inventory, ownership, blockers, schema, and CI contract.", "riskIds": ["D0.4-R01", "D0.4-R03", "D0.4-R04", "D0.4-R05"], "probeIds": ["D0.4-V-STATIC-STATIC-CONTRACT"], "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"] },
+    { "id": "V-REAL-E2E", "required": true, "rationale": "Execute capability probes on the actual disposable GitHub-hosted Windows image.", "riskIds": ["D0.4-R02", "D0.4-R04"], "probeIds": ["D0.4-V-REAL-E2E-HOSTED-WINDOWS"], "environmentIds": ["ENV-GHA-WINDOWS"] }
+  ],
+  "probes": [
+    {
+      "id": "D0.4-V-STATIC-STATIC-CONTRACT",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/verification/Test-EnvironmentReadiness.ps1 -Mode Static",
+      "minimumDiscovery": 10,
+      "redOracle": "The pre-D0.4 repository has no schema-valid, owner-complete, fail-closed delivery-capability inventory.",
+      "riskIds": ["D0.4-R01", "D0.4-R03", "D0.4-R04", "D0.4-R05"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": ["PRD:RISK-012"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 10, "requiredCapabilities": 12, "maximumUnexpectedSkips": 0, "maximumSecretValues": 0, "artifactRetentionDays": 90 }
+    },
+    {
+      "id": "D0.4-V-REAL-E2E-HOSTED-WINDOWS",
+      "command": "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment",
+      "minimumDiscovery": 10,
+      "redOracle": "The actual hosted Windows runner must prove the frozen OS, architecture, UIA assembly, isolated-storage, network-policy, and timeout capabilities.",
+      "riskIds": ["D0.4-R02", "D0.4-R04"],
+      "laneIds": ["V-REAL-E2E"],
+      "requirementIds": ["PRD:RISK-012"],
+      "environmentIds": ["ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "minimumDiscovery": 10, "minimumFreeBytes": 5368709120, "maximumUnexpectedSkips": 0, "maximumPersonalDataFields": 0 }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows development environment", "shell": "Windows PowerShell 5.1", "purpose": "Local static RED/GREEN" },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+", "purpose": "Existing exact-SHA delivery and schema validation" },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+", "purpose": "Disposable hosted Windows capability proof" },
+    { "id": "ENV-INTERACTIVE-WIN10", "os": "Windows 10 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later real desktop and assistive-technology evidence" },
+    { "id": "ENV-INTERACTIVE-WIN11", "os": "Windows 11 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later real desktop and assistive-technology evidence" }
+  ],
+  "fixtures": [],
+  "services": ["GitHub Actions", "GitHub artifact storage", "Windows code signing", "pilot coordination", "provider account controls"],
+  "thresholds": {
+    "minimumDiscovery": 10,
+    "requiredCapabilities": 12,
+    "maximumUnexpectedSkips": 0,
+    "maximumSecretValues": 0,
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "delivery owner", "accountability": "Collect redacted capability evidence, maintain required checks, and keep absent prerequisites fail-closed." },
+    { "role": "infrastructure owner", "accountability": "Provision/reset interactive workers, archive, signing, and protected GitHub settings before their first blocking step." },
+    { "role": "product owner", "accountability": "Provide pilot authorization and approve provider terms before live-provider or pilot evidence." },
+    { "role": "independent verification reviewer", "accountability": "Challenge false readiness, secret exposure, unsupported runner claims, and blocker downgrades." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "environment-readiness-tests.log", "hosted-windows-capabilities.json"]
+}

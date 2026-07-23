@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.5-v1-invalidated-by-v2",
+  "invalidatedManifestId": "D0.5-v1",
+  "frozenArtifactPath": "docs/verification/manifests/D0.5-v1.yml",
+  "frozenArtifactSha256": "3ba590b540db3838e69ade6a9f298bc139ecc567f9feccae630fd940e103a716",
+  "replacementManifestId": "D0.5-v2",
+  "invalidatedAt": "2026-07-23T05:11:38Z",
+  "reason": "Independent integration review proved that v1 hashed a downloaded wheel but installed a second index resolution, omitted per-operation bounds and attempts, did not audit partial evidence before upload, under-validated semantic evidence, and did not atomically bind the archived source to SOURCE_SHA.",
+  "reviewer": "independent-integration-test-reviewer-role"
+}

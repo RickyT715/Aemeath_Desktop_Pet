@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.3-v2-invalidated-by-v3",
+  "invalidatedManifestId": "D0.3-v2",
+  "frozenArtifactPath": "docs/verification/manifests/D0.3-v2.yml",
+  "frozenArtifactSha256": "09e73b9d7f9345d4c362555401298d24ce3b6021194f37f26e5e101c18e29579",
+  "replacementManifestId": "D0.3-v3",
+  "invalidatedAt": "2026-07-22T11:05:00Z",
+  "reason": "Independent review found aggregate hash gaps, phantom lane ownership, non-reusable journey IDs, future-gap Gate 0 ambiguity, and fail-open cross-field semantics.",
+  "reviewer": "independent-verification-reviewer-role"
+}

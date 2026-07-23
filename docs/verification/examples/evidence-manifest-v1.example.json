@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "phase-evidence",
+  "manifestId": "P1.1-red-v1",
+  "riskManifestId": "P1.1-v1",
+  "stepId": "P1.1",
+  "phase": "RED",
+  "sourceSha": "1111111111111111111111111111111111111111",
+  "startedAt": "2026-07-22T00:00:00Z",
+  "completedAt": "2026-07-22T00:01:00Z",
+  "command": "dotnet test --filter FullyQualifiedName~P1_1",
+  "testIds": ["P1.1-V-UNIT-EXAMPLE-001"],
+  "lanes": ["V-UNIT"],
+  "environment": {
+    "id": "ENV-GHA-WINDOWS",
+    "os": "Windows Server hosted image",
+    "architecture": "x64",
+    "runnerClass": "github-hosted",
+    "tools": { "dotnet": "8.0.x" },
+    "configuration": "Release",
+    "seed": null
+  },
+  "expectedExit": 1,
+  "actualExit": 1,
+  "discovery": { "minimum": 1, "actual": 1, "executed": 1, "passed": 0, "failed": 1, "skipped": 0 },
+  "oracle": "The failure names the intended missing policy behavior, not setup or compilation.",
+  "thresholds": { "failedAtIntendedOracle": true, "maximumUnexpectedSkips": 0 },
+  "result": "pass",
+  "observations": ["The intended assertion failed."],
+  "exclusions": ["No live service or personal data was used."],
+  "artifacts": [
+    {
+      "path": "artifacts/P1.1/red.trx",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "redacted": true,
+      "category": "test-result"
+    }
+  ],
+  "review": {
+    "reviewer": "independent-reviewer-role",
+    "timestamp": "2026-07-22T00:02:00Z",
+    "decision": "approved",
+    "thresholdDecision": "Expected nonzero discovery and intended RED oracle were met."
+  }
+}

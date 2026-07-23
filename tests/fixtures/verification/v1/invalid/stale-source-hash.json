@@ -1,0 +1,5 @@
+{
+  "mutation": "replace-source-hash",
+  "target": "PRD:JARVIS",
+  "expectedCode": "TRACE-STALE-SOURCE-HASH"
+}

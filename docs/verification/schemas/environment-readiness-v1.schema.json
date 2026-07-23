@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/environment-readiness-v1.schema.json",
+  "title": "Aemeath delivery-environment readiness inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "documentType", "manifestId", "riskManifestId", "riskManifestSha256",
+    "baselineSha", "verifiedSourceSha", "verifiedRunId", "hostedRuntimeEvidenceSha256",
+    "sourceIdentityPath", "sourceIdentitySha256", "phase", "collectedAt", "repository",
+    "capabilities", "summary", "dataHandling", "review"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "documentType": { "const": "delivery-environment-readiness" },
+    "manifestId": { "const": "D0.4-READINESS-v1" },
+    "riskManifestId": { "const": "D0.4-v3" },
+    "riskManifestSha256": { "$ref": "#/$defs/sha256" },
+    "baselineSha": { "$ref": "#/$defs/sha1" },
+    "verifiedSourceSha": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" },
+    "verifiedRunId": { "type": ["string", "null"], "pattern": "^[1-9][0-9]*$" },
+    "hostedRuntimeEvidenceSha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "sourceIdentityPath": { "const": "docs/verification/evidence/D0.4-source-identity.json" },
+    "sourceIdentitySha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "phase": { "enum": ["preflight", "closure"] },
+    "collectedAt": { "type": "string", "format": "date-time" },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nameWithOwner", "visibility", "defaultBranch", "branchProtected", "rulesetCount",
+        "selfHostedRunnerCount", "actionsSecretCount", "environmentCount",
+        "branchProtectionPermission", "snapshotPath", "snapshotSha256", "evidenceRefs"
+      ],
+      "properties": {
+        "nameWithOwner": { "const": "RickyT715/Aemeath_Desktop_Pet" },
+        "visibility": { "enum": ["PUBLIC", "PRIVATE", "INTERNAL"] },
+        "defaultBranch": { "type": "string", "minLength": 1 },
+        "branchProtected": { "type": "boolean" },
+        "rulesetCount": { "type": "integer", "minimum": 0 },
+        "selfHostedRunnerCount": { "type": "integer", "minimum": 0 },
+        "actionsSecretCount": { "type": "integer", "minimum": 0 },
+        "environmentCount": { "type": "integer", "minimum": 0 },
+        "branchProtectionPermission": { "enum": ["ADMIN", "MAINTAIN", "WRITE", "TRIAGE", "READ", "UNKNOWN"] },
+        "snapshotPath": { "const": "docs/verification/evidence/D0.4-github-snapshot.md" },
+        "snapshotSha256": { "$ref": "#/$defs/sha256" },
+        "evidenceRefs": { "$ref": "#/$defs/nonEmptyUniqueStrings" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "category", "state", "ownerRole", "requiredForSteps", "firstBlockingStep",
+          "verifiedAt", "evidenceRefs", "observation", "blockerReason", "remediation",
+          "containsPersonalData", "containsSecretValues"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^CAP-[A-Z0-9-]+$" },
+          "category": { "enum": ["hosted-runner", "interactive-runner", "evidence-storage", "signing", "repository-governance", "pilot", "provider"] },
+          "state": { "enum": ["ready", "blocked", "pending"] },
+          "ownerRole": { "type": "string", "minLength": 3 },
+          "requiredForSteps": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "firstBlockingStep": { "type": ["string", "null"] },
+          "verifiedAt": { "type": ["string", "null"], "format": "date-time" },
+          "evidenceRefs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "observation": { "type": "string", "minLength": 1 },
+          "blockerReason": { "type": ["string", "null"] },
+          "remediation": { "type": ["string", "null"] },
+          "containsPersonalData": { "const": false },
+          "containsSecretValues": { "const": false }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "state": { "const": "ready" } } },
+            "then": {
+              "properties": {
+                "verifiedAt": { "type": "string", "format": "date-time" },
+                "evidenceRefs": { "minItems": 1 },
+                "blockerReason": { "type": "null" },
+                "remediation": { "type": "null" }
+              }
+            },
+            "else": {
+              "properties": {
+                "firstBlockingStep": { "type": "string", "minLength": 1 },
+                "blockerReason": { "type": "string", "minLength": 10 },
+                "remediation": { "type": "string", "minLength": 10 }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "ready", "blocked", "pending"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 },
+        "ready": { "type": "integer", "minimum": 0 },
+        "blocked": { "type": "integer", "minimum": 0 },
+        "pending": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "dataHandling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["personalDataStored", "secretValuesStored", "allowedPublicMetadata", "policy"],
+      "properties": {
+        "personalDataStored": { "const": false },
+        "secretValuesStored": { "const": false },
+        "allowedPublicMetadata": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "enum": ["public-repository-coordinate", "public-run-url", "public-owner-handle"] }
+        },
+        "policy": { "type": "string", "minLength": 20 }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewerRole", "status", "reviewedAt", "notes"],
+      "properties": {
+        "reviewerRole": { "type": "string", "minLength": 3 },
+        "status": { "enum": ["pending-independent-review", "independently-reviewed"] },
+        "reviewedAt": { "type": ["string", "null"], "format": "date-time" },
+        "notes": { "type": "string", "minLength": 10 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "phase": { "const": "closure" } } },
+      "then": {
+        "properties": {
+          "verifiedSourceSha": { "$ref": "#/$defs/sha1" },
+          "verifiedRunId": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+          "hostedRuntimeEvidenceSha256": { "$ref": "#/$defs/sha256" },
+          "sourceIdentitySha256": { "$ref": "#/$defs/sha256" }
+        }
+      },
+      "else": {
+        "properties": {
+          "verifiedSourceSha": { "type": "null" },
+          "verifiedRunId": { "type": "null" },
+          "hostedRuntimeEvidenceSha256": { "type": "null" },
+          "sourceIdentitySha256": { "type": "null" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nonEmptyUniqueStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

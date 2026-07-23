@@ -1,0 +1,220 @@
+﻿{
+    "schemaVersion":  3,
+    "documentType":  "dependency-qualification",
+    "qualificationId":  "D0.5-CLEAN-INSTALL-v3",
+    "baselineSha":  "b7eafb683d37d80bd60b59e850311acd79d2a569",
+    "sourceSha":  "2b962f7cde827a6304c79d867621ec54f54af4a0",
+    "archiveMode":  "git-archive-explicit-sha",
+    "commandSequence":  [
+                            "python -m venv \u003cQUALIFICATION_VENV\u003e",
+                            "dotnet restore AemeathDesktopPet.sln",
+                            "python -m pip install -e \".[dev]\"",
+                            "python -m pip download --only-binary=:all: --no-deps langgraph-checkpoint-sqlite==3.1.0",
+                            "python -m pip install \u003cDOWNLOADED_CHECKPOINT_WHEEL\u003e",
+                            "python inspect installed-distribution PEP 610 provenance",
+                            "python -m pip check",
+                            "python import smoke",
+                            "python -m pip list --format=freeze"
+                        ],
+    "supplementalDependency":  {
+                                   "name":  "langgraph-checkpoint-sqlite",
+                                   "version":  "3.1.0",
+                                   "declaredInProductManifest":  false,
+                                   "repairStep":  "P0B.1d",
+                                   "classification":  "known-blocking-dependency-gap",
+                                   "behavioralRed":  false
+                               },
+    "operations":  [
+                       {
+                           "name":  "source-identity-capture",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  30,
+                           "elapsedMilliseconds":  31,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "source-archive",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  120,
+                           "elapsedMilliseconds":  400,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "python-venv",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  180,
+                           "elapsedMilliseconds":  6136,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "dotnet-restore",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  600,
+                           "elapsedMilliseconds":  3337,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "python-declared-install",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  1200,
+                           "elapsedMilliseconds":  263528,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "checkpoint-wheel-download",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  180,
+                           "elapsedMilliseconds":  2405,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "python-supplemental-install",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  300,
+                           "elapsedMilliseconds":  7746,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "installed-wheel-provenance",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  120,
+                           "elapsedMilliseconds":  109,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "pip-check",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  120,
+                           "elapsedMilliseconds":  957,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "import-smoke",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  120,
+                           "elapsedMilliseconds":  968,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "environment-capture",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  120,
+                           "elapsedMilliseconds":  403,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "tool-version-capture",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  60,
+                           "elapsedMilliseconds":  577,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       },
+                       {
+                           "name":  "source-drift-check",
+                           "status":  "success",
+                           "exitCode":  0,
+                           "attemptNumber":  1,
+                           "timeoutSeconds":  30,
+                           "elapsedMilliseconds":  32,
+                           "timedOut":  false,
+                           "processTreeTerminated":  false,
+                           "retryPolicy":  "none"
+                       }
+                   ],
+    "imports":  [
+                    {
+                        "name":  "aemeath_agent.main",
+                        "status":  "success"
+                    },
+                    {
+                        "name":  "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver",
+                        "status":  "success"
+                    }
+                ],
+    "resolvedPackageCount":  157,
+    "checkpointWheelSha256":  "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad",
+    "installedWheelSha256":  "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad",
+    "pep610ArchiveSha256":  "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad",
+    "sourceIdentityVerified":  true,
+    "sourceDriftChecked":  true,
+    "evidenceAuditPassed":  true,
+    "evidenceHashes":  [
+                           {
+                               "path":  "tool-versions.json",
+                               "sha256":  "1887128d3958ea34c29b780667797ad0733249655daffb3c2d14ad6e50cb3d69"
+                           },
+                           {
+                               "path":  "dotnet-restore.log",
+                               "sha256":  "c8a69d98d0a9d8725c81d8ebfba4aeffc65ce8c135e23b4113870f98153c62b1"
+                           },
+                           {
+                               "path":  "python-install.log",
+                               "sha256":  "cdc11e00ac1b342a84d246185c56368ad449f10c240722d31b64c7ef75e0e170"
+                           },
+                           {
+                               "path":  "python-freeze.txt",
+                               "sha256":  "4805d8b68d9fcf1b375f39e3ee7ae0bdeaa29e6dd00b4048fb052737f283223f"
+                           },
+                           {
+                               "path":  "checkpoint-wheel.sha256.json",
+                               "sha256":  "6548bc89d46b0c98253baba2161a9881b22d65f8de660a16e919915f97e0383d"
+                           },
+                           {
+                               "path":  "pip-check.log",
+                               "sha256":  "62a7bed1b63f3145e4a1f662db6de145fcc24a75271861405b20d49df601b4ee"
+                           },
+                           {
+                               "path":  "import-smoke.log",
+                               "sha256":  "abc51fa284b58f48b2413324d692662ec1d43165eeb706ac4d7181c16a12e176"
+                           }
+                       ],
+    "unexpectedSkips":  0
+}

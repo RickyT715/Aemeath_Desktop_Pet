@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/dependency-qualification-v3.schema.json",
+  "title": "Aemeath bounded clean-install dependency qualification v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "documentType", "qualificationId", "baselineSha", "sourceSha",
+    "archiveMode", "commandSequence", "supplementalDependency", "operations", "imports",
+    "resolvedPackageCount", "checkpointWheelSha256", "installedWheelSha256",
+    "pep610ArchiveSha256", "sourceIdentityVerified", "sourceDriftChecked",
+    "evidenceAuditPassed", "evidenceHashes", "unexpectedSkips"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "documentType": { "const": "dependency-qualification" },
+    "qualificationId": { "const": "D0.5-CLEAN-INSTALL-v3" },
+    "baselineSha": { "const": "b7eafb683d37d80bd60b59e850311acd79d2a569" },
+    "sourceSha": { "$ref": "#/$defs/gitSha" },
+    "archiveMode": { "const": "git-archive-explicit-sha" },
+    "commandSequence": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "prefixItems": [
+        { "const": "python -m venv <QUALIFICATION_VENV>" },
+        { "const": "dotnet restore AemeathDesktopPet.sln" },
+        { "const": "python -m pip install -e \".[dev]\"" },
+        { "const": "python -m pip download --only-binary=:all: --no-deps langgraph-checkpoint-sqlite==3.1.0" },
+        { "const": "python -m pip install <DOWNLOADED_CHECKPOINT_WHEEL>" },
+        { "const": "python inspect installed-distribution PEP 610 provenance" },
+        { "const": "python -m pip check" },
+        { "const": "python import smoke" },
+        { "const": "python -m pip list --format=freeze" }
+      ]
+    },
+    "supplementalDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name", "version", "declaredInProductManifest", "repairStep",
+        "classification", "behavioralRed"
+      ],
+      "properties": {
+        "name": { "const": "langgraph-checkpoint-sqlite" },
+        "version": { "const": "3.1.0" },
+        "declaredInProductManifest": { "const": false },
+        "repairStep": { "const": "P0B.1d" },
+        "classification": { "const": "known-blocking-dependency-gap" },
+        "behavioralRed": { "const": false }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 13,
+      "maxItems": 13,
+      "prefixItems": [
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "source-identity-capture" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "source-archive" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "python-venv" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "dotnet-restore" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "python-declared-install" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "checkpoint-wheel-download" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "python-supplemental-install" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "installed-wheel-provenance" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "pip-check" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "import-smoke" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "environment-capture" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "tool-version-capture" } } },
+        { "$ref": "#/$defs/successOperation", "properties": { "name": { "const": "source-drift-check" } } }
+      ]
+    },
+    "imports": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "status"],
+          "properties": {
+            "name": { "const": "aemeath_agent.main" },
+            "status": { "const": "success" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "status"],
+          "properties": {
+            "name": { "const": "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver" },
+            "status": { "const": "success" }
+          }
+        }
+      ]
+    },
+    "resolvedPackageCount": { "type": "integer", "minimum": 40 },
+    "checkpointWheelSha256": { "$ref": "#/$defs/sha256" },
+    "installedWheelSha256": { "$ref": "#/$defs/sha256" },
+    "pep610ArchiveSha256": { "$ref": "#/$defs/sha256" },
+    "sourceIdentityVerified": { "const": true },
+    "sourceDriftChecked": { "const": true },
+    "evidenceAuditPassed": { "const": true },
+    "evidenceHashes": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "unexpectedSkips": { "const": 0 }
+  },
+  "$defs": {
+    "gitSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "successOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name", "status", "exitCode", "attemptNumber", "timeoutSeconds",
+        "elapsedMilliseconds", "timedOut", "processTreeTerminated", "retryPolicy"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "const": "success" },
+        "exitCode": { "const": 0 },
+        "attemptNumber": { "const": 1 },
+        "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 1200 },
+        "elapsedMilliseconds": { "type": "integer", "minimum": 0 },
+        "timedOut": { "const": false },
+        "processTreeTerminated": { "const": false },
+        "retryPolicy": { "const": "none" }
+      }
+    }
+  }
+}

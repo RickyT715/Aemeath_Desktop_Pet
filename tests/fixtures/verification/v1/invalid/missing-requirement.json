@@ -1,0 +1,5 @@
+{
+  "mutation": "remove-entry",
+  "target": "CURRENT:AR-001",
+  "expectedCode": "TRACE-MISSING-ID"
+}

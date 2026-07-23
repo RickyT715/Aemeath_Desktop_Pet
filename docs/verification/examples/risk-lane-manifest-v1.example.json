@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "P1.1-v1",
+  "revision": 1,
+  "previousManifestId": null,
+  "invalidationReason": null,
+  "stepId": "P1.1",
+  "status": "frozen-before-red",
+  "baselineSha": "1111111111111111111111111111111111111111",
+  "scope": "Example only: one focused post-Gate-0 implementation step.",
+  "requirementIds": ["PRD:AC-FR-022-12"],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-017"],
+  "risks": [
+    {
+      "id": "P1.1-R01",
+      "outcome": "The intended dependency-boundary change is not detected by its test.",
+      "laneIds": ["V-UNIT"],
+      "probeIds": ["P1.1-V-UNIT-EXAMPLE-001"]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "V-UNIT",
+      "required": true,
+      "rationale": "The example changes deterministic policy behavior.",
+      "riskIds": ["P1.1-R01"],
+      "probeIds": ["P1.1-V-UNIT-EXAMPLE-001"],
+      "environmentIds": ["ENV-GHA-WINDOWS"]
+    }
+  ],
+  "probes": [
+    {
+      "id": "P1.1-V-UNIT-EXAMPLE-001",
+      "command": "dotnet test --filter FullyQualifiedName~P1_1",
+      "minimumDiscovery": 1,
+      "redOracle": "The unchanged implementation fails at the intended policy assertion.",
+      "riskIds": ["P1.1-R01"],
+      "laneIds": ["V-UNIT"],
+      "requirementIds": ["PRD:AC-FR-022-12"],
+      "environmentIds": ["ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": { "failedAtIntendedOracle": true }
+    }
+  ],
+  "environments": [
+    {
+      "id": "ENV-GHA-WINDOWS",
+      "os": "windows-latest",
+      "shell": "pwsh",
+      "purpose": "Deterministic hosted unit verification"
+    }
+  ],
+  "fixtures": [],
+  "services": [],
+  "thresholds": { "minimumDiscovery": 1, "maximumUnexpectedSkips": 0 },
+  "owners": [
+    { "role": "step owner", "accountability": "Own RED through exact-SHA VERIFY." }
+  ],
+  "expectedArtifacts": ["p1-1-unit-results.trx", "source-identity.json"]
+}

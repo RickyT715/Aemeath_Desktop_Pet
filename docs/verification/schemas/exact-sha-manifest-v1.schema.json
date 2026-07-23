@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aemeath.dev/schemas/verification/exact-sha-manifest-v1.schema.json",
+  "title": "Aemeath post-push exact-SHA gate manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "manifestType", "repository", "branch", "baselineSha", "sourceSha",
+    "checkedOutSha", "requiredChecksManifestSha256", "workflow", "filters", "jobs", "lanes",
+    "localCommands", "ciCommands", "environment", "artifactsExpected", "artifactsActual",
+    "evidence", "legacyRegression", "gate"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "manifestType": { "const": "exact-sha-gate" },
+    "repository": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "branch": { "type": "string", "minLength": 1 },
+    "baselineSha": { "$ref": "#/$defs/sha" },
+    "sourceSha": { "$ref": "#/$defs/sha" },
+    "checkedOutSha": { "$ref": "#/$defs/sha" },
+    "requiredChecksManifestSha256": { "$ref": "#/$defs/contentHash" },
+    "workflow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file", "ref", "runId", "runUrl", "event", "attempt"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "ref": { "$ref": "#/$defs/sha" },
+        "runId": { "type": "integer", "minimum": 1 },
+        "runUrl": { "type": "string", "format": "uri" },
+        "event": { "const": "push" },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "filters": {
+      "type": "object", "additionalProperties": false,
+      "required": ["pathFiltersApplied", "selectedRef", "selectedEvent"],
+      "properties": {
+        "pathFiltersApplied": { "const": false },
+        "selectedRef": { "type": "string", "minLength": 1 },
+        "selectedEvent": { "const": "push" }
+      }
+    },
+    "jobs": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "jobId", "result", "expectedInstances", "actualInstances", "matrixExpected", "matrixActual"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "jobId": { "type": ["integer", "string"] },
+          "result": { "const": "success" },
+          "expectedInstances": { "type": "integer", "minimum": 1 },
+          "actualInstances": { "type": "integer", "minimum": 1 },
+          "matrixExpected": { "type": "array", "minItems": 1, "items": { "type": "object" } },
+          "matrixActual": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+        }
+      }
+    },
+    "lanes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "testIds", "commands", "minimumDiscovery", "actualDiscovery", "failed", "skipped"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^V-[A-Z0-9-]+$" },
+          "testIds": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "commands": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+          "minimumDiscovery": { "type": "integer", "minimum": 1 },
+          "actualDiscovery": { "type": "integer", "minimum": 0 },
+          "failed": { "type": "integer", "minimum": 0 },
+          "skipped": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "localCommands": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+    "ciCommands": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+    "environment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["os", "runnerClass", "architecture", "tools", "locks", "fixtures", "capabilities", "configuration", "seed"],
+      "properties": {
+        "os": { "type": "string", "minLength": 1 },
+        "runnerClass": { "type": "string", "minLength": 1 },
+        "architecture": { "type": "string", "minLength": 1 },
+        "tools": { "type": "object", "minProperties": 1 },
+        "locks": { "type": "object" },
+        "fixtures": { "type": "array" },
+        "capabilities": { "type": "array" },
+        "configuration": { "type": "string", "minLength": 1 },
+        "seed": { "type": ["integer", "null"] }
+      }
+    },
+    "artifactsExpected": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+    "artifactsActual": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "sha256", "retentionDays", "downloadLocation"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/contentHash" },
+          "retentionDays": { "type": "integer", "minimum": 90 },
+          "downloadLocation": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["red", "green", "verify"],
+      "properties": {
+        "red": { "type": "string", "minLength": 1 },
+        "green": { "type": "string", "minLength": 1 },
+        "verify": { "type": "string", "minLength": 1 },
+        "legacy": { "type": ["string", "null"] }
+      }
+    },
+    "legacyRegression": {
+      "type": "object", "additionalProperties": false,
+      "required": ["required", "result", "combinedWithIndependentMetric"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "result": { "enum": ["success", "not-applicable"] },
+        "combinedWithIndependentMetric": { "const": false }
+      }
+    },
+    "gate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewedAt", "invalidates"],
+      "properties": {
+        "status": { "const": "pass" },
+        "reviewer": { "type": "string", "minLength": 1 },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "invalidates": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "legacyRegression": {
+            "properties": { "required": { "const": true } },
+            "required": ["required"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "legacyRegression": { "properties": { "result": { "const": "success" } } },
+          "evidence": { "properties": { "legacy": { "type": "string", "minLength": 1 } } }
+        }
+      },
+      "else": {
+        "properties": {
+          "legacyRegression": { "properties": { "result": { "const": "not-applicable" } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "contentHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nonEmptyUniqueStrings": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

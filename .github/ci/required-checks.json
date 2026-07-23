@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "workflowFile": ".github/workflows/ci.yml",
+  "workflowName": "CI",
+  "requiredEvent": "push",
+  "minimumRetentionDays": 90,
+  "trustedActions": [
+    {
+      "name": "actions/checkout",
+      "releaseTag": "v4.4.0",
+      "sha": "11d5960a326750d5838078e36cf38b85af677262"
+    },
+    {
+      "name": "actions/setup-dotnet",
+      "releaseTag": "v4.3.1",
+      "sha": "67a3573c9a986a3f9c594539f4ab511d57bb3ce9"
+    },
+    {
+      "name": "actions/setup-python",
+      "releaseTag": "v6.2.0",
+      "sha": "a309ff8b426b58ec0e2a45f0f869d46889d02405"
+    },
+    {
+      "name": "actions/upload-artifact",
+      "releaseTag": "v4.6.2",
+      "sha": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "delivery-contract",
+      "name": "Delivery Contract",
+      "runner": "ubuntu-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "not-applicable",
+        "minimumDiscoveredTests": 0,
+        "rationale": "Delivery Preflight validates CI mechanics before Gate 0A freezes an independent product test suite."
+      },
+      "artifactPrefix": "delivery-contract-",
+      "artifactPath": "artifacts/ci/delivery-contract/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "delivery-contract-tests.log",
+          "minimumBytes": 20
+        }
+      ]
+    },
+    {
+      "id": "dotnet-build",
+      "name": ".NET Release Build",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "not-applicable",
+        "minimumDiscoveredTests": 0,
+        "rationale": "D0.2 admits only the Release build; legacy tests stay outside the gate until the independent Gate 0A suite is frozen."
+      },
+      "artifactPrefix": "dotnet-build-",
+      "artifactPath": "artifacts/ci/dotnet-build/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "restore.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "build.log",
+          "minimumBytes": 20
+        }
+      ]
+    },
+    {
+      "id": "verification-contracts",
+      "name": "Verification Contracts",
+      "runner": "ubuntu-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 24,
+        "command": "./tools/verification/Test-VerificationContracts.ps1",
+        "rationale": "D0.3-v6 freezes at least 24 counted semantic probes covering trace semantics, regeneration, mutations, executable schemas, linked manifests, measured semantic/schema negatives, and the exact separate D0.5 Ubuntu static evidence expansion."
+      },
+      "artifactPrefix": "verification-contracts-",
+      "artifactPath": "artifacts/ci/verification-contracts/",
+      "minimumArtifactBytes": 100,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "verification-contract-tests.log",
+          "minimumBytes": 100
+        },
+        {
+          "path": "dependency-qualification-static-tests.log",
+          "minimumBytes": 500
+        }
+      ]
+    },
+    {
+      "id": "delivery-environment",
+      "name": "Delivery Environment",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 25,
+        "command": "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment",
+        "rationale": "D0.4 requires at least 16 static contract probes plus nine independently counted exact-SHA hosted Windows OS, UIA, display, storage, network, cleanup, timeout, and redaction probes."
+      },
+      "artifactPrefix": "delivery-environment-",
+      "artifactPath": "artifacts/ci/delivery-environment/",
+      "minimumArtifactBytes": 500,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "environment-readiness-tests.log",
+          "minimumBytes": 100
+        },
+        {
+          "path": "hosted-windows-capabilities.json",
+          "minimumBytes": 300
+        }
+      ]
+    },
+    {
+      "id": "dependency-qualification",
+      "name": "Dependency Qualification",
+      "runner": "windows-latest",
+      "executionModel": "single",
+      "expectedInstances": 1,
+      "discovery": {
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 60,
+        "command": "./tools/verification/Invoke-DependencyQualification.ps1 -EvidenceDirectory artifacts/ci/dependency-qualification",
+        "rationale": "D0.5-v3 requires at least 45 static schema, runtime-provenance, actual-argument mutation, privacy, source-binding, cross-platform process-tree, trace, and workflow probes plus 15 bounded real clean-install package probes."
+      },
+      "artifactPrefix": "dependency-qualification-",
+      "artifactPath": "artifacts/ci/dependency-qualification/",
+      "minimumArtifactBytes": 1000,
+      "digestAlgorithm": "sha256",
+      "evidenceFiles": [
+        {
+          "path": "source-identity.json",
+          "minimumBytes": 50
+        },
+        {
+          "path": "dependency-qualification-tests.log",
+          "minimumBytes": 500
+        },
+        {
+          "path": "dependency-qualification.json",
+          "minimumBytes": 500
+        },
+        {
+          "path": "tool-versions.json",
+          "minimumBytes": 100
+        },
+        {
+          "path": "dotnet-restore.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "python-install.log",
+          "minimumBytes": 1000
+        },
+        {
+          "path": "python-freeze.txt",
+          "minimumBytes": 1000
+        },
+        {
+          "path": "checkpoint-wheel.sha256.json",
+          "minimumBytes": 100
+        },
+        {
+          "path": "pip-check.log",
+          "minimumBytes": 20
+        },
+        {
+          "path": "import-smoke.log",
+          "minimumBytes": 50
+        }
+      ]
+    }
+  ]
+}
