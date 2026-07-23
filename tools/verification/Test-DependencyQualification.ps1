@@ -25,6 +25,8 @@ $invalidationV2Path = "docs/verification/invalidations/D0.5-v2.json"
 $workflowPath = ".github/workflows/ci.yml"
 $requiredChecksPath = ".github/ci/required-checks.json"
 $tracePath = "docs/verification/traceability-v1.yml"
+$greenEvidencePath = "docs/verification/evidence/D0.5-green.md"
+$checklistPath = "docs/plans/20260722-jarvis-assistant-tdd-checklist.md"
 $attributesPath = ".gitattributes"
 $evidenceAttributeTestPath = "tools/ci/Test-DependencyEvidenceAttributes.ps1"
 $frozenManifestSha256 = "990073c5256b333e6845c54b1376325df6042884d656d42d7cde11563da736f6"
@@ -46,6 +48,25 @@ $expectedCommittedFiles = @(
     "checkpoint-wheel.sha256.json",
     "pip-check.log",
     "import-smoke.log"
+)
+$expectedClosureArtifactFiles = @(
+    "source-identity.json",
+    "dependency-qualification-tests.log",
+    "dependency-qualification.json",
+    "tool-versions.json",
+    "dotnet-restore.log",
+    "python-install.log",
+    "python-freeze.txt",
+    "checkpoint-wheel.sha256.json",
+    "pip-check.log",
+    "import-smoke.log"
+)
+$expectedClosureJobs = @(
+    "Delivery Contract",
+    ".NET Release Build",
+    "Verification Contracts",
+    "Delivery Environment",
+    "Dependency Qualification"
 )
 $probeCount = 0
 $staticProbeCount = 0
@@ -92,6 +113,143 @@ function Get-NormalizedStringHash {
 function Get-NormalizedTextHash {
     param([string]$Path)
     return Get-NormalizedStringHash (Get-NormalizedTextContent $Path)
+}
+
+function Test-ExactClosureSet {
+    param(
+        [string[]]$Expected,
+        [string[]]$Actual
+    )
+
+    return (
+        $Actual.Count -eq $Expected.Count -and
+        @(Compare-Object $Expected $Actual -CaseSensitive).Count -eq 0
+    )
+}
+
+function Test-D05ClosureCaseMutationControls {
+    $survivors = [System.Collections.Generic.List[string]]::new()
+
+    $artifactMutant = @($expectedClosureArtifactFiles)
+    $artifactMutant[0] = $artifactMutant[0].ToUpperInvariant()
+    if (Test-ExactClosureSet $expectedClosureArtifactFiles $artifactMutant) {
+        $survivors.Add("CLOSURE-ARTIFACT-CASE-MUTANT")
+    }
+
+    $jobMutant = @($expectedClosureJobs)
+    $jobMutant[0] = $jobMutant[0].ToUpperInvariant()
+    if (Test-ExactClosureSet $expectedClosureJobs $jobMutant) {
+        $survivors.Add("CLOSURE-JOB-CASE-MUTANT")
+    }
+
+    $contextMutant = @($expectedClosureJobs)
+    $contextMutant[0] = $contextMutant[0].ToUpperInvariant()
+    if (Test-ExactClosureSet $expectedClosureJobs $contextMutant) {
+        $survivors.Add("CLOSURE-CONTEXT-CASE-MUTANT")
+    }
+
+    Assert-Condition ($survivors.Count -eq 0) (
+        "D0.5 closure case-only mutants survived: $($survivors -join ', ')."
+    )
+    foreach ($message in @(
+        "case-only artifact filename mutation is rejected",
+        "case-only CI job-name mutation is rejected",
+        "case-only branch-context mutation is rejected"
+    )) {
+        Write-StaticPass $message
+    }
+}
+
+function Test-D05ClosureEvidence {
+    $failures = [System.Collections.Generic.List[string]]::new()
+    $checklist = Get-NormalizedTextContent $checklistPath
+    $sectionMatch = [regex]::Match(
+        $checklist,
+        "(?ms)^### D0\.5 .+?\n(?<body>.*?)(?=^## )"
+    )
+    if (-not $sectionMatch.Success -or
+        $sectionMatch.Groups["body"].Value -notmatch
+            '(?m)^- \[x\] Commit evidence only, push, and obtain exact-head-SHA CI success\.\s*$') {
+        $failures.Add("CLOSURE-CHECKLIST-OPEN")
+    }
+
+    if (-not (Test-Path -LiteralPath $greenEvidencePath -PathType Leaf)) {
+        $failures.Add("CLOSURE-EVIDENCE-MISSING")
+    } else {
+        $green = Get-NormalizedTextContent $greenEvidencePath
+        $jsonMatch = [regex]::Match(
+            $green,
+            '(?ms)<!-- D0\.5-CLOSURE-CONTRACT-BEGIN -->\s*```json\s*(?<json>\{.*?\})\s*```\s*<!-- D0\.5-CLOSURE-CONTRACT-END -->'
+        )
+        if (-not $jsonMatch.Success) {
+            $failures.Add("CLOSURE-CONTRACT-MISSING")
+        } else {
+            try {
+                $closure = $jsonMatch.Groups["json"].Value | ConvertFrom-Json
+                $artifactFiles = @($closure.artifact.files | ForEach-Object { [string]$_ })
+                $jobs = @($closure.jobs | ForEach-Object { [string]$_.name })
+                $jobConclusions = @($closure.jobs | ForEach-Object { [string]$_.conclusion })
+                $contexts = @($closure.branchProtection.requiredContexts |
+                    ForEach-Object { [string]$_ })
+                $exactArtifactFiles = Test-ExactClosureSet `
+                    $expectedClosureArtifactFiles $artifactFiles
+                $exactJobs = (
+                    (Test-ExactClosureSet $expectedClosureJobs $jobs) -and
+                    @($jobConclusions | Where-Object { $_ -cne "success" }).Count -eq 0
+                )
+                $exactContexts = Test-ExactClosureSet $expectedClosureJobs $contexts
+                $exactHostedSemantics = (
+                    $closure.hostedQualification.baselineSha -ceq $frozenBaselineSha -and
+                    [int]$closure.hostedQualification.resolvedPackageCount -eq 157 -and
+                    [int]$closure.hostedQualification.operationCount -eq 13 -and
+                    [int]$closure.hostedQualification.packageProbeCount -eq 15 -and
+                    [int]$closure.hostedQualification.unexpectedSkips -eq 0 -and
+                    $closure.hostedQualification.downloadedWheelSha256 -ceq
+                        "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad" -and
+                    $closure.hostedQualification.installedWheelSha256 -ceq
+                        "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad" -and
+                    $closure.hostedQualification.pep610ArchiveSha256 -ceq
+                        "cc9b40df0076feae8a9ad42ae713621b148b00ac23adc09dc1dc66090a46e5ad" -and
+                    $closure.hostedQualification.pep610UrlRetained -eq $false -and
+                    [int]$closure.hostedQualification.privacyHits -eq 0
+                )
+                if (-not (
+                    $closure.manifestId -ceq "D0.5-v3" -and
+                    $closure.manifestSha256 -ceq $frozenManifestSha256 -and
+                    $closure.implementationSha -ceq
+                        "0563f60598d080c65c4a76ebd3db3f5656e7977e" -and
+                    $closure.run.id -ceq "29987750070" -and
+                    $closure.run.url -ceq
+                        "https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/29987750070" -and
+                    $closure.run.conclusion -ceq "success" -and
+                    $closure.run.completedAt -ceq "2026-07-23T07:22:18Z" -and
+                    $closure.artifact.name -ceq
+                        "dependency-qualification-0563f60598d080c65c4a76ebd3db3f5656e7977e" -and
+                    [int]$closure.artifact.bytes -eq 14927 -and
+                    $closure.artifact.digest -ceq
+                        "sha256:2db64e12b922345e2abca1e55050f28199f0e208b8fff5543ec2c450a0843d56" -and
+                    $closure.artifact.expiresAt -ceq "2026-10-21T07:16:47Z" -and
+                    $exactArtifactFiles -and
+                    $exactJobs -and
+                    $exactHostedSemantics -and
+                    $closure.branchProtection.strict -eq $true -and
+                    $exactContexts -and
+                    $closure.branchProtection.enforceAdmins -eq $true -and
+                    $closure.branchProtection.allowForcePushes -eq $false -and
+                    $closure.branchProtection.allowDeletions -eq $false
+                )) {
+                    $failures.Add("CLOSURE-CONTRACT-DRIFT")
+                }
+            } catch {
+                $failures.Add("CLOSURE-CONTRACT-INVALID")
+            }
+        }
+    }
+
+    Assert-Condition ($failures.Count -eq 0) (
+        "D0.5 closure contract failed: $($failures -join ', ')."
+    )
+    Write-StaticPass "exact-SHA CI, hosted packet, branch policy, and checklist closure are bound"
 }
 
 function Get-FileSha256 {
@@ -1603,6 +1761,8 @@ if ($pipOutput -notmatch "^pip\s+([^\s]+)\s+from\s+") { throw "Cannot parse pip 
 $context = Test-CoreContract
 if ($Mode -ceq "Static") {
     Test-CommittedEvidence $context
+    Test-D05ClosureEvidence
+    Test-D05ClosureCaseMutationControls
     Assert-Condition ($staticProbeCount -ge 45) "D0.5 v3 static discovery floor was not met: $staticProbeCount < 45."
     Assert-Condition ($packageProbeCount -eq 0) "Static mode counted package probes."
 } elseif ($Mode -ceq "Qualify") {

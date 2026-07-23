@@ -381,7 +381,7 @@ current advisory PR checks as diagnostic evidence only; those checks cannot sati
   `langgraph-checkpoint-sqlite==3.1.0` after `pip install -e ".[dev]"`, capture the complete resolved
   environment and wheel hash in the manifest, and keep the product manifests untouched. Record the
   missing declaration as a Gate 0B repair, not a valid behavioral RED or silent product fix.
-- [ ] Commit evidence only, push, and obtain exact-head-SHA CI success.
+- [x] Commit evidence only, push, and obtain exact-head-SHA CI success.
 
 ## 7. Gate 0A — Independently qualify the unchanged production baseline
 
