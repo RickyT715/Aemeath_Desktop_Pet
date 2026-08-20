@@ -1,0 +1,3340 @@
+{
+  "schemaVersion":  1,
+  "documentType":  "preservation-specification",
+  "specId":  "P0A.1-preservation-spec-v2",
+  "revision":  2,
+  "status":  "frozen",
+  "previousSpecification":  {
+                 "path":  "docs/verification/preservation-spec-v1.yml",
+                 "id":  "P0A.1-preservation-spec-v1",
+                 "revision":  1,
+                 "sha256":  "9907fcd846c05b61020fedae20517b97320dbe321e713af3a9316b5e6c164f2d",
+                 "status":  "BLOCK"
+               },
+  "governingManifest":  {
+               "path":  "docs/verification/manifests/P0A.1-v5.yml",
+               "id":  "P0A.1-v5",
+               "sha256":  "17f262ff6f2e9c038ce3001b554080b5e39c3e6bb4428ee02b5d47e890c8da91"
+             },
+  "baseline":  {
+          "commitSha":  "43f9c288f843f7620ffee5eee3504f52875f4774",
+          "currentRequirementsOriginSha":  "c2e3dbfd5e90bb40ea5006b702bbbc32d24a1ae7",
+          "productionRootIdentityMethod":  {
+                             "version":  1,
+                             "excludeReparsePoints":  true,
+                             "excludedDirectoryNames":  [
+                                            "bin",
+                                            "obj",
+                                            "__pycache__",
+                                            ".pytest_cache"
+                                          ],
+                             "excludedFileSuffixes":  [
+                                            ".pyc"
+                                          ],
+                             "recordFormat":  "relative/path|byteLength|lowercaseRawSha256",
+                             "pathSeparator":  "/",
+                             "sort":  "StringComparer.Ordinal",
+                             "join":  "LF without trailing delimiter",
+                             "encoding":  "UTF-8 without BOM",
+                             "digest":  "SHA-256 lowercase hexadecimal"
+                           },
+          "productionRoots":  [
+                      {
+                        "path":  "src/AemeathDesktopPet",
+                        "fileCount":  94,
+                        "sha256":  "28d3d397007971ff83361b7b0834223d8412f26421b303c9bb164fc23bf13dfb"
+                      },
+                      {
+                        "path":  "python-backend/aemeath_agent",
+                        "fileCount":  46,
+                        "sha256":  "98a46adbc9c814f1bc80d83f688c38916208ea17b54b5106a65a17a86538b5ae"
+                      }
+                    ]
+        },
+  "sourceHashMethod":  {
+              "version":  1,
+              "encoding":  "UTF-8 without BOM",
+              "lineEndingNormalization":  "CRLF and CR to LF",
+              "normalizedCheckboxText":  "Replace leading - [x] and - [X] with - [ ]",
+              "digest":  "SHA-256 lowercase hexadecimal"
+            },
+  "sources":  [
+          {
+            "id":  "CURRENT:REQUIREMENTS",
+            "path":  "REQUIREMENTS.md",
+            "revision":  "c2e3dbfd5e90bb40ea5006b702bbbc32d24a1ae7",
+            "hashMode":  "normalized-text",
+            "sha256":  "94c8c95a75ca7f6f417e4b6358042ed727656cd58074213f878ddbaaeff37cbc"
+          },
+          {
+            "id":  "CURRENT:LOCATORS",
+            "path":  "docs/plans/20260722-jarvis-assistant-tdd-checklist.md",
+            "revision":  "a6c15496cf2893a24e560c01ef4e598a635859cc",
+            "hashMode":  "normalized-checkbox-text",
+            "sha256":  "0d20daf50ef166b78805f170972b517e1533a0b69afc274a44c8e0ef5628ad58"
+          },
+          {
+            "id":  "PRD:JARVIS",
+            "path":  "docs/prd/jarvis_assistant_prd.md",
+            "revision":  "a6c15496cf2893a24e560c01ef4e598a635859cc",
+            "hashMode":  "normalized-text",
+            "sha256":  "b2ee8dfaffdfa27e22f820f5bf7f6a065a360933a5c4b1789b4cd1ea27d791b2"
+          },
+          {
+            "id":  "DESIGN:JARVIS",
+            "path":  "docs/design/jarvis_assistant_design.md",
+            "revision":  "a6c15496cf2893a24e560c01ef4e598a635859cc",
+            "hashMode":  "normalized-text",
+            "sha256":  "f280cdbd89946d934888cd91ef2c7fafa0478126f58ec2e4365f7be23481f12b"
+          },
+          {
+            "id":  "UI:JARVIS",
+            "path":  "docs/ui-spec/jarvis_assistant_ui_spec.md",
+            "revision":  "a6c15496cf2893a24e560c01ef4e598a635859cc",
+            "hashMode":  "normalized-text",
+            "sha256":  "806d37aa63a719dda7de7446c2e6ff6bbc55243eb0ce6478d6464ad7ca68b1c1"
+          },
+          {
+            "id":  "ADR:VERIFICATION",
+            "path":  "docs/adr/ADR-0002-test-driven-verification-and-exact-sha-delivery.md",
+            "revision":  "a6c15496cf2893a24e560c01ef4e598a635859cc",
+            "hashMode":  "normalized-text",
+            "sha256":  "21ac1e7df434b37d4a8fe596d8dcceab9f26eb386f5d77cf88b052473253f9e9"
+          }
+        ],
+  "traceability":  {
+            "path":  "docs/verification/traceability-v2.yml",
+            "sha256":  "28e89fe63ca3dcb433e741f860381ed05b7319169d19e01dc8c7be5cfcd3f415",
+            "entryCount":  352,
+            "currentEntryCount":  114,
+            "dispositionMapId":  "REQMAP-CURRENT-V1",
+            "recordsSha256":  "fdd77a96813a3d8d5270e47a803486cac64eff33e2f8426d97f1200240423f7b",
+            "boundaryIds":  [
+                      "PB-001",
+                      "PB-002",
+                      "PB-003",
+                      "PB-004",
+                      "PB-005",
+                      "PB-006",
+                      "PB-007",
+                      "PB-008",
+                      "PB-009",
+                      "PB-010",
+                      "PB-011",
+                      "PB-012",
+                      "PB-013",
+                      "PB-014",
+                      "PB-015",
+                      "PB-016",
+                      "PB-017",
+                      "PB-018"
+                    ],
+            "requirementIds":  [
+                        "CURRENT:AC-FUT-001",
+                        "CURRENT:AC-FUT-002",
+                        "CURRENT:AC-FUT-003",
+                        "CURRENT:FR-FUT-001",
+                        "CURRENT:FR-FUT-002",
+                        "CURRENT:FR-FUT-003",
+                        "CURRENT:LOC-ASSETS",
+                        "CURRENT:LOC-GAPS",
+                        "CURRENT:LOC-INTENT",
+                        "CURRENT:LOC-PORTS",
+                        "CURRENT:LOC-PRIVACY",
+                        "CURRENT:LOC-RUNTIME",
+                        "CURRENT:LOC-SCOPE",
+                        "CURRENT:LOC-STATUS",
+                        "CURRENT:LOC-STORAGE",
+                        "CURRENT:LOC-TRANSMISSION",
+                        "CURRENT:LOC-VERIFY",
+                        "PRD:AC-FR-021-01",
+                        "PRD:AC-FR-021-02",
+                        "PRD:AC-FR-021-03",
+                        "PRD:AC-FR-021-05",
+                        "PRD:AC-FR-021-09",
+                        "PRD:AC-FR-021-10",
+                        "PRD:AC-FR-021-12",
+                        "PRD:AC-FR-024-02",
+                        "PRD:GATE-0-01",
+                        "PRD:GATE-0-02",
+                        "PRD:GATE-0-04",
+                        "PRD:GATE-0-05",
+                        "PRD:GATE-0-06",
+                        "PRD:NFR-JA-005",
+                        "PRD:NFR-JA-005-01",
+                        "PRD:NFR-JA-005-02",
+                        "PRD:RISK-010"
+                      ],
+            "previousTraceability":  {
+                           "path":  "docs/verification/traceability-v1.yml",
+                           "sha256":  "939fa28c670fe55a320af7b1d879257b6ee28193309946aca29bb06caeb6db55"
+                         }
+          },
+  "inventories":  {
+            "components":  [
+                      {
+                        "id":  "CMP-APP-HOST",
+                        "title":  "WPF application host and owned lifecycle",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/App.xaml.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-PET-WINDOW",
+                        "title":  "Transparent topmost pet window",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views/PetWindow.xaml",
+                                   "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-ANIMATION-ENGINE",
+                        "title":  "Sprite decoding, caching, mapping, and playback",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Engine/AnimationEngine.cs",
+                                   "src/AemeathDesktopPet/Resources/Sprites"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-BEHAVIOR-PHYSICS",
+                        "title":  "Pet behavior, physics, time, and edge engines",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Engine/BehaviorEngine.cs",
+                                   "src/AemeathDesktopPet/Engine/PhysicsEngine.cs",
+                                   "src/AemeathDesktopPet/Engine/WindowEdgeManager.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-PET-INPUT-TRAY",
+                        "title":  "Pet input, tray, click-through, and Windows interop",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views/PetWindow.xaml.cs",
+                                   "src/AemeathDesktopPet/Interop/Win32Api.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-COMPANION-VISUALS",
+                        "title":  "Speech bubble, particles, paper plane, glitch, and cat visuals",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views/SpeechBubble.xaml",
+                                   "src/AemeathDesktopPet/Views/CatWindow.xaml",
+                                   "src/AemeathDesktopPet/Engine/ParticleSystem.cs",
+                                   "src/AemeathDesktopPet/Engine/PaperPlaneSystem.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-CHAT",
+                        "title":  "Chat window, view model, prompt, and direct providers",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views/ChatWindow.xaml",
+                                   "src/AemeathDesktopPet/ViewModels/ChatViewModel.cs",
+                                   "src/AemeathDesktopPet/Services/IChatService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-VOICE",
+                        "title":  "Voice input, STT, TTS, audio policy, and hotkey",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/VoiceInputService.cs",
+                                   "src/AemeathDesktopPet/Services/TtsVoiceService.cs",
+                                   "src/AemeathDesktopPet/Services/GlobalHotkeyService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-SCREEN",
+                        "title":  "Screen capture, awareness, privacy gates, and vision dispatch",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/ScreenCaptureService.cs",
+                                   "src/AemeathDesktopPet/Services/ScreenAwarenessService.cs",
+                                   "src/AemeathDesktopPet/Services/BackendVisionService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-SETTINGS",
+                        "title":  "Eight-tab settings and configuration",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views/SettingsWindow.xaml",
+                                   "src/AemeathDesktopPet/Models/AppConfig.cs",
+                                   "src/AemeathDesktopPet/Services/ConfigService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-LOCAL-DATA",
+                        "title":  "JSON persistence, statistics, and chat-history lifecycle",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/JsonPersistenceService.cs",
+                                   "src/AemeathDesktopPet/Services/StatsService.cs",
+                                   "src/AemeathDesktopPet/Services/MemoryService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-OPTIONAL-INTEGRATIONS",
+                        "title":  "Companion, Pomodoro, activity, and music integrations",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/CompanionLauncherService.cs",
+                                   "src/AemeathDesktopPet/Services/PomodoroIntegrationService.cs",
+                                   "src/AemeathDesktopPet/Services/ActivityMonitorService.cs",
+                                   "src/AemeathDesktopPet/Services/MusicService.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-SIDECAR-SUPERVISION",
+                        "title":  "Optional Python sidecar process supervision",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/BackendProcessManager.cs",
+                                   "python-backend/aemeath_agent/main.py"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-DESKTOP-SIDECAR-PROTOCOL",
+                        "title":  "Desktop-sidecar REST, SSE, STT, vision, and reverse-WPF protocol",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                                   "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+                                   "python-backend/aemeath_agent/api",
+                                   "python-backend/aemeath_agent/bridge/wpf_client.py"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-PYTHON-AGENT-RAG",
+                        "title":  "Python agent graph, tools, and retrieval",
+                        "sourceLocators":  [
+                                   "python-backend/aemeath_agent/agent",
+                                   "python-backend/aemeath_agent/tools",
+                                   "python-backend/aemeath_agent/rag"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-MEMORY",
+                        "title":  "C# and Python memory sources",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/CoreMemoryService.cs",
+                                   "src/AemeathDesktopPet/Services/ProceduralMemoryService.cs",
+                                   "src/AemeathDesktopPet/Services/ObservationBufferService.cs",
+                                   "python-backend/aemeath_agent/agent/memory_store.py"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-MCP",
+                        "title":  "MCP definitions and client/server lifecycle surfaces",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/McpClientService.cs",
+                                   "src/AemeathDesktopPet/Services/McpServer/AemeathPetTools.cs",
+                                   "src/AemeathDesktopPet/Models/AppConfig.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-PRIVACY-AUTH",
+                        "title":  "Privacy, redaction, secret, and local-authorization boundary",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Services/PiiScanner.cs",
+                                   "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+                                   "src/AemeathDesktopPet/Models/AppConfig.cs"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-BUILD-PACKAGE",
+                        "title":  "Build, package, dependency, install, and clean-machine surface",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/AemeathDesktopPet.csproj",
+                                   "python-backend/pyproject.toml",
+                                   ".github/workflows"
+                                 ]
+                      },
+                      {
+                        "id":  "CMP-WINDOWS-UI",
+                        "title":  "Supported Windows UI, DPI, accessibility, performance, and reliability surface",
+                        "sourceLocators":  [
+                                   "src/AemeathDesktopPet/Views",
+                                   "src/AemeathDesktopPet/Themes",
+                                   "src/AemeathDesktopPet/app.manifest",
+                                   "src/AemeathDesktopPet/Interop/Win32Api.cs"
+                                 ]
+                      }
+                    ],
+            "publicBehaviors":  [
+                        {
+                          "id":  "PB-001",
+                          "title":  "Application startup, lifecycle, and shutdown"
+                        },
+                        {
+                          "id":  "PB-002",
+                          "title":  "Pet window, sprites, behavior, and physics"
+                        },
+                        {
+                          "id":  "PB-003",
+                          "title":  "Pet input, tray, click-through, and position"
+                        },
+                        {
+                          "id":  "PB-004",
+                          "title":  "Bubble, particles, plane, and optional cat"
+                        },
+                        {
+                          "id":  "PB-005",
+                          "title":  "Text conversation, history, and offline behavior"
+                        },
+                        {
+                          "id":  "PB-006",
+                          "title":  "Voice, STT, TTS, hotkey, and audio"
+                        },
+                        {
+                          "id":  "PB-007",
+                          "title":  "Screen awareness and privacy indication"
+                        },
+                        {
+                          "id":  "PB-008",
+                          "title":  "Settings and configuration compatibility"
+                        },
+                        {
+                          "id":  "PB-009",
+                          "title":  "Stats, chat, and local-data lifecycle"
+                        },
+                        {
+                          "id":  "PB-010",
+                          "title":  "Companion, Pomodoro, and activity integrations"
+                        },
+                        {
+                          "id":  "PB-011",
+                          "title":  "Sidecar supervision and offline degradation"
+                        },
+                        {
+                          "id":  "PB-012",
+                          "title":  "WPF-sidecar streaming and STT protocol"
+                        },
+                        {
+                          "id":  "PB-013",
+                          "title":  "Python agent, tools, and retrieval"
+                        },
+                        {
+                          "id":  "PB-014",
+                          "title":  "C# and Python memory sources"
+                        },
+                        {
+                          "id":  "PB-015",
+                          "title":  "MCP definitions and process lifecycle"
+                        },
+                        {
+                          "id":  "PB-016",
+                          "title":  "Secrets, redaction, and local authorization"
+                        },
+                        {
+                          "id":  "PB-017",
+                          "title":  "Build, package, install, and rollback"
+                        },
+                        {
+                          "id":  "PB-018",
+                          "title":  "Windows UI, accessibility, performance, and reliability"
+                        }
+                      ],
+            "persistedData":  [
+                       {
+                         "id":  "DATA-CONFIG",
+                         "title":  "Application configuration and plaintext provider fields",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/AppConfig.cs",
+                                    "src/AemeathDesktopPet/Services/ConfigService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+                                    "src/AemeathDesktopPet/Views/PetWindow.xaml.cs",
+                                    "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-CONFIG-DEFAULTS",
+                                      "DATA-CONFIG-POSITION-RESTART"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-003",
+                                   "PB-008",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-STATS",
+                         "title":  "Pet statistics and lifetime counters",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/stats.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/stats.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/AemeathStats.cs",
+                                    "src/AemeathDesktopPet/Services/JsonPersistenceService.cs",
+                                    "src/AemeathDesktopPet/Services/StatsService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-STATS-BASELINE"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-009"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-MESSAGES",
+                         "title":  "Bounded chat history",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/messages.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/messages.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/ChatMessage.cs",
+                                    "src/AemeathDesktopPet/Services/JsonPersistenceService.cs",
+                                    "src/AemeathDesktopPet/Services/MemoryService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/ChatViewModel.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-MESSAGES-TURN"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-005",
+                                   "PB-009",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-CORE-MEMORY",
+                         "title":  "C# core memory",
+                         "ownership":  "application",
+                         "access":  "read-write-api",
+                         "lifecycle":  "latent-writable-currently-read-only",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/core_memory.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/core_memory.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/CoreMemory.cs",
+                                    "src/AemeathDesktopPet/Services/CoreMemoryService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-CORE-MEMORY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-PROCEDURAL-MEMORY",
+                         "title":  "C# procedural memory",
+                         "ownership":  "application",
+                         "access":  "read-write-api",
+                         "lifecycle":  "latent-writable-currently-read-only",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/procedural_memory.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/procedural_memory.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/ProceduralMemory.cs",
+                                    "src/AemeathDesktopPet/Services/ProceduralMemoryService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-PROCEDURAL-MEMORY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-OBSERVATION-BUFFER",
+                         "title":  "Short-lived C# observation buffer",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/observation_buffer.json",
+                         "pathSemantics":  {
+                                    "authority":  "windows-local-application-data",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/observation_buffer.json",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/ObservationEntry.cs",
+                                    "src/AemeathDesktopPet/Services/ObservationBufferService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+                                    "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-OBSERVATION-BUFFER"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-007",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-STARTUP-RUN-REGISTRY",
+                         "title":  "Windows current-user startup registration",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable",
+                         "path":  "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AemeathDesktopPet",
+                         "pathSemantics":  {
+                                    "authority":  "windows-current-user-registry",
+                                    "default":  "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AemeathDesktopPet",
+                                    "fallback":  null,
+                                    "configuredBy":  "config.json:startWithWindows",
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/AppConfig.cs",
+                                    "src/AemeathDesktopPet/Services/StartupService.cs",
+                                    "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-STARTUP-RUN-REGISTRY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-001",
+                                   "PB-008",
+                                   "PB-017"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-AGENT-CHECKPOINT",
+                         "title":  "Python agent checkpoint state",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-conditionally-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/agent_state.db",
+                         "pathSemantics":  {
+                                    "authority":  "pydantic-setting",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/agent_state.db when LOCALAPPDATA is non-empty",
+                                    "fallback":  "~/.aemeath/agent_state.db when LOCALAPPDATA is empty",
+                                    "configuredBy":  "AEMEATH_AGENT_DB_PATH",
+                                    "relativeTo":  "sidecar-current-working-directory only when the configured override is relative"
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/agent/checkpointer.py",
+                                    "python-backend/aemeath_agent/agent/graph.py",
+                                    "python-backend/aemeath_agent/api/models.py",
+                                    "python-backend/aemeath_agent/api/routes_agent.py",
+                                    "python-backend/aemeath_agent/api/routes_health.py",
+                                    "python-backend/aemeath_agent/config.py",
+                                    "python-backend/aemeath_agent/main.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-AGENT-CHECKPOINT"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-005",
+                                   "PB-011",
+                                   "PB-012",
+                                   "PB-013",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-PYTHON-MEMORY-STORE",
+                         "title":  "Python memory store",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-conditionally-writable",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/memory_store.json",
+                         "pathSemantics":  {
+                                    "authority":  "application-default",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/memory_store.json when LOCALAPPDATA is non-empty",
+                                    "fallback":  "~/.aemeath/memory_store.json when LOCALAPPDATA is empty",
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/agent/graph.py",
+                                    "python-backend/aemeath_agent/agent/memory_store.py",
+                                    "python-backend/aemeath_agent/api/routes_memory.py",
+                                    "python-backend/aemeath_agent/tools/retrieve_memory.py",
+                                    "python-backend/aemeath_agent/tools/save_memory.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-PYTHON-MEMORY-STORE"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-005",
+                                   "PB-013",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-PYTHON-MEMORY-BLOCKS",
+                         "title":  "Python USER and CORE memory blocks",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-writable-on-first-access",
+                         "path":  "%LOCALAPPDATA%/AemeathDesktopPet/memory_blocks.json",
+                         "pathSemantics":  {
+                                    "authority":  "application-default",
+                                    "default":  "%LOCALAPPDATA%/AemeathDesktopPet/memory_blocks.json when LOCALAPPDATA is non-empty",
+                                    "fallback":  "~/.aemeath/memory_blocks.json when LOCALAPPDATA is empty",
+                                    "configuredBy":  null,
+                                    "relativeTo":  null
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/agent/memory_store.py",
+                                    "python-backend/aemeath_agent/agent/prompts.py",
+                                    "python-backend/aemeath_agent/api/routes_memory.py",
+                                    "python-backend/aemeath_agent/tools/update_user_block.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-PYTHON-MEMORY-BLOCKS"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-005",
+                                   "PB-013",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-CHROMA",
+                         "title":  "Chroma RAG and episodic-memory collections",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-conditionally-writable",
+                         "path":  "data/chromadb/",
+                         "pathSemantics":  {
+                                    "authority":  "pydantic-setting",
+                                    "default":  "data/chromadb",
+                                    "fallback":  null,
+                                    "configuredBy":  "AEMEATH_CHROMADB_PATH",
+                                    "relativeTo":  "sidecar-current-working-directory when the selected value is relative"
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/api/routes_memory.py",
+                                    "python-backend/aemeath_agent/api/routes_rag.py",
+                                    "python-backend/aemeath_agent/config.py",
+                                    "python-backend/aemeath_agent/rag/ingestion.py",
+                                    "python-backend/aemeath_agent/rag/memory_vectorstore.py",
+                                    "python-backend/aemeath_agent/rag/vectorstore.py",
+                                    "python-backend/aemeath_agent/tools/retrieve_memory.py",
+                                    "python-backend/aemeath_agent/tools/save_memory.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-CHROMA"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-013",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-TODO",
+                         "title":  "Agent to-do database",
+                         "ownership":  "application",
+                         "access":  "read-write",
+                         "lifecycle":  "current-production-conditionally-writable",
+                         "path":  "data/todos.db",
+                         "pathSemantics":  {
+                                    "authority":  "application-hard-coded-tool-configuration",
+                                    "default":  "data/todos.db",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  "sidecar-current-working-directory"
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/tools/__init__.py",
+                                    "python-backend/aemeath_agent/tools/todo.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-TODO"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-013",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-ACTIVITY-SQLITE",
+                         "title":  "User-configured external activity database",
+                         "ownership":  "external-user",
+                         "access":  "read-only",
+                         "lifecycle":  "external-user-managed",
+                         "path":  "user-configured SQLite path",
+                         "pathSemantics":  {
+                                    "authority":  "desktop-application-config",
+                                    "default":  "machine-specific production initializer intentionally not frozen",
+                                    "fallback":  null,
+                                    "configuredBy":  "config.json:activityMonitor.databasePath",
+                                    "relativeTo":  "desktop-process-current-working-directory when the configured value is relative"
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/AppConfig.cs",
+                                    "src/AemeathDesktopPet/Services/ActivityMonitorService.cs",
+                                    "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-ACTIVITY-SQLITE-READONLY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-010",
+                                   "PB-014",
+                                   "PB-016"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-SIDECAR-ENVFILE",
+                         "title":  "Sidecar environment configuration",
+                         "ownership":  "external-operator",
+                         "access":  "read-only",
+                         "lifecycle":  "external-operator-managed",
+                         "path":  ".env",
+                         "pathSemantics":  {
+                                    "authority":  "pydantic-settings-model-config",
+                                    "default":  ".env",
+                                    "fallback":  null,
+                                    "configuredBy":  null,
+                                    "relativeTo":  "sidecar-current-working-directory"
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/config.py",
+                                    "python-backend/aemeath_agent/main.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-SIDECAR-ENVFILE-READONLY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-011",
+                                   "PB-013",
+                                   "PB-016",
+                                   "PB-017"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-MUSIC-LIBRARY",
+                         "title":  "User-configured music library",
+                         "ownership":  "external-user",
+                         "access":  "read-only",
+                         "lifecycle":  "external-user-managed",
+                         "path":  "user-configured music directory",
+                         "pathSemantics":  {
+                                    "authority":  "desktop-application-config",
+                                    "default":  "",
+                                    "fallback":  null,
+                                    "configuredBy":  "config.json:musicFolderPath",
+                                    "relativeTo":  "desktop-process-current-working-directory when the configured value is relative"
+                                  },
+                         "sourceLocators":  [
+                                    "src/AemeathDesktopPet/Models/AppConfig.cs",
+                                    "src/AemeathDesktopPet/Services/MusicService.cs",
+                                    "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+                                    "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-MUSIC-LIBRARY-READONLY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-004",
+                                   "PB-006",
+                                   "PB-010"
+                                 ]
+                       },
+                       {
+                         "id":  "DATA-RAG-SOURCE-DOCUMENTS",
+                         "title":  "Request-supplied RAG source documents",
+                         "ownership":  "external-user",
+                         "access":  "read-only",
+                         "lifecycle":  "external-user-managed",
+                         "path":  "request-supplied file or directory",
+                         "pathSemantics":  {
+                                    "authority":  "rag-ingest-request",
+                                    "default":  null,
+                                    "fallback":  null,
+                                    "configuredBy":  "POST /rag/ingest request.path and request.is_directory",
+                                    "relativeTo":  "sidecar-current-working-directory when the request path is relative"
+                                  },
+                         "sourceLocators":  [
+                                    "python-backend/aemeath_agent/api/models.py",
+                                    "python-backend/aemeath_agent/api/routes_rag.py",
+                                    "python-backend/aemeath_agent/rag/ingestion.py",
+                                    "python-backend/aemeath_agent/rag/vectorstore.py"
+                                  ],
+                         "fixtureRecordIds":  [
+                                      "DATA-RAG-SOURCE-FILE-OR-DIRECTORY-READONLY"
+                                    ],
+                         "boundaryIds":  [
+                                   "PB-013",
+                                   "PB-016"
+                                 ]
+                       }
+                     ],
+            "integrationBoundaries":  [
+                           {
+                             "id":  "INT-SIDECAR-REST-SSE",
+                             "title":  "Sidecar loopback REST and SSE",
+                             "kind":  "loopback-http",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                                        "python-backend/aemeath_agent/api"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-WPF-LOOPBACK",
+                             "title":  "Reverse WPF loopback API and Python bridge",
+                             "kind":  "loopback-http",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+                                        "python-backend/aemeath_agent/bridge/wpf_client.py"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-DIRECT-CHAT-PROVIDERS",
+                             "title":  "Claude, Gemini, and proxy chat providers",
+                             "kind":  "external-provider",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/ClaudeApiService.cs",
+                                        "src/AemeathDesktopPet/Services/GeminiApiService.cs",
+                                        "src/AemeathDesktopPet/Services/ProxyApiService.cs"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-TTS-PROVIDERS",
+                             "title":  "Edge, GPT-SoVITS, ElevenLabs, Fish Audio, and OpenAI TTS",
+                             "kind":  "external-or-local-provider",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/TtsVoiceService.cs"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-STT-PROVIDERS",
+                             "title":  "Whisper and Gemini speech-to-text",
+                             "kind":  "external-or-sidecar-provider",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/BackendSttService.cs",
+                                        "python-backend/aemeath_agent/api/routes_stt.py"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-VISION-PROVIDERS",
+                             "title":  "Gemini, Claude, Ollama, and hybrid vision",
+                             "kind":  "external-or-local-provider",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/BackendVisionService.cs",
+                                        "python-backend/aemeath_agent/vision"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-RAG-EMBEDDINGS",
+                             "title":  "RAG ingestion, retrieval, embedding, and reranking",
+                             "kind":  "local-or-provider-index",
+                             "sourceLocators":  [
+                                        "python-backend/aemeath_agent/rag"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-WEB-WEATHER-TOOLS",
+                             "title":  "Tavily web search and OpenWeatherMap tools",
+                             "kind":  "external-provider",
+                             "sourceLocators":  [
+                                        "python-backend/aemeath_agent/tools/web_search.py",
+                                        "python-backend/aemeath_agent/tools/weather.py"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-COMPANION-PROCESS",
+                             "title":  "Configured companion process launcher",
+                             "kind":  "external-process",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/CompanionLauncherService.cs"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-POMODORO-PIPE",
+                             "title":  "Pomodoro named-pipe events",
+                             "kind":  "local-ipc",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/PomodoroIntegrationService.cs"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-ACTIVITY-SQLITE",
+                             "title":  "External activity SQLite reader",
+                             "kind":  "external-local-data",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/ActivityMonitorService.cs"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-MCP-STDIO",
+                             "title":  "External MCP stdio peers",
+                             "kind":  "supervised-stdio",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Services/McpClientService.cs",
+                                        "src/AemeathDesktopPet/Services/McpServer"
+                                      ]
+                           },
+                           {
+                             "id":  "INT-WINDOWS-DESKTOP",
+                             "title":  "Windows tray, hotkey, screen, DPI, fullscreen, and window manager",
+                             "kind":  "windows-real-boundary",
+                             "sourceLocators":  [
+                                        "src/AemeathDesktopPet/Interop/Win32Api.cs",
+                                        "src/AemeathDesktopPet/Services/GlobalHotkeyService.cs",
+                                        "src/AemeathDesktopPet/app.manifest"
+                                      ]
+                           }
+                         ],
+            "windowsJourneys":  [
+                        {
+                          "id":  "WIN-OFFLINE-STARTUP",
+                          "title":  "Offline startup and bounded clean exit",
+                          "mode":  "fixture-e2e",
+                          "status":  "planned-independent-qualification",
+                          "boundaryIds":  [
+                                    "PB-001",
+                                    "PB-002",
+                                    "PB-003",
+                                    "PB-005",
+                                    "PB-008",
+                                    "PB-011",
+                                    "PB-017",
+                                    "PB-018"
+                                  ],
+                          "expected":  "With no provider, network, or sidecar, a usable pet, Chat, and Settings appear and the process exits within a bound."
+                        },
+                        {
+                          "id":  "WIN-RESTART-CONTINUITY",
+                          "title":  "Disposable-profile restart continuity",
+                          "mode":  "fixture-e2e",
+                          "status":  "planned-independent-qualification",
+                          "boundaryIds":  [
+                                    "PB-001",
+                                    "PB-003",
+                                    "PB-005",
+                                    "PB-008",
+                                    "PB-009",
+                                    "PB-014",
+                                    "PB-016",
+                                    "PB-017",
+                                    "PB-018"
+                                  ],
+                          "expected":  "Non-secret configuration, position, stats, history, and retained memory shapes survive a disposable-profile restart without touching a real user profile."
+                        },
+                        {
+                          "id":  "WIN-CHAT-OUTCOMES",
+                          "title":  "Chat normal, failure, offline, and history outcomes",
+                          "mode":  "fixture-e2e",
+                          "status":  "planned-independent-qualification",
+                          "boundaryIds":  [
+                                    "PB-001",
+                                    "PB-005",
+                                    "PB-011",
+                                    "PB-012",
+                                    "PB-016",
+                                    "PB-018"
+                                  ],
+                          "expected":  "Normal streaming, provider failure, offline fallback, and completed-turn history remain distinct, visible, ordered, and nonduplicating."
+                        },
+                        {
+                          "id":  "WIN-PET-REAL-BOUNDARY",
+                          "title":  "Real pet visibility and recovery",
+                          "mode":  "real-windows",
+                          "status":  "planned-independent-qualification",
+                          "boundaryIds":  [
+                                    "PB-001",
+                                    "PB-002",
+                                    "PB-003",
+                                    "PB-004",
+                                    "PB-018"
+                                  ],
+                          "expected":  "Transparent topmost visibility, hide/show, tray access, and click-through recovery work on a disposable interactive Windows desktop."
+                        },
+                        {
+                          "id":  "WIN-KEYBOARD-SURFACE",
+                          "title":  "Keyboard companion-surface entry and exit",
+                          "mode":  "real-windows",
+                          "status":  "explicit-current-gap",
+                          "boundaryIds":  [
+                                    "PB-001",
+                                    "PB-003",
+                                    "PB-005",
+                                    "PB-008",
+                                    "PB-018"
+                                  ],
+                          "expected":  "A reliable keyboard path opens and closes a companion surface; the current baseline has no such entry and Ctrl+F2 is only the voice-input hotkey."
+                        }
+                      ]
+          },
+  "boundaries":  [
+            {
+              "id":  "PB-001",
+              "title":  "Application startup, owned lifecycle, and shutdown",
+              "preserve":  "One pet starts per application instance, owned resources stop, and the compatible data root remains available offline.",
+              "replaceOrGap":  "Do not freeze direct construction, unbounded background startup effects, or unbounded shutdown as compatibility.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "docs/plans/20260722-jarvis-assistant-tdd-checklist.md#31-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/App.xaml.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-APP-HOST",
+                        "CMP-SIDECAR-SUPERVISION"
+                      ],
+              "behaviorIds":  [
+                        "PB-001"
+                      ],
+              "dataIds":  [
+                      "DATA-STARTUP-RUN-REGISTRY"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-CHAT-OUTCOMES",
+                       "WIN-PET-REAL-BOUNDARY",
+                       "WIN-KEYBOARD-SURFACE"
+                     ],
+              "oracleIds":  [
+
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+
+                      ]
+            },
+            {
+              "id":  "PB-002",
+              "title":  "Pet window, sprites, behavior, and physics",
+              "preserve":  "Transparent topmost embodiment, configured size and opacity, movement, included sprite timing, and offline companionship.",
+              "replaceOrGap":  "Do not freeze random time or position, exact random sequences, or placeholder animation mappings as permanent design.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Views/PetWindow.xaml",
+                         "src/AemeathDesktopPet/Engine/AnimationEngine.cs",
+                         "src/AemeathDesktopPet/Engine/PhysicsEngine.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-PET-WINDOW",
+                        "CMP-ANIMATION-ENGINE",
+                        "CMP-BEHAVIOR-PHYSICS"
+                      ],
+              "behaviorIds":  [
+                        "PB-002"
+                      ],
+              "dataIds":  [
+
+                    ],
+              "integrationIds":  [
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-PET-REAL-BOUNDARY"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-PET",
+                      "ORACLE-PHYSICS",
+                      "ORACLE-ANIMATION-RATE",
+                      "ORACLE-RANDOMNESS-BOUNDARY"
+                    ],
+              "artifactIds":  [
+                        "P0A1-ORACLES-V1",
+                        "P0A1-RESOURCES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-PET-THROW-RELEASE",
+                        "GAP-PET-EDGE-SUBSCRIPTIONS",
+                        "GAP-MINIGAMES-MISSING",
+                        "GAP-INTERACTION-SOUNDS-MISSING"
+                      ]
+            },
+            {
+              "id":  "PB-003",
+              "title":  "Pet input, tray, click-through, and position",
+              "preserve":  "Equivalent access and recovery paths plus safe on-screen position restore.",
+              "replaceOrGap":  "Do not freeze mouse-only reachability, inaccessible programmatic menu items, or coordinate-only automation.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Views/PetWindow.xaml.cs",
+                         "src/AemeathDesktopPet/Interop/Win32Api.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-PET-WINDOW",
+                        "CMP-BEHAVIOR-PHYSICS",
+                        "CMP-PET-INPUT-TRAY"
+                      ],
+              "behaviorIds":  [
+                        "PB-003"
+                      ],
+              "dataIds":  [
+                      "DATA-CONFIG"
+                    ],
+              "integrationIds":  [
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-PET-REAL-BOUNDARY",
+                       "WIN-KEYBOARD-SURFACE"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-PET",
+                      "ORACLE-STATS-PET",
+                      "ORACLE-PHYSICS",
+                      "ORACLE-AUTOMATION-GAP"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-STATIC",
+                      "V-MANUAL-WIN",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-PET-THROW-RELEASE",
+                        "GAP-PET-EDGE-SUBSCRIPTIONS",
+                        "GAP-FULLSCREEN-PET-POLICY",
+                        "GAP-KEYBOARD-COMPANION-SURFACE",
+                        "GAP-UI-AUTOMATION-SEMANTICS"
+                      ]
+            },
+            {
+              "id":  "PB-004",
+              "title":  "Bubble, particles, plane, and optional cat",
+              "preserve":  "Visible companion feedback, lifecycle, existing counters, and optional cat behavior.",
+              "replaceOrGap":  "Do not freeze invisible plane rendering, emoji-only cat or status semantics, uncontrolled timers, or exact random visual output.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Views/SpeechBubble.xaml",
+                         "src/AemeathDesktopPet/Views/CatWindow.xaml",
+                         "src/AemeathDesktopPet/Engine/PaperPlaneSystem.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-COMPANION-VISUALS",
+                        "CMP-ANIMATION-ENGINE",
+                        "CMP-BEHAVIOR-PHYSICS"
+                      ],
+              "behaviorIds":  [
+                        "PB-004"
+                      ],
+              "dataIds":  [
+                      "DATA-MUSIC-LIBRARY"
+                    ],
+              "integrationIds":  [
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+                       "WIN-PET-REAL-BOUNDARY"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-CAT",
+                      "ORACLE-BUBBLE-GEOMETRY",
+                      "ORACLE-STATS-SING",
+                      "ORACLE-STATS-PLANE",
+                      "ORACLE-BUBBLE-TIMING",
+                      "ORACLE-SPEECH-RANGES",
+                      "ORACLE-RANDOMNESS-BOUNDARY"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-RESOURCES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-STATIC",
+                      "V-MANUAL-WIN",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-PET-EDGE-SUBSCRIPTIONS",
+                        "GAP-PAPER-PLANE-RENDERER",
+                        "GAP-STATE-CAT-ASSETS",
+                        "GAP-UI-AUTOMATION-SEMANTICS",
+                        "GAP-MINIGAMES-MISSING",
+                        "GAP-INTERACTION-SOUNDS-MISSING"
+                      ]
+            },
+            {
+              "id":  "PB-005",
+              "title":  "Text conversation, history, and offline behavior",
+              "preserve":  "Ordered streaming, visible failure recovery, readable history, completed-turn persistence, and offline use.",
+              "replaceOrGap":  "Do not freeze stored placeholders, silent routing ambiguity, provider orchestration in the view model, or divergent response fields.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/ViewModels/ChatViewModel.cs",
+                         "src/AemeathDesktopPet/Services/BackendAgentService.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-CHAT",
+                        "CMP-LOCAL-DATA",
+                        "CMP-DESKTOP-SIDECAR-PROTOCOL"
+                      ],
+              "behaviorIds":  [
+                        "PB-005"
+                      ],
+              "dataIds":  [
+                      "DATA-MESSAGES",
+                      "DATA-AGENT-CHECKPOINT",
+                      "DATA-PYTHON-MEMORY-STORE",
+                      "DATA-PYTHON-MEMORY-BLOCKS"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-DIRECT-CHAT-PROVIDERS"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-CHAT-OUTCOMES",
+                       "WIN-KEYBOARD-SURFACE"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-CHAT",
+                      "ORACLE-STATS-CHAT",
+                      "ORACLE-MEMORY-LIMITS"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-KEYBOARD-COMPANION-SURFACE",
+                        "GAP-AGENT-RESPONSE-FIELD",
+                        "GAP-MEMORY-AUTHORITIES",
+                        "GAP-AGENT-SSE-FRAMING",
+                        "GAP-AGENT-SSE-TOOL-CALL",
+                        "GAP-AGENT-SSE-ERROR-VISIBILITY",
+                        "GAP-CHAT-TIER-FAILOVER"
+                      ]
+            },
+            {
+              "id":  "PB-006",
+              "title":  "Voice, STT, TTS, hotkey, and audio",
+              "preserve":  "Opt-in push-to-talk, visible transcript and status, provider selection, queued speech policy, and text fallback.",
+              "replaceOrGap":  "Do not freeze mouse-only hold control, mismatched backend or credential contracts, hidden capture, or unbounded real-audio tests.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/VoiceInputService.cs",
+                         "src/AemeathDesktopPet/Services/BackendSttService.cs",
+                         "python-backend/aemeath_agent/api/routes_stt.py"
+                       ],
+              "componentIds":  [
+                        "CMP-VOICE",
+                        "CMP-DESKTOP-SIDECAR-PROTOCOL"
+                      ],
+              "behaviorIds":  [
+                        "PB-006"
+                      ],
+              "dataIds":  [
+                      "DATA-MUSIC-LIBRARY"
+                    ],
+              "integrationIds":  [
+                         "INT-STT-PROVIDERS",
+                         "INT-TTS-PROVIDERS",
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+
+                     ],
+              "oracleIds":  [
+
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-STT-CONTRACT",
+                        "GAP-UI-AUTOMATION-SEMANTICS"
+                      ]
+            },
+            {
+              "id":  "PB-007",
+              "title":  "Screen awareness and privacy indication",
+              "preserve":  "Explicit opt-in, protected-window and blacklist behavior, visible capture indication, stop control, and budget settings.",
+              "replaceOrGap":  "Do not freeze background capture without task consent, screenshot attachment bypass, stored-but-unused privacy controls, or color-only status.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/ScreenAwarenessService.cs",
+                         "src/AemeathDesktopPet/Services/ScreenCaptureService.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-SCREEN",
+                        "CMP-PRIVACY-AUTH",
+                        "CMP-DESKTOP-SIDECAR-PROTOCOL"
+                      ],
+              "behaviorIds":  [
+                        "PB-007"
+                      ],
+              "dataIds":  [
+                      "DATA-OBSERVATION-BUFFER"
+                    ],
+              "integrationIds":  [
+                         "INT-VISION-PROVIDERS",
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+
+                     ],
+              "oracleIds":  [
+                      "ORACLE-OBSERVATION-TTL"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-STATIC",
+                      "V-MANUAL-WIN",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-FULLSCREEN-PET-POLICY",
+                        "GAP-AGENT-SCREENSHOT-SHAPE",
+                        "GAP-VISION-SAVED-PRIVACY-CONTROLS",
+                        "GAP-MEMORY-DISTILLATION-FALSE-SUCCESS"
+                      ]
+            },
+            {
+              "id":  "PB-008",
+              "title":  "Settings and configuration compatibility",
+              "preserve":  "All eight current settings categories have a disposition, Cancel is side-effect free, and approved values migrate atomically.",
+              "replaceOrGap":  "Do not freeze plaintext keys, raw ordinary-user MCP command editing, monolithic code-behind, unlabeled inputs, or inaccessible controls.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Views/SettingsWindow.xaml",
+                         "src/AemeathDesktopPet/Models/AppConfig.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-SETTINGS",
+                        "CMP-LOCAL-DATA",
+                        "CMP-PRIVACY-AUTH"
+                      ],
+              "behaviorIds":  [
+                        "PB-008"
+                      ],
+              "dataIds":  [
+                      "DATA-CONFIG",
+                      "DATA-STARTUP-RUN-REGISTRY"
+                    ],
+              "integrationIds":  [
+                         "INT-MCP-STDIO"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-KEYBOARD-SURFACE"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-SETTINGS",
+                      "ORACLE-SPEECH-RANGES",
+                      "ORACLE-AUTOMATION-GAP"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-KEYBOARD-COMPANION-SURFACE",
+                        "GAP-PLAINTEXT-SECRETS",
+                        "GAP-UI-AUTOMATION-SEMANTICS",
+                        "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+                        "GAP-SIDECAR-ENV-PREFIX-DRIFT"
+                      ]
+            },
+            {
+              "id":  "PB-009",
+              "title":  "Stats, chat, and local-data lifecycle",
+              "preserve":  "Literal stats, counters, bounded history, and compatible content survive restart and migration with backup, compare, and rollback evidence.",
+              "replaceOrGap":  "Do not freeze real-profile test access or destructive unversioned writes.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/StatsService.cs",
+                         "src/AemeathDesktopPet/Services/MemoryService.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-LOCAL-DATA",
+                        "CMP-BEHAVIOR-PHYSICS"
+                      ],
+              "behaviorIds":  [
+                        "PB-009"
+                      ],
+              "dataIds":  [
+                      "DATA-STATS",
+                      "DATA-MESSAGES"
+                    ],
+              "integrationIds":  [
+
+                       ],
+              "journeyIds":  [
+                       "WIN-RESTART-CONTINUITY"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-STATS",
+                      "ORACLE-STATS-DEFAULTS",
+                      "ORACLE-STATS-CHAT",
+                      "ORACLE-STATS-PET",
+                      "ORACLE-STATS-SING",
+                      "ORACLE-STATS-PLANE",
+                      "ORACLE-STATS-GAME",
+                      "ORACLE-STATS-BOUNDS",
+                      "ORACLE-STATS-TIMER",
+                      "ORACLE-MEMORY-LIMITS"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-WPF",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-USER-BLOCK-STARTUP-SNAPSHOT",
+                        "GAP-PROCEDURAL-LEARNING-CONSOLIDATION",
+                        "GAP-MEMORY-FORGET-TIME-RANGE",
+                        "GAP-MEMORY-DISTILLATION-FALSE-SUCCESS"
+                      ]
+            },
+            {
+              "id":  "PB-010",
+              "title":  "Companion, Pomodoro, and activity integrations",
+              "preserve":  "Optional enablement, event semantics, graceful absence, and nonfatal cleanup.",
+              "replaceOrGap":  "Do not freeze direct external process, registry, named-pipe, or database mutation inside deterministic CI fixtures.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/CompanionLauncherService.cs",
+                         "src/AemeathDesktopPet/Services/PomodoroIntegrationService.cs",
+                         "src/AemeathDesktopPet/Services/ActivityMonitorService.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-OPTIONAL-INTEGRATIONS"
+                      ],
+              "behaviorIds":  [
+                        "PB-010"
+                      ],
+              "dataIds":  [
+                      "DATA-ACTIVITY-SQLITE",
+                      "DATA-MUSIC-LIBRARY"
+                    ],
+              "integrationIds":  [
+                         "INT-COMPANION-PROCESS",
+                         "INT-POMODORO-PIPE",
+                         "INT-ACTIVITY-SQLITE"
+                       ],
+              "journeyIds":  [
+
+                     ],
+              "oracleIds":  [
+
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-ACCESS",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+
+                      ]
+            },
+            {
+              "id":  "PB-011",
+              "title":  "Sidecar supervision and offline degradation",
+              "preserve":  "The advanced runtime remains optional, its child lifecycle is bounded, and WPF remains usable offline.",
+              "replaceOrGap":  "Do not freeze health-only readiness, configured-port drift, missing dependencies, or source-tree-only release assumptions.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/BackendProcessManager.cs",
+                         "python-backend/aemeath_agent/main.py"
+                       ],
+              "componentIds":  [
+                        "CMP-SIDECAR-SUPERVISION",
+                        "CMP-APP-HOST"
+                      ],
+              "behaviorIds":  [
+                        "PB-011"
+                      ],
+              "dataIds":  [
+                      "DATA-AGENT-CHECKPOINT",
+                      "DATA-SIDECAR-ENVFILE"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-CHAT-OUTCOMES"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-BACKEND-PORTS"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-PERF",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-SIDECAR-CONFIGURED-PORT",
+                        "GAP-SIDECAR-RELEASE-PACKAGE",
+                        "GAP-LOOPBACK-AUTH",
+                        "GAP-AGENT-SSE-FRAMING",
+                        "GAP-AGENT-SSE-ERROR-VISIBILITY",
+                        "GAP-CHAT-TIER-FAILOVER",
+                        "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+                        "GAP-SIDECAR-ENV-PREFIX-DRIFT"
+                      ]
+            },
+            {
+              "id":  "PB-012",
+              "title":  "WPF-sidecar streaming and STT protocol",
+              "preserve":  "Compatible request, stream, result, and conversation-continuity outcomes at the current public boundary.",
+              "replaceOrGap":  "Do not freeze unauthenticated reverse APIs, divergent handwritten DTOs, unsafe retries, permissive versioning, or route drift.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                         "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+                         "python-backend/aemeath_agent/api/models.py",
+                         "python-backend/aemeath_agent/bridge/wpf_client.py"
+                       ],
+              "componentIds":  [
+                        "CMP-DESKTOP-SIDECAR-PROTOCOL",
+                        "CMP-SIDECAR-SUPERVISION"
+                      ],
+              "behaviorIds":  [
+                        "PB-012"
+                      ],
+              "dataIds":  [
+                      "DATA-AGENT-CHECKPOINT"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-WPF-LOOPBACK",
+                         "INT-STT-PROVIDERS",
+                         "INT-VISION-PROVIDERS"
+                       ],
+              "journeyIds":  [
+                       "WIN-CHAT-OUTCOMES"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-BACKEND-PORTS",
+                      "ORACLE-PROTOCOL-GAP"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-SIDECAR-CONFIGURED-PORT",
+                        "GAP-AGENT-SCREENSHOT-SHAPE",
+                        "GAP-AGENT-RESPONSE-FIELD",
+                        "GAP-STT-CONTRACT",
+                        "GAP-LOOPBACK-AUTH",
+                        "GAP-WPF-BRIDGE-ROUTE-DRIFT",
+                        "GAP-AGENT-SSE-FRAMING",
+                        "GAP-AGENT-SSE-TOOL-CALL",
+                        "GAP-AGENT-SSE-ERROR-VISIBILITY",
+                        "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+                        "GAP-SIDECAR-ENV-PREFIX-DRIFT"
+                      ]
+            },
+            {
+              "id":  "PB-013",
+              "title":  "Python agent, tools, and retrieval",
+              "preserve":  "Approved useful deterministic tool and RAG outcomes retain citations and safe degraded behavior.",
+              "replaceOrGap":  "Do not freeze broad unscoped tool exposure, unconfigured live retrieval, model-owned side effects, or an absent daily brief as passing behavior.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "python-backend/aemeath_agent/agent/graph.py",
+                         "python-backend/aemeath_agent/tools",
+                         "python-backend/aemeath_agent/rag"
+                       ],
+              "componentIds":  [
+                        "CMP-PYTHON-AGENT-RAG"
+                      ],
+              "behaviorIds":  [
+                        "PB-013"
+                      ],
+              "dataIds":  [
+                      "DATA-AGENT-CHECKPOINT",
+                      "DATA-PYTHON-MEMORY-STORE",
+                      "DATA-PYTHON-MEMORY-BLOCKS",
+                      "DATA-CHROMA",
+                      "DATA-TODO",
+                      "DATA-SIDECAR-ENVFILE",
+                      "DATA-RAG-SOURCE-DOCUMENTS"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-RAG-EMBEDDINGS",
+                         "INT-WEB-WEATHER-TOOLS",
+                         "INT-WPF-LOOPBACK"
+                       ],
+              "journeyIds":  [
+
+                     ],
+              "oracleIds":  [
+
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-RAG-LIVE-CONFIG",
+                        "GAP-DAILY-BRIEF-MISSING",
+                        "GAP-AGENT-SSE-TOOL-CALL",
+                        "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+                        "GAP-SIDECAR-ENV-PREFIX-DRIFT"
+                      ]
+            },
+            {
+              "id":  "PB-014",
+              "title":  "C# and Python memory sources",
+              "preserve":  "Recoverable user facts and history retain provenance, bounded context, and explicit deletion expectations.",
+              "replaceOrGap":  "Do not freeze multiple authorities, stale derived caches, incomplete provider injection, unclear forget semantics, or absent reminder and brief loops.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/CoreMemoryService.cs",
+                         "src/AemeathDesktopPet/Services/ProceduralMemoryService.cs",
+                         "python-backend/aemeath_agent/agent/memory_store.py"
+                       ],
+              "componentIds":  [
+                        "CMP-MEMORY",
+                        "CMP-LOCAL-DATA",
+                        "CMP-PYTHON-AGENT-RAG"
+                      ],
+              "behaviorIds":  [
+                        "PB-014"
+                      ],
+              "dataIds":  [
+                      "DATA-CORE-MEMORY",
+                      "DATA-PROCEDURAL-MEMORY",
+                      "DATA-OBSERVATION-BUFFER",
+                      "DATA-AGENT-CHECKPOINT",
+                      "DATA-PYTHON-MEMORY-STORE",
+                      "DATA-PYTHON-MEMORY-BLOCKS",
+                      "DATA-CHROMA",
+                      "DATA-ACTIVITY-SQLITE"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-RAG-EMBEDDINGS"
+                       ],
+              "journeyIds":  [
+                       "WIN-RESTART-CONTINUITY"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-MEMORY-LIMITS",
+                      "ORACLE-OBSERVATION-TTL",
+                      "ORACLE-DISTILLATION-TIMER",
+                      "ORACLE-REMINDER-GAP"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-MEMORY-AUTHORITIES",
+                        "GAP-MEMORY-CONTROL-UI",
+                        "GAP-REMINDER-LOOP-MISSING",
+                        "GAP-DAILY-BRIEF-MISSING",
+                        "GAP-USER-BLOCK-STARTUP-SNAPSHOT",
+                        "GAP-PROCEDURAL-LEARNING-CONSOLIDATION",
+                        "GAP-MEMORY-FORGET-TIME-RANGE",
+                        "GAP-MEMORY-DISTILLATION-FALSE-SUCCESS"
+                      ]
+            },
+            {
+              "id":  "PB-015",
+              "title":  "MCP definitions and process lifecycle",
+              "preserve":  "Compatible user-authored definitions remain available only after consent and migration review.",
+              "replaceOrGap":  "Do not freeze unwired settings as working, raw execution without policy, stale schema grants, or loopback reachability as authorization.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Services/McpClientService.cs",
+                         "src/AemeathDesktopPet/Services/McpServer/AemeathPetTools.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-MCP",
+                        "CMP-PRIVACY-AUTH"
+                      ],
+              "behaviorIds":  [
+                        "PB-015"
+                      ],
+              "dataIds":  [
+
+                    ],
+              "integrationIds":  [
+                         "INT-MCP-STDIO",
+                         "INT-WPF-LOOPBACK"
+                       ],
+              "journeyIds":  [
+
+                     ],
+              "oracleIds":  [
+                      "ORACLE-MCP-PROTOCOL"
+                    ],
+              "artifactIds":  [
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-CONTRACT",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-MCP-LIFECYCLE",
+                        "GAP-LOOPBACK-AUTH"
+                      ]
+            },
+            {
+              "id":  "PB-016",
+              "title":  "Secrets, redaction, and local authorization",
+              "preserve":  "Existing user choices and non-secret settings remain compatible without disclosure.",
+              "replaceOrGap":  "Do not freeze plaintext credentials, token leakage, unredacted diagnostics, unauthenticated loopback, route drift, or local reachability as authorization.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "REQUIREMENTS.md#54-privacy-requirements",
+                         "src/AemeathDesktopPet/Services/PiiScanner.cs",
+                         "src/AemeathDesktopPet/Services/InternalApiServer.cs"
+                       ],
+              "componentIds":  [
+                        "CMP-PRIVACY-AUTH",
+                        "CMP-SETTINGS",
+                        "CMP-DESKTOP-SIDECAR-PROTOCOL",
+                        "CMP-MEMORY"
+                      ],
+              "behaviorIds":  [
+                        "PB-016"
+                      ],
+              "dataIds":  [
+                      "DATA-CONFIG",
+                      "DATA-MESSAGES",
+                      "DATA-CORE-MEMORY",
+                      "DATA-PROCEDURAL-MEMORY",
+                      "DATA-OBSERVATION-BUFFER",
+                      "DATA-AGENT-CHECKPOINT",
+                      "DATA-PYTHON-MEMORY-STORE",
+                      "DATA-PYTHON-MEMORY-BLOCKS",
+                      "DATA-CHROMA",
+                      "DATA-TODO",
+                      "DATA-ACTIVITY-SQLITE",
+                      "DATA-SIDECAR-ENVFILE",
+                      "DATA-RAG-SOURCE-DOCUMENTS"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE",
+                         "INT-WPF-LOOPBACK",
+                         "INT-DIRECT-CHAT-PROVIDERS",
+                         "INT-TTS-PROVIDERS",
+                         "INT-STT-PROVIDERS",
+                         "INT-VISION-PROVIDERS",
+                         "INT-RAG-EMBEDDINGS",
+                         "INT-WEB-WEATHER-TOOLS",
+                         "INT-MCP-STDIO"
+                       ],
+              "journeyIds":  [
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-CHAT-OUTCOMES"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-BACKEND-PORTS"
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-ORACLES-V1",
+                        "P0A1-PROTOCOL-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-SIDECAR-CONFIGURED-PORT",
+                        "GAP-AGENT-SCREENSHOT-SHAPE",
+                        "GAP-STT-CONTRACT",
+                        "GAP-MCP-LIFECYCLE",
+                        "GAP-MEMORY-AUTHORITIES",
+                        "GAP-MEMORY-CONTROL-UI",
+                        "GAP-PLAINTEXT-SECRETS",
+                        "GAP-LOOPBACK-AUTH",
+                        "GAP-WPF-BRIDGE-ROUTE-DRIFT",
+                        "GAP-UI-AUTOMATION-SEMANTICS",
+                        "GAP-VISION-SAVED-PRIVACY-CONTROLS",
+                        "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+                        "GAP-SIDECAR-ENV-PREFIX-DRIFT",
+                        "GAP-USER-BLOCK-STARTUP-SNAPSHOT",
+                        "GAP-PROCEDURAL-LEARNING-CONSOLIDATION",
+                        "GAP-MEMORY-FORGET-TIME-RANGE",
+                        "GAP-MEMORY-DISTILLATION-FALSE-SUCCESS"
+                      ]
+            },
+            {
+              "id":  "PB-017",
+              "title":  "Build, package, install, and rollback",
+              "preserve":  "A supported Windows artifact starts and degrades clearly without development tools, with exact-SHA evidence.",
+              "replaceOrGap":  "Do not freeze source-tree-only sidecar assumptions, undeclared dependencies, unbundled integrations, or evidence from a different SHA.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/AemeathDesktopPet.csproj",
+                         "python-backend/pyproject.toml",
+                         ".github/workflows/release.yml"
+                       ],
+              "componentIds":  [
+                        "CMP-BUILD-PACKAGE",
+                        "CMP-APP-HOST",
+                        "CMP-SIDECAR-SUPERVISION"
+                      ],
+              "behaviorIds":  [
+                        "PB-017"
+                      ],
+              "dataIds":  [
+                      "DATA-STARTUP-RUN-REGISTRY",
+                      "DATA-SIDECAR-ENVFILE"
+                    ],
+              "integrationIds":  [
+                         "INT-SIDECAR-REST-SSE"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY"
+                     ],
+              "oracleIds":  [
+
+                    ],
+              "artifactIds":  [
+                        "P0A1-DATA-V5",
+                        "P0A1-RESOURCES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-SIDECAR-RELEASE-PACKAGE",
+                        "GAP-MCP-LIFECYCLE"
+                      ]
+            },
+            {
+              "id":  "PB-018",
+              "title":  "Windows UI, accessibility, performance, and reliability",
+              "preserve":  "Windows 10 and 11 x64, PerMonitorV2 behavior, 100/150/200 percent scale, high contrast, reduced motion, keyboard and Narrator journeys remain within recorded budgets.",
+              "replaceOrGap":  "Do not freeze missing automation semantics, fixed low-contrast colors, mouse-only paths, or pixel-perfect dynamic GIF and emoji snapshots.",
+              "sourceLocators":  [
+                         "docs/design/jarvis_assistant_design.md#22-preservation-boundary-inventory",
+                         "src/AemeathDesktopPet/Views",
+                         "src/AemeathDesktopPet/Themes/AemeathTheme.xaml",
+                         "src/AemeathDesktopPet/app.manifest"
+                       ],
+              "componentIds":  [
+                        "CMP-WINDOWS-UI",
+                        "CMP-PET-WINDOW",
+                        "CMP-COMPANION-VISUALS",
+                        "CMP-CHAT",
+                        "CMP-VOICE",
+                        "CMP-SCREEN",
+                        "CMP-SETTINGS",
+                        "CMP-BUILD-PACKAGE"
+                      ],
+              "behaviorIds":  [
+                        "PB-018"
+                      ],
+              "dataIds":  [
+
+                    ],
+              "integrationIds":  [
+                         "INT-WINDOWS-DESKTOP"
+                       ],
+              "journeyIds":  [
+                       "WIN-OFFLINE-STARTUP",
+                       "WIN-RESTART-CONTINUITY",
+                       "WIN-CHAT-OUTCOMES",
+                       "WIN-PET-REAL-BOUNDARY",
+                       "WIN-KEYBOARD-SURFACE"
+                     ],
+              "oracleIds":  [
+                      "ORACLE-WINDOW-PET",
+                      "ORACLE-WINDOW-CAT",
+                      "ORACLE-WINDOW-CHAT",
+                      "ORACLE-WINDOW-SETTINGS",
+                      "ORACLE-WINDOW-STATS",
+                      "ORACLE-BUBBLE-GEOMETRY",
+                      "ORACLE-DPI",
+                      "ORACLE-AUTOMATION-GAP"
+                    ],
+              "artifactIds":  [
+                        "P0A1-ORACLES-V1",
+                        "P0A1-RESOURCES-V1"
+                      ],
+              "laneIds":  [
+                      "V-UNIT",
+                      "V-COMPONENT",
+                      "V-CONTRACT",
+                      "V-WPF",
+                      "V-UIA",
+                      "V-FIXTURE-E2E",
+                      "V-REAL-E2E",
+                      "V-SECURITY",
+                      "V-ACCESS",
+                      "V-PERF",
+                      "V-PACKAGE",
+                      "V-STATIC",
+                      "V-MANUAL-WIN",
+                      "V-LEGACY"
+                    ],
+              "knownGapIds":  [
+                        "GAP-PET-EDGE-SUBSCRIPTIONS",
+                        "GAP-PAPER-PLANE-RENDERER",
+                        "GAP-FULLSCREEN-PET-POLICY",
+                        "GAP-KEYBOARD-COMPANION-SURFACE",
+                        "GAP-STATE-CAT-ASSETS",
+                        "GAP-SIDECAR-RELEASE-PACKAGE",
+                        "GAP-MEMORY-CONTROL-UI",
+                        "GAP-PLAINTEXT-SECRETS",
+                        "GAP-UI-AUTOMATION-SEMANTICS",
+                        "GAP-REMINDER-LOOP-MISSING",
+                        "GAP-DAILY-BRIEF-MISSING",
+                        "GAP-MINIGAMES-MISSING",
+                        "GAP-INTERACTION-SOUNDS-MISSING"
+                      ]
+            }
+          ],
+  "qualificationLanes":  [
+                {
+                  "id":  "V-UNIT",
+                  "required":  true,
+                  "rationale":  "Deterministic isolated specifications qualify the safety harness and retained domain and engine rules.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.3b",
+                           "P0A.4a",
+                           "P0A.4b",
+                           "P0A.4c",
+                           "P0A.4d"
+                         ],
+                  "testIds":  [
+                          "P0A.3b-V-UNIT-UNIT-SPEC",
+                          "P0A.4a-V-UNIT-UNIT-SPEC",
+                          "P0A.4b-V-UNIT-UNIT-SPEC",
+                          "P0A.4c-V-UNIT-UNIT-SPEC",
+                          "P0A.4d-V-UNIT-UNIT-SPEC"
+                        ]
+                },
+                {
+                  "id":  "V-COMPONENT",
+                  "required":  true,
+                  "rationale":  "Component flows qualify composition, local data, optional integrations, and sidecar-adjacent behavior without live providers.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-014",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.4e",
+                           "P0A.5a",
+                           "P0A.5b",
+                           "P0A.5c",
+                           "P0A.5d",
+                           "P0A.5e"
+                         ],
+                  "testIds":  [
+                          "P0A.4e-V-COMPONENT-COMPONENT-FLOW",
+                          "P0A.5a-V-COMPONENT-COMPONENT-FLOW",
+                          "P0A.5b-V-COMPONENT-COMPONENT-FLOW",
+                          "P0A.5c-V-COMPONENT-COMPONENT-FLOW",
+                          "P0A.5d-V-COMPONENT-COMPONENT-FLOW",
+                          "P0A.5e-V-COMPONENT-COMPONENT-FLOW"
+                        ]
+                },
+                {
+                  "id":  "V-CONTRACT",
+                  "required":  true,
+                  "rationale":  "Public storage and cross-runtime shapes are qualified without blessing known protocol defects.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-009",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.5b",
+                           "P0A.5e"
+                         ],
+                  "testIds":  [
+                          "P0A.5b-V-CONTRACT-CONTRACT-COMPATIBILITY",
+                          "P0A.5e-V-CONTRACT-CONTRACT-COMPATIBILITY"
+                        ]
+                },
+                {
+                  "id":  "V-WPF",
+                  "required":  true,
+                  "rationale":  "Real production XAML is observed on a pumped graphical worker for semantic state and layout truth.",
+                  "boundaryIds":  [
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-008",
+                            "PB-009",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.6"
+                         ],
+                  "testIds":  [
+                          "P0A.6-V-WPF-WPF-STATE"
+                        ]
+                },
+                {
+                  "id":  "V-UIA",
+                  "required":  true,
+                  "rationale":  "Process UI Automation records supported external control paths and the current automation gap.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-007",
+                            "PB-008",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.6",
+                           "P0A.7"
+                         ],
+                  "testIds":  [
+                          "P0A.6-V-UIA-UIA-JOURNEY",
+                          "P0A.7-V-UIA-UIA-JOURNEY"
+                        ]
+                },
+                {
+                  "id":  "V-FIXTURE-E2E",
+                  "required":  true,
+                  "rationale":  "Canary-only disposable journeys qualify whole user outcomes without personal data or uncontrolled services.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.2",
+                           "P0A.3c",
+                           "P0A.7"
+                         ],
+                  "testIds":  [
+                          "P0A.2-V-FIXTURE-E2E-FIXTURE-JOURNEY",
+                          "P0A.3c-V-FIXTURE-E2E-FIXTURE-JOURNEY",
+                          "P0A.7-V-FIXTURE-E2E-FIXTURE-JOURNEY"
+                        ]
+                },
+                {
+                  "id":  "V-REAL-E2E",
+                  "required":  true,
+                  "rationale":  "Irreducible Windows desktop behavior is qualified at the real transparent-window and keyboard boundaries.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.2"
+                         ],
+                  "testIds":  [
+                          "P0A.2-V-REAL-E2E-KEYBOARD-SURFACE",
+                          "P0A.2-V-REAL-E2E-PET-VISIBILITY"
+                        ]
+                },
+                {
+                  "id":  "V-SECURITY",
+                  "required":  true,
+                  "rationale":  "Safety, privacy, secret, residue, local-profile, and unauthenticated-loopback risks remain explicit and failure-detecting.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-011",
+                            "PB-012",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.3a",
+                           "P0A.5d",
+                           "P0A.5e"
+                         ],
+                  "testIds":  [
+                          "P0A.3a-V-SECURITY-SECURITY-CONTROLS",
+                          "P0A.5d-V-SECURITY-SECURITY-CONTROLS",
+                          "P0A.5e-V-SECURITY-SECURITY-CONTROLS"
+                        ]
+                },
+                {
+                  "id":  "V-ACCESS",
+                  "required":  true,
+                  "rationale":  "Accessibility state, names, roles, focus, keyboard reachability, contrast, scale, motion, and Narrator evidence are recorded honestly.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-010",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.6",
+                           "P0B.3e"
+                         ],
+                  "testIds":  [
+                          "P0A.6-V-ACCESS-ACCESSIBILITY-JOURNEY",
+                          "P0B.3e-V-ACCESS-ACCESSIBILITY-JOURNEY"
+                        ]
+                },
+                {
+                  "id":  "V-PERF",
+                  "required":  true,
+                  "rationale":  "Current timing and performance behavior is bounded and measured without treating unverified targets as guarantees.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-011",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.6",
+                           "P0A.8"
+                         ],
+                  "testIds":  [
+                          "P0A.6-V-PERF-PERFORMANCE-BUDGET",
+                          "P0A.8-V-PERF-PERFORMANCE-BUDGET"
+                        ]
+                },
+                {
+                  "id":  "V-PACKAGE",
+                  "required":  true,
+                  "rationale":  "Published Windows lifecycle, clean-machine degradation, retained resources, and optional sidecar distribution are qualified separately.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-005",
+                            "PB-006",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.8"
+                         ],
+                  "testIds":  [
+                          "P0A.8-V-PACKAGE-PACKAGE-LIFECYCLE"
+                        ]
+                },
+                {
+                  "id":  "V-STATIC",
+                  "required":  true,
+                  "rationale":  "Meta-tests bind documentation truth, complete inventories, source identity, frozen hashes, lane decisions, and exact-SHA delivery.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.1",
+                           "P0A.3a",
+                           "P0A.3b",
+                           "P0A.9"
+                         ],
+                  "testIds":  [
+                          "P0A.1-V-STATIC-STATIC-CONTRACT",
+                          "P0A.3a-V-STATIC-STATIC-CONTRACT",
+                          "P0A.3b-V-STATIC-STATIC-CONTRACT",
+                          "P0A.9-V-STATIC-STATIC-CONTRACT"
+                        ]
+                },
+                {
+                  "id":  "V-MANUAL-WIN",
+                  "required":  true,
+                  "rationale":  "Interactive Windows evidence covers boundaries that hosted or mocked workers cannot substitute.",
+                  "boundaryIds":  [
+                            "PB-003",
+                            "PB-004",
+                            "PB-007",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.8"
+                         ],
+                  "testIds":  [
+                          "P0A.8-V-MANUAL-WIN-MANUAL-WINDOWS-BOUNDARY"
+                        ]
+                },
+                {
+                  "id":  "V-LEGACY",
+                  "required":  true,
+                  "rationale":  "Legacy suites run only at P0A.9 as a separate regression input and never become independent oracles.",
+                  "boundaryIds":  [
+                            "PB-001",
+                            "PB-002",
+                            "PB-003",
+                            "PB-004",
+                            "PB-005",
+                            "PB-006",
+                            "PB-007",
+                            "PB-008",
+                            "PB-009",
+                            "PB-010",
+                            "PB-011",
+                            "PB-012",
+                            "PB-013",
+                            "PB-014",
+                            "PB-015",
+                            "PB-016",
+                            "PB-017",
+                            "PB-018"
+                          ],
+                  "ownerSteps":  [
+                           "P0A.9"
+                         ],
+                  "testIds":  [
+                          "P0A.9-V-LEGACY-LEGACY-REGRESSION"
+                        ]
+                }
+              ],
+  "artifacts":  [
+           {
+             "id":  "P0A1-DATA-V5",
+             "path":  "tests/fixtures/preservation/v1/data-v5.json",
+             "sha256":  "4fa474e506e03ad1d3e2af9a9bce6d14e27100d450f310970d82969af860dfc0",
+             "kind":  "canary-persisted-data",
+             "boundaryIds":  [
+                       "PB-001",
+                       "PB-003",
+                       "PB-004",
+                       "PB-005",
+                       "PB-006",
+                       "PB-007",
+                       "PB-008",
+                       "PB-009",
+                       "PB-010",
+                       "PB-011",
+                       "PB-012",
+                       "PB-013",
+                       "PB-014",
+                       "PB-016",
+                       "PB-017"
+                     ]
+           },
+           {
+             "id":  "P0A1-ORACLES-V1",
+             "path":  "tests/fixtures/preservation/v1/oracles-v1.json",
+             "sha256":  "4f00f6fbc478984a4ec074a2aa9c651399b688fe9d30ce0de9fb38f3bd5cce4d",
+             "kind":  "literal-stat-geometry-time-and-gap-oracles",
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-003",
+                       "PB-004",
+                       "PB-005",
+                       "PB-007",
+                       "PB-008",
+                       "PB-009",
+                       "PB-011",
+                       "PB-012",
+                       "PB-014",
+                       "PB-015",
+                       "PB-016",
+                       "PB-018"
+                     ]
+           },
+           {
+             "id":  "P0A1-PROTOCOL-V1",
+             "path":  "tests/fixtures/preservation/v1/protocol-v1.json",
+             "sha256":  "95ef4544f52eab0a2f4f6cc819237bdc47ec7b5d52459422795067eb2274f312",
+             "kind":  "cross-runtime-protocol-canaries-and-gaps",
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-006",
+                       "PB-007",
+                       "PB-011",
+                       "PB-012",
+                       "PB-013",
+                       "PB-014",
+                       "PB-015",
+                       "PB-016"
+                     ]
+           },
+           {
+             "id":  "P0A1-RESOURCES-V1",
+             "path":  "tests/fixtures/preservation/v1/resources-v1.json",
+             "sha256":  "63e70f82566b91eea4781e3b1da7b8ad1a360b0f926549690757e36225f2f7f8",
+             "kind":  "raw-resource-hashes-and-metadata",
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-004",
+                       "PB-017",
+                       "PB-018"
+                     ]
+           }
+         ],
+  "supportedEnvironments":  [
+                 {
+                   "id":  "ENV-WINDOWS-LOCAL",
+                   "os":  "Windows 11 x64 development environment",
+                   "status":  "ready",
+                   "capabilityIds":  [
+                              "LOCAL-WINDOWS-PS51"
+                            ],
+                   "targetSteps":  [
+                             "P0A.1"
+                           ]
+                 },
+                 {
+                   "id":  "ENV-GHA-UBUNTU",
+                   "os":  "ubuntu-latest",
+                   "status":  "ready",
+                   "capabilityIds":  [
+                              "CAP-GHA-UBUNTU-EXACT-SHA",
+                              "CAP-CI-ARTIFACT-RETENTION"
+                            ],
+                   "targetSteps":  [
+                             "P0A.1"
+                           ]
+                 },
+                 {
+                   "id":  "ENV-GHA-WINDOWS",
+                   "os":  "windows-latest",
+                   "status":  "capability-observed-qualification-pending",
+                   "capabilityIds":  [
+                              "CAP-GHA-WINDOWS-CAPABILITY-PROBE",
+                              "CAP-GHA-WINDOWS-RELEASE-BUILD"
+                            ],
+                   "targetSteps":  [
+                             "P0A.2",
+                             "P0A.6",
+                             "P0A.7"
+                           ]
+                 },
+                 {
+                   "id":  "ENV-INTERACTIVE-WIN10",
+                   "os":  "Windows 10 x64 interactive worker",
+                   "status":  "blocked-not-provisioned",
+                   "capabilityIds":  [
+                              "CAP-INTERACTIVE-WIN10",
+                              "CAP-SELF-HOSTED-RUNNER-LABELS"
+                            ],
+                   "targetSteps":  [
+                             "P0A.2",
+                             "P0A.8"
+                           ]
+                 },
+                 {
+                   "id":  "ENV-INTERACTIVE-WIN11",
+                   "os":  "Windows 11 x64 interactive worker",
+                   "status":  "blocked-not-provisioned",
+                   "capabilityIds":  [
+                              "CAP-INTERACTIVE-WIN11",
+                              "CAP-SELF-HOSTED-RUNNER-LABELS"
+                            ],
+                   "targetSteps":  [
+                             "P0A.2",
+                             "P0A.7",
+                             "P0A.8"
+                           ]
+                 }
+               ],
+  "knownGaps":  [
+           {
+             "id":  "GAP-PET-THROW-RELEASE",
+             "requirementIds":  [
+                        "CURRENT:FR-PET-004"
+                      ],
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-003"
+                     ],
+             "statement":  "Drag release does not calculate and apply throw velocity into the Thrown physics path.",
+             "laterRedStep":  "P4.5a",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-PET-EDGE-SUBSCRIPTIONS",
+             "requirementIds":  [
+                        "CURRENT:FR-PET-007"
+                      ],
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-003",
+                       "PB-004",
+                       "PB-018"
+                     ],
+             "statement":  "Window-edge events, subscriptions, positioning, and visible edge poses are not wired end to end.",
+             "laterRedStep":  "P4.5b",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-PAPER-PLANE-RENDERER",
+             "requirementIds":  [
+                        "CURRENT:FR-PET-008"
+                      ],
+             "boundaryIds":  [
+                       "PB-004",
+                       "PB-018"
+                     ],
+             "statement":  "Paper-plane trajectory exists without a connected WPF renderer or final artwork.",
+             "laterRedStep":  "P4.5c",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-FULLSCREEN-PET-POLICY",
+             "requirementIds":  [
+                        "CURRENT:FR-PET-010"
+                      ],
+             "boundaryIds":  [
+                       "PB-003",
+                       "PB-007",
+                       "PB-018"
+                     ],
+             "statement":  "Fullscreen detection does not yet hide or reposition the pet window.",
+             "laterRedStep":  "P4.5d",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-KEYBOARD-COMPANION-SURFACE",
+             "requirementIds":  [
+                        "PRD:AC-FR-017-01"
+                      ],
+             "boundaryIds":  [
+                       "PB-003",
+                       "PB-005",
+                       "PB-008",
+                       "PB-018"
+                     ],
+             "statement":  "No reliable keyboard entry opens and closes a companion surface; Ctrl+F2 is only the voice-input hotkey.",
+             "laterRedStep":  "P4.5e",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-STATE-CAT-ASSETS",
+             "requirementIds":  [
+                        "CURRENT:FR-PET-006",
+                        "CURRENT:FR-FUT-002"
+                      ],
+             "boundaryIds":  [
+                       "PB-004",
+                       "PB-018"
+                     ],
+             "statement":  "The cat uses a Unicode placeholder, and sleep, edge, chat, speaking, cat-interaction, and paper-plane states lack purpose-built approved assets.",
+             "laterRedStep":  "UNSCHEDULED-PENDING-APPROVAL:APP-008",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-SIDECAR-CONFIGURED-PORT",
+             "requirementIds":  [
+                        "CURRENT:AR-002",
+                        "CURRENT:FR-AI-005"
+                      ],
+             "boundaryIds":  [
+                       "PB-011",
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "statement":  "The WPF-managed backend port is ineffective because startup does not pass the configured port and the sidecar defaults to 18900.",
+             "laterRedStep":  "P2.2",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-SIDECAR-RELEASE-PACKAGE",
+             "requirementIds":  [
+                        "CURRENT:AR-002",
+                        "CURRENT:FR-AI-005"
+                      ],
+             "boundaryIds":  [
+                       "PB-011",
+                       "PB-017",
+                       "PB-018"
+                     ],
+             "statement":  "The Python sidecar and its dependency set are not bundled or qualified in the current Windows release artifact.",
+             "laterRedStep":  "P2.5",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-AGENT-SCREENSHOT-SHAPE",
+             "requirementIds":  [
+                        "CURRENT:LOC-TRANSMISSION"
+                      ],
+             "boundaryIds":  [
+                       "PB-007",
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "statement":  "The desktop can send a screenshot field that Python AgentRequest does not declare.",
+             "laterRedStep":  "P2.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-AGENT-RESPONSE-FIELD",
+             "requirementIds":  [
+                        "CURRENT:AR-002"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-012"
+                     ],
+             "statement":  "The Python agent response emits reply while the desktop consumer reads response.",
+             "laterRedStep":  "P2.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-STT-CONTRACT",
+             "requirementIds":  [
+                        "CURRENT:FR-VOICE-003"
+                      ],
+             "boundaryIds":  [
+                       "PB-006",
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "statement":  "The desktop sends multipart STT data while FastAPI requires JSON audio_base64/provider/language, and the Whisper credential setting is mismatched.",
+             "laterRedStep":  "P9.1b",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-RAG-LIVE-CONFIG",
+             "requirementIds":  [
+                        "CURRENT:FR-AI-006",
+                        "CURRENT:FR-AI-007"
+                      ],
+             "boundaryIds":  [
+                       "PB-013"
+                     ],
+             "statement":  "The live agent does not configure rag_retrieve for normal startup.",
+             "laterRedStep":  "P9.2",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MCP-LIFECYCLE",
+             "requirementIds":  [
+                        "CURRENT:FR-AI-008"
+                      ],
+             "boundaryIds":  [
+                       "PB-015",
+                       "PB-016",
+                       "PB-017"
+                     ],
+             "statement":  "MCP client and server lifecycle is not wired into application startup and shutdown.",
+             "laterRedStep":  "P10.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MEMORY-AUTHORITIES",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-001",
+                        "CURRENT:FR-MEM-003",
+                        "CURRENT:FR-MEM-004"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "statement":  "C# and Python memory remain multiple authorities, direct providers omit memory-aware context, and synchronized cutover is incomplete.",
+             "laterRedStep":  "P7.2/P7.5",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MEMORY-CONTROL-UI",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-006",
+                        "CURRENT:PR-005"
+                      ],
+             "boundaryIds":  [
+                       "PB-014",
+                       "PB-016",
+                       "PB-018"
+                     ],
+             "statement":  "User-visible memory inspection, correction, query and time-range deletion controls do not exist.",
+             "laterRedStep":  "P7.4",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-PLAINTEXT-SECRETS",
+             "requirementIds":  [
+                        "CURRENT:PR-004"
+                      ],
+             "boundaryIds":  [
+                       "PB-008",
+                       "PB-016",
+                       "PB-018"
+                     ],
+             "statement":  "Provider credentials remain in plaintext configuration and the settings UI lacks equivalent disclosure or protected storage.",
+             "laterRedStep":  "P1.4/P0B.3c",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-LOOPBACK-AUTH",
+             "requirementIds":  [
+                        "CURRENT:PR-006"
+                      ],
+             "boundaryIds":  [
+                       "PB-011",
+                       "PB-012",
+                       "PB-015",
+                       "PB-016"
+                     ],
+             "statement":  "Loopback APIs have no caller authentication or authorization and local reachability is not a security boundary.",
+             "laterRedStep":  "P2.2/P2.4",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-WPF-BRIDGE-ROUTE-DRIFT",
+             "requirementIds":  [
+                        "CURRENT:AR-003",
+                        "CURRENT:FR-AI-006"
+                      ],
+             "boundaryIds":  [
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "statement":  "The Python bridge declares unsupported speech, animation, and health routes while the WPF pet-state route has no client method; only stats, screen, and music-control routes are shared.",
+             "laterRedStep":  "P2.1/P2.4",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-UI-AUTOMATION-SEMANTICS",
+             "requirementIds":  [
+                        "PRD:AC-FR-017-01",
+                        "PRD:AC-FR-017-02",
+                        "PRD:AC-FR-017-03"
+                      ],
+             "boundaryIds":  [
+                       "PB-003",
+                       "PB-004",
+                       "PB-006",
+                       "PB-008",
+                       "PB-016",
+                       "PB-018"
+                     ],
+             "statement":  "The current views lack reliable Automation IDs, labels, keyboard equivalents, live regions, and complete semantic contrast and focus behavior.",
+             "laterRedStep":  "P0B.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-REMINDER-LOOP-MISSING",
+             "requirementIds":  [
+                        "PRD:AC-FR-004-01",
+                        "PRD:AC-FR-004-02",
+                        "PRD:AC-FR-004-03",
+                        "PRD:AC-FR-004-04",
+                        "PRD:AC-FR-004-05"
+                      ],
+             "boundaryIds":  [
+                       "PB-014",
+                       "PB-018"
+                     ],
+             "statement":  "ScheduledEvent has only a serialized/read shape; production has no writer, scheduler, due-time reconciliation, or notification loop.",
+             "laterRedStep":  "P5.1/P5.2",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-DAILY-BRIEF-MISSING",
+             "requirementIds":  [
+                        "PRD:AC-FR-003-01",
+                        "PRD:AC-FR-003-02",
+                        "PRD:AC-FR-003-03",
+                        "PRD:AC-FR-003-04",
+                        "PRD:AC-FR-003-05"
+                      ],
+             "boundaryIds":  [
+                       "PB-013",
+                       "PB-014",
+                       "PB-018"
+                     ],
+             "statement":  "No daily-brief source aggregation, ranking, delivery, or follow-up surface is implemented.",
+             "laterRedStep":  "P5.3/P5.4",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-AGENT-SSE-FRAMING",
+             "requirementIds":  [
+                        "CURRENT:AR-002",
+                        "CURRENT:FR-AI-001"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "statement":  "The sidecar yields already framed SSE strings to EventSourceResponse, which frames them again; the desktop then discards token and terminal events as malformed JSON.",
+             "laterRedStep":  "P2.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-AGENT-SSE-TOOL-CALL",
+             "requirementIds":  [
+                        "CURRENT:AR-002",
+                        "CURRENT:FR-AI-006"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-012",
+                       "PB-013"
+                     ],
+             "statement":  "The sidecar places the streamed tool name in content while the desktop expects data.name, and double framing discards the event before that mismatch can be surfaced.",
+             "laterRedStep":  "P2.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-AGENT-SSE-ERROR-VISIBILITY",
+             "requirementIds":  [
+                        "CURRENT:AR-002",
+                        "CURRENT:AR-004",
+                        "CURRENT:FR-AI-001"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "statement":  "Stream error events are discarded by double framing and the desktop has no error-event case, so a sidecar failure can complete without a visible error outcome.",
+             "laterRedStep":  "P2.1",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-CHAT-TIER-FAILOVER",
+             "requirementIds":  [
+                        "CURRENT:AR-004",
+                        "PRD:AC-FR-014-02"
+                      ],
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011"
+                     ],
+             "statement":  "A sidecar request failure falls directly to contextual offline output instead of retrying through the configured direct provider tier.",
+             "laterRedStep":  "P2.3/P3.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-VISION-SAVED-PRIVACY-CONTROLS",
+             "requirementIds":  [
+                        "CURRENT:FR-VISION-004"
+                      ],
+             "boundaryIds":  [
+                       "PB-007",
+                       "PB-016"
+                     ],
+             "statement":  "Saved privacy-tier, local-prefilter, taskbar-blur, and address-bar-blur settings are not consumed by the active screen-awareness path.",
+             "laterRedStep":  "P6.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-RUNTIME-CONFIG-SYNC-NOOP",
+             "requirementIds":  [
+                        "CURRENT:LOC-GAPS"
+                      ],
+             "boundaryIds":  [
+                       "PB-008",
+                       "PB-011",
+                       "PB-012",
+                       "PB-013",
+                       "PB-016"
+                     ],
+             "statement":  "The runtime configuration synchronization endpoint accepts settings without applying them to the active sidecar configuration or already constructed services.",
+             "laterRedStep":  "P2.1/P2.2",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-SIDECAR-ENV-PREFIX-DRIFT",
+             "requirementIds":  [
+                        "CURRENT:FR-AI-005",
+                        "CURRENT:FR-AI-006",
+                        "CURRENT:LOC-GAPS"
+                      ],
+             "boundaryIds":  [
+                       "PB-008",
+                       "PB-011",
+                       "PB-012",
+                       "PB-013",
+                       "PB-016"
+                     ],
+             "statement":  "Desktop-provided sidecar environment names do not consistently match the prefixes and field names consumed by Python settings.",
+             "laterRedStep":  "P2.2",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-USER-BLOCK-STARTUP-SNAPSHOT",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-005"
+                      ],
+             "boundaryIds":  [
+                       "PB-009",
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "statement":  "The agent system prompt snapshots the USER BLOCK at startup, so persisted updates are not reflected in later prompts until the agent is rebuilt.",
+             "laterRedStep":  "P7.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-PROCEDURAL-LEARNING-CONSOLIDATION",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-001",
+                        "CURRENT:FR-MEM-007"
+                      ],
+             "boundaryIds":  [
+                       "PB-009",
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "statement":  "Procedural memory has a persisted shape but no complete routine-learning, session-consolidation, history-summary, or deduplicating update workflow.",
+             "laterRedStep":  "P7.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MEMORY-FORGET-TIME-RANGE",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-006",
+                        "CURRENT:PR-005"
+                      ],
+             "boundaryIds":  [
+                       "PB-009",
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "statement":  "The forget request exposes a time_range field, but the deletion implementation does not honor it across retained memory stores.",
+             "laterRedStep":  "P7.2/P7.4",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MEMORY-DISTILLATION-FALSE-SUCCESS",
+             "requirementIds":  [
+                        "CURRENT:FR-MEM-002"
+                      ],
+             "boundaryIds":  [
+                       "PB-007",
+                       "PB-009",
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "statement":  "The sidecar can return HTTP 200 with an empty distillation when no extraction model is available, while the desktop clears every pending observation after any successful status.",
+             "laterRedStep":  "P7.3",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-MINIGAMES-MISSING",
+             "requirementIds":  [
+                        "CURRENT:FR-FUT-001"
+                      ],
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-004",
+                       "PB-018"
+                     ],
+             "statement":  "The planned rock-paper-scissors, catch-the-star, and pet-integrated focus-mode interaction loops are not implemented.",
+             "laterRedStep":  "UNSCHEDULED-PENDING-APPROVAL:APP-007",
+             "countsAsPassingBaseline":  false
+           },
+           {
+             "id":  "GAP-INTERACTION-SOUNDS-MISSING",
+             "requirementIds":  [
+                        "CURRENT:FR-FUT-003"
+                      ],
+             "boundaryIds":  [
+                       "PB-002",
+                       "PB-004",
+                       "PB-018"
+                     ],
+             "statement":  "Optional interaction and companion sound effects with volume, mute, and disabled-state behavior are not implemented.",
+             "laterRedStep":  "UNSCHEDULED-PENDING-APPROVAL:APP-009",
+             "countsAsPassingBaseline":  false
+           }
+         ],
+  "provenance":  {
+            "authorDeclarations":  [
+                         {
+                           "id":  "P0A1-AUTHOR-01",
+                           "legacyExposure":  "exposed",
+                           "mayApproveIndependentOracles":  false,
+                           "statement":  "Prior legacy-test exposure is disclosed. The author derived this specification only from normative documents, public production contracts, raw resource bytes, and new canary fixtures; legacy tests and results are neither read for this step nor accepted as independent oracles."
+                         }
+                       ],
+            "reviewerAssignments":  [
+                          {
+                            "id":  "clean-room-preservation-reviewer-03",
+                            "role":  "unexposed preservation specification reviewer",
+                            "legacyExposure":  "unexposed",
+                            "status":  "assigned-after-v5-repair-before-review",
+                            "evidencePath":  "docs/verification/evidence/P0A.1-clean-room-review-v4.md",
+                            "evidenceAccess":  "write-only-output",
+                            "defaultDenyUnlistedSources":  true,
+                            "allowedSources":  [
+                                       "REQUIREMENTS.md",
+                                       "docs/prd/jarvis_assistant_prd.md",
+                                       "docs/design/jarvis_assistant_design.md",
+                                       "docs/ui-spec/jarvis_assistant_ui_spec.md",
+                                       "docs/plans/20260722-jarvis-assistant-tdd-checklist.md",
+                                       "docs/adr/ADR-0002-test-driven-verification-and-exact-sha-delivery.md",
+                                       "docs/verification/traceability-v2.yml",
+                                       "docs/verification/manifests/P0A.1-v5.yml",
+                                       "src/AemeathDesktopPet",
+                                       "python-backend/aemeath_agent",
+                                       "tests/fixtures/preservation/v1/data-v5.json",
+                                       "tests/fixtures/preservation/v1/oracles-v1.json",
+                                       "tests/fixtures/preservation/v1/protocol-v1.json",
+                                       "tests/fixtures/preservation/v1/resources-v1.json",
+                                       "docs/verification/preservation-spec-v2.yml",
+                                       "python-backend/pyproject.toml",
+                                       ".github/workflows/release.yml"
+                                     ],
+                            "forbiddenSourceRoots":  [
+                                          "tests/AemeathDesktopPet.Tests",
+                                          "python-backend/tests",
+                                          ".superpowers"
+                                        ],
+                            "forbiddenCategories":  [
+                                          "legacy-test-helpers",
+                                          "legacy-fixtures-and-snapshots",
+                                          "generated-expected-values-and-assertions",
+                                          "prior-test-results-and-evidence"
+                                        ],
+                            "artifactIds":  [
+                                      "P0A1-DATA-V5",
+                                      "P0A1-ORACLES-V1",
+                                      "P0A1-PROTOCOL-V1",
+                                      "P0A1-RESOURCES-V1"
+                                    ],
+                            "boundaryIds":  [
+                                      "PB-001",
+                                      "PB-002",
+                                      "PB-003",
+                                      "PB-004",
+                                      "PB-005",
+                                      "PB-006",
+                                      "PB-007",
+                                      "PB-008",
+                                      "PB-009",
+                                      "PB-010",
+                                      "PB-011",
+                                      "PB-012",
+                                      "PB-013",
+                                      "PB-014",
+                                      "PB-015",
+                                      "PB-016",
+                                      "PB-017",
+                                      "PB-018"
+                                    ]
+                          }
+                        ]
+          }
+}

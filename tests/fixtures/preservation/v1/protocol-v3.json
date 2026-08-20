@@ -1,0 +1,393 @@
+{
+  "schemaVersion":  3,
+  "fixtureId":  "P0A1-PROTOCOL-V3",
+  "revision":  3,
+  "previousFixture":  {
+              "fixtureId":  "P0A1-PROTOCOL-V2",
+              "path":  "tests/fixtures/preservation/v1/protocol-v2.json",
+              "sha256":  "ec2ea43cf0d06ef75e7b0334b432464fca71b9198814287e2bf33bf8e026a602",
+              "schemaVersion":  2,
+              "revision":  2,
+              "status":  "BLOCK",
+              "contractCount":  15
+            },
+  "invalidationReason":  "Protocol-v2 incorrectly claimed that the C# tool-call consumer requires and consumes producer arguments at data.args; production code only reads the tool name from data.name.",
+  "privacy":  {
+          "containsSecrets":  false,
+          "containsPersonalData":  false,
+          "canary":  "AEMEATH_FIXTURE_USER"
+        },
+  "contracts":  [
+           {
+             "id":  "PROTOCOL-AGENT-REQUEST",
+             "boundaryIds":  [
+                       "PB-012"
+                     ],
+             "producer":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+             "consumer":  "python-backend/aemeath_agent/api/models.py:AgentRequest",
+             "payload":  {
+                     "message":  "fixture prompt",
+                     "thread_id":  "AEMEATH_FIXTURE_THREAD",
+                     "context":  {
+                             "mood":  70.0,
+                             "energy":  80.0,
+                             "affection":  50.0,
+                             "days_together":  1
+                           }
+                   },
+             "compatible":  true
+           },
+           {
+             "id":  "PROTOCOL-AGENT-REQUEST-SCREENSHOT-GAP",
+             "boundaryIds":  [
+                       "PB-007",
+                       "PB-012"
+                     ],
+             "producer":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+             "consumer":  "python-backend/aemeath_agent/api/models.py:AgentRequest",
+             "payload":  {
+                     "message":  "fixture prompt",
+                     "thread_id":  "AEMEATH_FIXTURE_THREAD",
+                     "context":  {
+
+                           },
+                     "screenshot":  "RklYVFVSRQ=="
+                   },
+             "compatible":  false,
+             "expectedFailure":  "Python AgentRequest does not declare screenshot."
+           },
+           {
+             "id":  "PROTOCOL-AGENT-RESPONSE-GAP",
+             "boundaryIds":  [
+                       "PB-012"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py:AgentResponse",
+             "consumer":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+             "payload":  {
+                     "reply":  "fixture reply",
+                     "tool_calls":  [
+
+                            ],
+                     "thread_id":  "AEMEATH_FIXTURE_THREAD"
+                   },
+             "compatible":  false,
+             "expectedFailure":  "Desktop consumer currently reads response while sidecar emits reply."
+           },
+           {
+             "id":  "PROTOCOL-SSE-TOKEN",
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "producer":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "formatterSource":  "python-backend/aemeath_agent/api/sse.py",
+                      "inputFraming":  "already-framed-sse-text",
+                      "input":  "data: {\"type\": \"token\", \"content\": \"fixture\"}\n\n"
+                    },
+             "transport":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "dependencySource":  "python-backend/pyproject.toml",
+                      "dependencyConstraint":  "sse-starlette\u003e=2.0.0",
+                      "versionPinned":  false,
+                      "exactWireFrozen":  false
+                    },
+             "consumer":  {
+                      "source":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                      "eventType":  "token",
+                      "requiredPayload":  [
+                                  "type",
+                                  "content"
+                                ]
+                    },
+             "compatibility":  false,
+             "consumerOutcome":  "not-qualified-compatible",
+             "qualification":  "P0B.1d",
+             "laterRepair":  "P2.1",
+             "expectedFailure":  "The producer passes already-framed SSE text to EventSourceResponse, but formatter behavior is not version-pinned or statically qualified for the C# consumer."
+           },
+           {
+             "id":  "PROTOCOL-SSE-DONE",
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "producer":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "formatterSource":  "python-backend/aemeath_agent/api/sse.py",
+                      "inputFraming":  "already-framed-sse-text",
+                      "input":  "data: {\"type\": \"done\"}\n\n"
+                    },
+             "transport":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "dependencySource":  "python-backend/pyproject.toml",
+                      "dependencyConstraint":  "sse-starlette\u003e=2.0.0",
+                      "versionPinned":  false,
+                      "exactWireFrozen":  false
+                    },
+             "consumer":  {
+                      "source":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                      "eventType":  "done",
+                      "requiredPayload":  [
+                                  "type"
+                                ]
+                    },
+             "compatibility":  false,
+             "consumerOutcome":  "not-qualified-compatible",
+             "qualification":  "P0B.1d",
+             "laterRepair":  "P2.1",
+             "expectedFailure":  "The producer passes already-framed SSE text to EventSourceResponse, but formatter behavior is not version-pinned or statically qualified for the C# consumer."
+           },
+           {
+             "id":  "PROTOCOL-SSE-TOOL-CALL-GAP",
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-012",
+                       "PB-013"
+                     ],
+             "producer":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "formatterSource":  "python-backend/aemeath_agent/api/sse.py",
+                      "inputFraming":  "already-framed-sse-text",
+                      "input":  "data: {\"type\": \"tool_call\", \"content\": \"fixture_tool\", \"data\": {\"args\": {\"city\": \"fixture\"}}}\n\n"
+                    },
+             "transport":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "dependencySource":  "python-backend/pyproject.toml",
+                      "dependencyConstraint":  "sse-starlette\u003e=2.0.0",
+                      "versionPinned":  false,
+                      "exactWireFrozen":  false
+                    },
+             "consumer":  {
+                      "source":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                      "eventType":  "tool_call",
+                      "requiredToolNamePath":  "data.name"
+                    },
+             "staticMismatch":  {
+                        "kind":  "tool-call-shape",
+                        "producerToolNamePath":  "content",
+                        "producerArgumentsPath":  "data.args",
+                        "consumerToolNamePath":  "data.name",
+                        "consumerHandlesArguments":  false,
+                        "argumentsConsumed":  false
+                      },
+             "compatibility":  false,
+             "consumerOutcome":  "tool-call-shape-mismatch",
+             "qualification":  "P0B.1d",
+             "laterRepair":  "P2.1",
+             "expectedFailure":  "The producer places the tool name in content while the C# consumer requires data.name; transport formatter behavior is not frozen."
+           },
+           {
+             "id":  "PROTOCOL-SSE-ERROR-GAP",
+             "boundaryIds":  [
+                       "PB-005",
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "producer":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "formatterSource":  "python-backend/aemeath_agent/api/sse.py",
+                      "inputFraming":  "already-framed-sse-text",
+                      "input":  "data: {\"type\": \"error\", \"content\": \"fixture error\"}\n\n"
+                    },
+             "transport":  {
+                      "source":  "python-backend/aemeath_agent/api/routes_agent.py",
+                      "dependencySource":  "python-backend/pyproject.toml",
+                      "dependencyConstraint":  "sse-starlette\u003e=2.0.0",
+                      "versionPinned":  false,
+                      "exactWireFrozen":  false
+                    },
+             "consumer":  {
+                      "source":  "src/AemeathDesktopPet/Services/BackendAgentService.cs",
+                      "eventType":  "error",
+                      "handlesEventType":  false
+                    },
+             "staticMismatch":  {
+                        "kind":  "error-visibility",
+                        "producerEventType":  "error",
+                        "consumerHandlesEventType":  false
+                      },
+             "compatibility":  false,
+             "consumerOutcome":  "error-not-surfaced",
+             "qualification":  "P0B.1d",
+             "laterRepair":  "P2.1",
+             "expectedFailure":  "The producer emits error events while the C# consumer has no error event branch; transport formatter behavior is not frozen."
+           },
+           {
+             "id":  "PROTOCOL-HEALTH",
+             "boundaryIds":  [
+                       "PB-011",
+                       "PB-012"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py:HealthResponse",
+             "consumer":  "src/AemeathDesktopPet/Services/BackendProcessManager.cs",
+             "payload":  {
+                     "status":  "ok",
+                     "version":  "0.1.0",
+                     "uptime":  1.0
+                   },
+             "qualificationNote":  "Health is process liveness only and is not proof that the agent is usable."
+           },
+           {
+             "id":  "PROTOCOL-STT",
+             "boundaryIds":  [
+                       "PB-006",
+                       "PB-012"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py",
+             "payload":  {
+                     "request":  {
+                             "audio_base64":  "RklYVFVSRQ==",
+                             "provider":  "whisper",
+                             "language":  "en"
+                           },
+                     "response":  {
+                              "text":  "fixture transcript",
+                              "language":  "en",
+                              "confidence":  1.0
+                            }
+                   }
+           },
+           {
+             "id":  "PROTOCOL-VISION",
+             "boundaryIds":  [
+                       "PB-007",
+                       "PB-012"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py",
+             "payload":  {
+                     "image_base64":  "RklYVFVSRQ==",
+                     "prompt":  "Describe only the fixture",
+                     "provider":  "gemini"
+                   }
+           },
+           {
+             "id":  "PROTOCOL-RAG",
+             "boundaryIds":  [
+                       "PB-013",
+                       "PB-016"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py",
+             "payload":  {
+                     "request":  {
+                             "query":  "fixture query",
+                             "top_k":  5
+                           },
+                     "result":  {
+                            "content":  "fixture result",
+                            "source":  "fixture.txt",
+                            "score":  1.0
+                          }
+                   }
+           },
+           {
+             "id":  "PROTOCOL-MEMORY",
+             "boundaryIds":  [
+                       "PB-014",
+                       "PB-016"
+                     ],
+             "producer":  "python-backend/aemeath_agent/api/models.py",
+             "payload":  {
+                     "extract":  {
+                             "user_message":  "fixture",
+                             "assistant_response":  "fixture",
+                             "thread_id":  "AEMEATH_FIXTURE_THREAD"
+                           },
+                     "forget":  {
+                            "query":  "fixture",
+                            "time_range":  null
+                          }
+                   }
+           },
+           {
+             "id":  "PROTOCOL-INTERNAL-WPF-SERVER",
+             "boundaryIds":  [
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "producer":  "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+             "routes":  [
+                    {
+                      "method":  "GET",
+                      "path":  "/internal/stats"
+                    },
+                    {
+                      "method":  "GET",
+                      "path":  "/internal/screen"
+                    },
+                    {
+                      "method":  "POST",
+                      "path":  "/internal/music/control"
+                    },
+                    {
+                      "method":  "GET",
+                      "path":  "/internal/pet/state"
+                    }
+                  ],
+             "binding":  "loopback",
+             "authenticated":  false
+           },
+           {
+             "id":  "PROTOCOL-INTERNAL-WPF-BRIDGE-GAP",
+             "boundaryIds":  [
+                       "PB-012",
+                       "PB-016"
+                     ],
+             "producer":  "src/AemeathDesktopPet/Services/InternalApiServer.cs",
+             "consumer":  "python-backend/aemeath_agent/bridge/wpf_client.py",
+             "sharedRoutes":  [
+                        {
+                          "method":  "GET",
+                          "path":  "/internal/stats"
+                        },
+                        {
+                          "method":  "GET",
+                          "path":  "/internal/screen"
+                        },
+                        {
+                          "method":  "POST",
+                          "path":  "/internal/music/control"
+                        }
+                      ],
+             "clientOnlyUnsupportedRoutes":  [
+                               {
+                                 "method":  "POST",
+                                 "path":  "/internal/speech"
+                               },
+                               {
+                                 "method":  "POST",
+                                 "path":  "/internal/animation"
+                               },
+                               {
+                                 "method":  "GET",
+                                 "path":  "/internal/health"
+                               }
+                             ],
+             "serverOnlyRoute":  {
+                         "method":  "GET",
+                         "path":  "/internal/pet/state"
+                       },
+             "compatible":  false,
+             "expectedFailure":  "The client declares three routes the server does not implement, while the server pet-state route has no client method."
+           },
+           {
+             "id":  "PROTOCOL-MCP",
+             "boundaryIds":  [
+                       "PB-015",
+                       "PB-016"
+                     ],
+             "producer":  "src/AemeathDesktopPet/Models/AppConfig.cs:McpServerDefinition",
+             "payload":  {
+                     "id":  "fixture-server",
+                     "name":  "Fixture Server",
+                     "command":  "fixture-command-not-executed",
+                     "arguments":  "",
+                     "transportType":  "stdio",
+                     "enabled":  false
+                   },
+             "qualificationNote":  "The fixture is shape-only and must never execute a process during Gate 0A."
+           }
+         ]
+}

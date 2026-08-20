@@ -30,6 +30,8 @@ $d03FixtureMarker = $discoveryMarkerPrefix +
     '{"schemaVersion":1,"resultId":"D0.3-V-STATIC-001","sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","actualDiscovery":24,"failed":0,"skipped":0}'
 $ubuntuFixtureMarker = $discoveryMarkerPrefix +
     '{"schemaVersion":1,"resultId":"D0.5-V-STATIC-UBUNTU","sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","actualDiscovery":45,"failed":0,"skipped":0}'
+$p0a1FixtureMarker = $discoveryMarkerPrefix +
+    '{"schemaVersion":1,"resultId":"P0A.1-V-STATIC-STATIC-CONTRACT","sourceSha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","actualDiscovery":8,"failed":0,"skipped":0}'
 
 function Write-StaticContractPass {
     param([string]$Message)
@@ -830,6 +832,9 @@ function New-ValidResultFixture {
                 $markerFiles["dependency-qualification-static-tests.log"] = @(
                     "$discoveryMarkerPrefix{`"schemaVersion`":1,`"resultId`":`"D0.5-V-STATIC-UBUNTU`",`"sourceSha`":`"$sha`",`"actualDiscovery`":45,`"failed`":0,`"skipped`":0}"
                 )
+                $markerFiles["preservation-specification-tests.log"] = @(
+                    "$discoveryMarkerPrefix{`"schemaVersion`":1,`"resultId`":`"P0A.1-V-STATIC-STATIC-CONTRACT`",`"sourceSha`":`"$sha`",`"actualDiscovery`":8,`"failed`":0,`"skipped`":0}"
+                )
             }
             "delivery-environment" {
                 $markerFiles["environment-readiness-tests.log"] = @(
@@ -903,7 +908,8 @@ function Assert-DiscoveryPayload {
             Total = 24
             Records = @(
                 "D0.3-V-STATIC-001|verification-contract-tests.log|24|True|24",
-                "D0.5-V-STATIC-UBUNTU|dependency-qualification-static-tests.log|45|False|45"
+                "D0.5-V-STATIC-UBUNTU|dependency-qualification-static-tests.log|45|False|45",
+                "P0A.1-V-STATIC-STATIC-CONTRACT|preservation-specification-tests.log|8|False|8"
             )
         }
         "delivery-environment" = [PSCustomObject]@{
@@ -968,10 +974,14 @@ function Assert-WaitSummarySelfTest {
         $probe[0].discovery.kind -cne "powershell-probe" -or
         [long]$probe[0].discovery.minimumDiscoveredTests -ne 24 -or
         [long]$probe[0].discovery.actualDiscoveredTests -ne 27 -or
-        @($probe[0].discovery.results).Count -ne 2 -or
+        @($probe[0].discovery.results).Count -ne 3 -or
         @($probe[0].discovery.results | Where-Object {
                 $_.resultId -ceq "D0.5-V-STATIC-UBUNTU" -and
                 $_.includedInJobMinimum -eq $false -and [long]$_.actualDiscovery -eq 67
+            }).Count -ne 1 -or
+        @($probe[0].discovery.results | Where-Object {
+                $_.resultId -ceq "P0A.1-V-STATIC-STATIC-CONTRACT" -and
+                $_.includedInJobMinimum -eq $false -and [long]$_.actualDiscovery -eq 8
             }).Count -ne 1 -or
         $notApplicable[0].discovery.kind -cne "not-applicable" -or
         [long]$notApplicable[0].discovery.minimumDiscoveredTests -ne 0 -or
@@ -997,24 +1007,37 @@ function Get-ResultFixtureEvidencePath {
 }
 
 function Assert-ExcludedDiscoveryResultIsMandatory {
-    $fixture = New-ValidResultFixture
-    $path = Get-ResultFixtureEvidencePath -Fixture $fixture `
-        -JobId "verification-contracts" `
-        -EvidencePath "dependency-qualification-static-tests.log"
-    $content = [IO.File]::ReadAllText($path)
-    [IO.File]::WriteAllText($path, $content.Replace($script:ubuntuFixtureMarker, ""))
+    $cases = @(
+        [PSCustomObject]@{
+            ResultId = "D0.5-V-STATIC-UBUNTU"
+            EvidencePath = "dependency-qualification-static-tests.log"
+            Marker = $script:ubuntuFixtureMarker
+        },
+        [PSCustomObject]@{
+            ResultId = "P0A.1-V-STATIC-STATIC-CONTRACT"
+            EvidencePath = "preservation-specification-tests.log"
+            Marker = $script:p0a1FixtureMarker
+        }
+    )
+    foreach ($case in $cases) {
+        $fixture = New-ValidResultFixture
+        $path = Get-ResultFixtureEvidencePath -Fixture $fixture `
+            -JobId "verification-contracts" -EvidencePath $case.EvidencePath
+        $content = [IO.File]::ReadAllText($path)
+        [IO.File]::WriteAllText($path, $content.Replace([string]$case.Marker, ""))
 
-    $failures = @(Test-CiDeliveryResult -RequiredChecks $requiredChecks -Sha $fixture.Sha `
-            -RunDetails $fixture.Run -Artifacts $fixture.Artifacts `
-            -EvidenceRoots $fixture.EvidenceRoots)
-    $expected = "[DISCOVERY-MARKER-MISSING] job 'verification-contracts' result " +
-        "'D0.5-V-STATIC-UBUNTU' marker appeared 0 times; expected 1 in " +
-        "'dependency-qualification-static-tests.log'"
-    if ($failures.Count -eq 0 -or
-        ($failures -join "`n").IndexOf($expected, [StringComparison]::Ordinal) -lt 0) {
-        throw "Excluded discovery result was not mandatory. Failures: $($failures -join '; ')"
+        $failures = @(Test-CiDeliveryResult -RequiredChecks $requiredChecks -Sha $fixture.Sha `
+                -RunDetails $fixture.Run -Artifacts $fixture.Artifacts `
+                -EvidenceRoots $fixture.EvidenceRoots)
+        $expected = "[DISCOVERY-MARKER-MISSING] job 'verification-contracts' result " +
+            "'$($case.ResultId)' marker appeared 0 times; expected 1 in '$($case.EvidencePath)'"
+        if ($failures.Count -eq 0 -or
+            ($failures -join "`n").IndexOf($expected, [StringComparison]::Ordinal) -lt 0) {
+            throw "Excluded discovery result '$($case.ResultId)' was not mandatory. " +
+                "Failures: $($failures -join '; ')"
+        }
     }
-    Write-ResultContractPass "excluded discovery result remains mandatory"
+    Write-ResultContractPass "excluded discovery results remain mandatory"
 }
 
 function Assert-HigherIncludedDiscoveryActualIsReturned {
@@ -1036,7 +1059,8 @@ function Assert-HigherIncludedDiscoveryActualIsReturned {
         })
     $expectedRecords = @(
         "D0.3-V-STATIC-001|verification-contract-tests.log|24|True|31",
-        "D0.5-V-STATIC-UBUNTU|dependency-qualification-static-tests.log|45|False|45"
+        "D0.5-V-STATIC-UBUNTU|dependency-qualification-static-tests.log|45|False|45",
+        "P0A.1-V-STATIC-STATIC-CONTRACT|preservation-specification-tests.log|8|False|8"
     )
     if (@($payload.failures).Count -ne 0 -or
         [long]$payload.actualDiscoveredTests -ne 31 -or
@@ -1547,6 +1571,7 @@ function Assert-CiDiscoveryWorkflowPipelines {
         [PSCustomObject]@{ Job = "delivery-contract"; Command = "./tools/ci/Test-CiDelivery.ps1"; Sink = "artifacts/ci/delivery-contract/delivery-contract-tests.log" },
         [PSCustomObject]@{ Job = "verification-contracts"; Command = "./tools/verification/Test-VerificationContracts.ps1"; Sink = "artifacts/ci/verification-contracts/verification-contract-tests.log" },
         [PSCustomObject]@{ Job = "verification-contracts"; Command = "./tools/verification/Test-DependencyQualification.ps1 -Mode Static"; Sink = "artifacts/ci/verification-contracts/dependency-qualification-static-tests.log" },
+        [PSCustomObject]@{ Job = "verification-contracts"; Command = "./tools/verification/Test-PreservationSpecification.ps1"; Sink = "artifacts/ci/verification-contracts/preservation-specification-tests.log" },
         [PSCustomObject]@{ Job = "delivery-environment"; Command = "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment"; Sink = "artifacts/ci/delivery-environment/environment-readiness-tests.log" },
         [PSCustomObject]@{ Job = "dependency-qualification"; Command = "./tools/verification/Invoke-DependencyQualification.ps1 -EvidenceDirectory artifacts/ci/dependency-qualification"; Sink = "artifacts/ci/dependency-qualification/dependency-qualification-tests.log" }
     )
@@ -1591,38 +1616,50 @@ function Assert-CiDiscoveryWorkflowNegativeControls {
     } else {
         "`n"
     }
-    $pipeline = "          ./tools/verification/Test-DependencyQualification.ps1 -Mode Static *>&1 |" +
-        $lineEnding +
-        "            Tee-Object artifacts/ci/verification-contracts/dependency-qualification-static-tests.log"
-    if ([regex]::Matches($workflow, [regex]::Escape($pipeline)).Count -ne 1) {
-        throw "Could not locate the Ubuntu dependency discovery pipeline."
-    }
-    $cases = @(
+    $rows = @(
         [PSCustomObject]@{
-            Name = "false branch"
-            Replacement = "          if (`$false) {" + $lineEnding + $pipeline +
-                $lineEnding + "          }"
+            Name = "Ubuntu dependency"
+            Command = "./tools/verification/Test-DependencyQualification.ps1 -Mode Static"
+            Sink = "artifacts/ci/verification-contracts/dependency-qualification-static-tests.log"
         },
         [PSCustomObject]@{
-            Name = "after return"
-            Replacement = "          return" + $lineEnding + $pipeline
+            Name = "P0A.1 preservation"
+            Command = "./tools/verification/Test-PreservationSpecification.ps1"
+            Sink = "artifacts/ci/verification-contracts/preservation-specification-tests.log"
         }
     )
-    foreach ($case in $cases) {
-        $mutatedWorkflow = $workflow.Replace($pipeline, [string]$case.Replacement)
-        $rejected = $false
-        try {
-            Assert-CiDiscoveryWorkflowPipelines -WorkflowContent $mutatedWorkflow
-        } catch {
-            $expected = "Workflow job 'verification-contracts' does not retain " +
-                "'./tools/verification/Test-DependencyQualification.ps1 -Mode Static'"
-            if ($_.Exception.Message.IndexOf($expected, [StringComparison]::Ordinal) -lt 0) {
-                throw
-            }
-            $rejected = $true
+    foreach ($row in $rows) {
+        $pipeline = "          $($row.Command) *>&1 |" + $lineEnding +
+            "            Tee-Object $($row.Sink)"
+        if ([regex]::Matches($workflow, [regex]::Escape($pipeline)).Count -ne 1) {
+            throw "Could not locate the $($row.Name) discovery pipeline."
         }
-        if (-not $rejected) {
-            throw "Discovery workflow guard accepted producer pipeline case '$($case.Name)'."
+        $cases = @(
+            [PSCustomObject]@{
+                Name = "false branch"
+                Replacement = "          if (`$false) {" + $lineEnding + $pipeline +
+                    $lineEnding + "          }"
+            },
+            [PSCustomObject]@{
+                Name = "after return"
+                Replacement = "          return" + $lineEnding + $pipeline
+            }
+        )
+        foreach ($case in $cases) {
+            $mutatedWorkflow = $workflow.Replace($pipeline, [string]$case.Replacement)
+            $rejected = $false
+            try {
+                Assert-CiDiscoveryWorkflowPipelines -WorkflowContent $mutatedWorkflow
+            } catch {
+                $expected = "Workflow job 'verification-contracts' does not retain '$($row.Command)'"
+                if ($_.Exception.Message.IndexOf($expected, [StringComparison]::Ordinal) -lt 0) {
+                    throw
+                }
+                $rejected = $true
+            }
+            if (-not $rejected) {
+                throw "Discovery workflow guard accepted $($row.Name) case '$($case.Name)'."
+            }
         }
     }
     Write-ResultContractPass "dead discovery workflow pipelines are rejected"
@@ -1633,6 +1670,7 @@ function Assert-CiDiscoveryProducerSources {
         [PSCustomObject]@{ Path = "tools/ci/Test-CiDelivery.ps1"; ResultId = "D0.2R-V-STATIC-STATIC-CONTRACT"; Actual = '$staticContractCount'; Routes = @() },
         [PSCustomObject]@{ Path = "tools/ci/Test-CiDelivery.ps1"; ResultId = "D0.2R-V-COMPONENT-RESULT-CONTRACT"; Actual = '$resultContractCount'; Routes = @() },
         [PSCustomObject]@{ Path = "tools/verification/Test-VerificationContracts.ps1"; ResultId = "D0.3-V-STATIC-001"; Actual = '$discoveredProbes'; Routes = @() },
+        [PSCustomObject]@{ Path = "tools/verification/Test-PreservationSpecification.ps1"; ResultId = "P0A.1-V-STATIC-STATIC-CONTRACT"; Actual = '$probeCount'; Routes = @() },
         [PSCustomObject]@{ Path = "tools/verification/Test-DependencyQualification.ps1"; ResultId = "D0.5-V-STATIC-UBUNTU"; Actual = '$staticProbeCount'; Routes = @('$Mode-ceq"Static"', '<else>') },
         [PSCustomObject]@{ Path = "tools/verification/Test-EnvironmentReadiness.ps1"; ResultId = "D0.4-V-STATIC-STATIC-CONTRACT"; Actual = '([long]($probeCount-$hostedProbeCount))'; Routes = @() },
         [PSCustomObject]@{ Path = "tools/verification/Test-EnvironmentReadiness.ps1"; ResultId = "D0.4-V-REAL-E2E-HOSTED-WINDOWS"; Actual = '$hostedProbeCount'; Routes = @('$Mode-ceq"HostedWindows"') },
@@ -1701,9 +1739,25 @@ function Assert-CiDiscoveryProducerSources {
     if ($failures.Count -gt 0) {
         throw "Discovery producer contract failed:`n - $($failures -join "`n - ")"
     }
-    Write-ResultContractPass "eight discovery producer markers"
+    Write-ResultContractPass "nine discovery producer markers"
 }
 #endregion
+
+function Assert-P0A1CiIntegrationContract {
+    $jobs = @($requiredChecks.jobs | Where-Object { [string]$_.id -ceq "verification-contracts" })
+    $results = @($jobs[0].discovery.results | Where-Object {
+            [string]$_.resultId -ceq "P0A.1-V-STATIC-STATIC-CONTRACT"
+        })
+    $evidence = @($jobs[0].evidenceFiles | Where-Object {
+            [string]$_.path -ceq "preservation-specification-tests.log"
+        })
+    if ($jobs.Count -ne 1 -or $results.Count -ne 1 -or $evidence.Count -ne 1 -or
+        [string]$results[0].evidencePath -cne "preservation-specification-tests.log" -or
+        [int]$results[0].minimum -ne 8 -or $results[0].includedInJobMinimum -ne $false -or
+        [int]$evidence[0].minimumBytes -ne 100) {
+        throw "P0A.1 CI discovery result and evidence contract are not exact."
+    }
+}
 
 try {
     $wrappedDiagnostic = ([char]27).ToString() +
@@ -1715,6 +1769,7 @@ try {
     }
     Write-StaticContractPass "wrapped/ANSI diagnostic normalization"
 
+    Assert-P0A1CiIntegrationContract
     $baseline = Invoke-StaticContract -WorkflowContent $workflow -Manifest (Copy-Manifest)
     if ($baseline.ExitCode -ne 0) {
         throw "Valid static CI contract failed: $($baseline.Output)"

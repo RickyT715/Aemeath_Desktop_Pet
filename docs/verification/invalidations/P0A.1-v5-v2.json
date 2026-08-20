@@ -1,0 +1,12 @@
+{
+  "schemaVersion":  1,
+  "recordType":  "manifest-invalidation",
+  "recordId":  "P0A.1-v5-invalidated-by-v7",
+  "invalidatedManifestId":  "P0A.1-v5",
+  "frozenArtifactPath":  "docs/verification/manifests/P0A.1-v5.yml",
+  "frozenArtifactSha256":  "17f262ff6f2e9c038ce3001b554080b5e39c3e6bb4428ee02b5d47e890c8da91",
+  "replacementManifestId":  "P0A.1-v7",
+  "invalidatedAt":  "2026-08-20T19:14:18Z",
+  "reason":  "Clean review docs/verification/evidence/P0A.1-clean-room-review-v4.md SHA c49f52ecb73a5d882c818941cbe9cac5b221570e925cbe9c297517eaa176e439 is a BLOCK with census C1/I5/M1; the old docs/verification/invalidations/P0A.1-v5.json record is unusable because its extra reviewBinding property violates the manifest-invalidation schema.",
+  "reviewer":  "clean-room-preservation-reviewer-03"
+}

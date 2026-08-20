@@ -72,6 +72,13 @@ if ($SelfTestOnly) {
                 minimum = 45
                 includedInJobMinimum = $false
                 actualDiscovery = 67
+            },
+            [PSCustomObject]@{
+                resultId = "P0A.1-V-STATIC-STATIC-CONTRACT"
+                evidencePath = "preservation-specification-tests.log"
+                minimum = 8
+                includedInJobMinimum = $false
+                actualDiscovery = 8
             }
         )
     }

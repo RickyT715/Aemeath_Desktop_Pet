@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "P0A.1-v4",
+  "revision": 4,
+  "previousManifestId": "P0A.1-v3",
+  "invalidationReason": null,
+  "stepId": "P0A.1",
+  "status": "frozen-before-red",
+  "baselineSha": "43f9c288f843f7620ffee5eee3504f52875f4774",
+  "scope": "Freeze the complete unchanged-production preservation specification, independent canary fixtures, literal/resource/protocol oracles, requirement disposition identity, future Gate 0 lane decisions, supported environments, and honest prior-exposure review contract; reject omissions, false compatibility, or hash drift without reading or running legacy tests.",
+  "requirementIds": [
+    "CURRENT:LOC-ASSETS", "CURRENT:LOC-GAPS", "CURRENT:LOC-INTENT", "CURRENT:LOC-PORTS",
+    "CURRENT:LOC-PRIVACY", "CURRENT:LOC-RUNTIME", "CURRENT:LOC-SCOPE", "CURRENT:LOC-STATUS",
+    "CURRENT:LOC-STORAGE", "CURRENT:LOC-TRANSMISSION", "CURRENT:LOC-VERIFY",
+    "PRD:AC-FR-021-01", "PRD:AC-FR-021-02", "PRD:AC-FR-021-03", "PRD:AC-FR-021-05",
+    "PRD:AC-FR-021-09", "PRD:AC-FR-021-10", "PRD:AC-FR-021-12", "PRD:AC-FR-024-02",
+    "PRD:GATE-0-01", "PRD:GATE-0-02", "PRD:GATE-0-04", "PRD:GATE-0-05", "PRD:GATE-0-06",
+    "PRD:NFR-JA-005", "PRD:NFR-JA-005-01", "PRD:NFR-JA-005-02", "PRD:RISK-010"
+  ],
+  "dispositionIds": [
+    "REQMAP-CURRENT-V1", "APP-001", "APP-002", "APP-003", "APP-004",
+    "APP-005", "APP-006", "APP-007", "APP-008", "APP-009"
+  ],
+  "boundaryIds": [
+    "PB-001", "PB-002", "PB-003", "PB-004", "PB-005", "PB-006",
+    "PB-007", "PB-008", "PB-009", "PB-010", "PB-011", "PB-012",
+    "PB-013", "PB-014", "PB-015", "PB-016", "PB-017", "PB-018"
+  ],
+  "risks": [
+    { "id": "P0A.1-R01", "outcome": "A retained boundary, component, public behavior, persisted-data invariant, integration boundary, or supported Windows journey is missing or duplicated.", "laneIds": ["V-STATIC"], "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "P0A.1-R02", "outcome": "The current requirement disposition graph, source identity, or preservation source locator is incomplete or stale.", "laneIds": ["V-STATIC"], "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "P0A.1-R03", "outcome": "A required Gate 0 lane or environment loses ownership, boundary coverage, a blocking gap, or its explicit future test identity.", "laneIds": ["V-STATIC"], "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "P0A.1-R04", "outcome": "A fixture, resource, literal, geometry, stat, time, JSON, or protocol oracle drifts, claims false compatibility, or contains personal/secret data.", "laneIds": ["V-STATIC"], "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"] },
+    { "id": "P0A.1-R05", "outcome": "Legacy-test exposure is hidden, a legacy artifact becomes an independent oracle, or an affected oracle lacks a declared unexposed reviewer.", "laneIds": ["V-STATIC"], "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"] }
+  ],
+  "lanes": [
+    {
+      "id": "V-STATIC",
+      "required": true,
+      "rationale": "P0A.1 changes only versioned specification, fixture, verification-tooling, documentation-truth, and exact-SHA delivery metadata; production source and legacy suites remain untouched.",
+      "riskIds": ["P0A.1-R01", "P0A.1-R02", "P0A.1-R03", "P0A.1-R04", "P0A.1-R05"],
+      "probeIds": ["P0A.1-V-STATIC-STATIC-CONTRACT"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"]
+    }
+  ],
+  "probes": [
+    {
+      "id": "P0A.1-V-STATIC-STATIC-CONTRACT",
+      "command": "./tools/verification/Test-PreservationSpecification.ps1",
+      "minimumDiscovery": 6,
+      "redOracle": "The frozen v1 specification and pre-repair traceability graph must exit nonzero with P0A1-SPEC-INVALID and include named P0A1-MANIFEST-BINDING, P0A1-FIXTURE-HASH, P0A1-LANE-BEHAVIOR, P0A1-ENVIRONMENT-COVERAGE, P0A1-GAP-COVERAGE, P0A1-SOURCE-METHOD, P0A1-PRODUCTION-ROOT-METHOD, and P0A1-CLEAN-REVIEW-EVIDENCE diagnostics; after GREEN the repaired baseline passes and five mutations are rejected: missing-PB, missing-requirement-map-entry, missing-lane, fixture-hash drift, and SSE compatibility lie. The retained clean-room v2 review must remain BLOCK with I-01 because v3's Windows-only powershell.exe/-ExecutionPolicy command is not executable as frozen in ENV-GHA-UBUNTU; v4 repairs only that command-to-environment contradiction with the repository-relative direct-script command and requires a new clean-room review before GREEN.",
+      "riskIds": ["P0A.1-R01", "P0A.1-R02", "P0A.1-R03", "P0A.1-R04", "P0A.1-R05"],
+      "laneIds": ["V-STATIC"],
+      "requirementIds": [
+        "CURRENT:LOC-ASSETS", "CURRENT:LOC-GAPS", "CURRENT:LOC-INTENT", "CURRENT:LOC-PORTS",
+        "CURRENT:LOC-PRIVACY", "CURRENT:LOC-RUNTIME", "CURRENT:LOC-SCOPE", "CURRENT:LOC-STATUS",
+        "CURRENT:LOC-STORAGE", "CURRENT:LOC-TRANSMISSION", "CURRENT:LOC-VERIFY",
+        "PRD:AC-FR-021-01", "PRD:AC-FR-021-02", "PRD:AC-FR-021-03", "PRD:AC-FR-021-05",
+        "PRD:AC-FR-021-09", "PRD:AC-FR-021-10", "PRD:AC-FR-021-12", "PRD:AC-FR-024-02",
+        "PRD:GATE-0-01", "PRD:GATE-0-02", "PRD:GATE-0-04", "PRD:GATE-0-05", "PRD:GATE-0-06",
+        "PRD:NFR-JA-005", "PRD:NFR-JA-005-01", "PRD:NFR-JA-005-02", "PRD:RISK-010"
+      ],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"],
+      "fixtureIds": ["P0A1-DATA-V1", "P0A1-ORACLES-V1", "P0A1-PROTOCOL-V1", "P0A1-RESOURCES-V1"],
+      "thresholds": {
+        "minimumDiscovery": 6,
+        "maximumUnexpectedSkips": 0,
+        "requiredMutationControls": 5,
+        "requiredBoundaries": 18,
+        "requiredRequirementIds": 28,
+        "requiredCurrentDispositionRecords": 114,
+        "requiredQualificationLanes": 14,
+        "requiredFixtures": 4,
+        "requiredDataRecords": 7,
+        "requiredOracleRecords": 28,
+        "requiredProtocolContracts": 15,
+        "requiredResources": 11,
+        "requiredWindowsJourneys": 5,
+        "requiredKnownGaps": 34,
+        "requiredSupportedEnvironments": 5,
+        "requiredProductionRoots": 2,
+        "requiredProductionFiles": 140,
+        "artifactRetentionDays": 90
+      }
+    }
+  ],
+  "environments": [
+    { "id": "ENV-WINDOWS-LOCAL", "os": "Windows 11 x64 development environment", "shell": "Windows PowerShell 5.1 plus pinned Python jsonschema fallback", "purpose": "Local RED/GREEN, byte/hash verification, and PowerShell 5.1 portability" },
+    { "id": "ENV-GHA-UBUNTU", "os": "ubuntu-latest", "shell": "PowerShell 7.4+", "purpose": "Blocking exact-head-SHA preservation specification verification with retained evidence" },
+    { "id": "ENV-GHA-WINDOWS", "os": "windows-latest", "shell": "PowerShell 7.4+", "purpose": "Disposable hosted Windows capability observation" },
+    { "id": "ENV-INTERACTIVE-WIN10", "os": "Windows 10 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later real desktop and assistive-technology evidence" },
+    { "id": "ENV-INTERACTIVE-WIN11", "os": "Windows 11 x64 interactive worker", "shell": "PowerShell 7.4+", "purpose": "Later UIA, real desktop, and assistive-technology evidence" }
+  ],
+  "fixtures": [
+    { "id": "P0A1-DATA-V1", "path": "tests/fixtures/preservation/v1/data-v1.json", "sha256": "fd6bbc92497fec791f432bd0109175a702cd64ad837c23a7c5d831323ab111fa" },
+    { "id": "P0A1-ORACLES-V1", "path": "tests/fixtures/preservation/v1/oracles-v1.json", "sha256": "4f00f6fbc478984a4ec074a2aa9c651399b688fe9d30ce0de9fb38f3bd5cce4d" },
+    { "id": "P0A1-PROTOCOL-V1", "path": "tests/fixtures/preservation/v1/protocol-v1.json", "sha256": "95ef4544f52eab0a2f4f6cc819237bdc47ec7b5d52459422795067eb2274f312" },
+    { "id": "P0A1-RESOURCES-V1", "path": "tests/fixtures/preservation/v1/resources-v1.json", "sha256": "63e70f82566b91eea4781e3b1da7b8ad1a360b0f926549690757e36225f2f7f8" }
+  ],
+  "services": [],
+  "thresholds": {
+    "minimumDiscovery": 6,
+    "maximumUnexpectedSkips": 0,
+    "requiredMutationControls": 5,
+    "requiredBoundaries": 18,
+    "requiredRequirementIds": 28,
+    "requiredCurrentDispositionRecords": 114,
+    "requiredQualificationLanes": 14,
+    "requiredFixtures": 4,
+    "requiredDataRecords": 7,
+    "requiredOracleRecords": 28,
+    "requiredProtocolContracts": 15,
+    "requiredResources": 11,
+    "requiredWindowsJourneys": 5,
+    "requiredKnownGaps": 34,
+    "requiredSupportedEnvironments": 5,
+    "requiredProductionRoots": 2,
+    "requiredProductionFiles": 140,
+    "artifactRetentionDays": 90
+  },
+  "owners": [
+    { "role": "step owner with disclosed legacy exposure", "accountability": "Freeze only independently derived requirements, public production contracts, canary fixtures, and source hashes; never reuse a legacy oracle or claim clean-room authorship." },
+    { "role": "unexposed preservation specification reviewer", "accountability": "Review every oracle and gap only from normative documents, production public contracts, and fixture bytes without reading legacy test sources, helpers, snapshots, results, or prior evidence." }
+  ],
+  "expectedArtifacts": ["source-identity.json", "preservation-specification-tests.log"]
+}
+

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v3-invalidated-by-v4",
+  "invalidatedManifestId": "P0A.1-v3",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v3.yml",
+  "frozenArtifactSha256": "70e3247afb5fe77009221148a28fd5a2d1f16117e75416612fea9ce6a657bc29",
+  "replacementManifestId": "P0A.1-v4",
+  "invalidatedAt": "2026-08-20T15:57:20Z",
+  "reason": "The assigned clean-room preservation review v2 blocked v3 because its frozen Windows-only powershell.exe/-ExecutionPolicy probe command cannot execute as declared in ENV-GHA-UBUNTU; v4 replaces it with the repository-relative direct-script command while preserving every other frozen contract.",
+  "reviewer": "clean-room-preservation-reviewer-01"
+}

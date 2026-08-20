@@ -1,0 +1,12 @@
+{
+  "schemaVersion":  1,
+  "recordType":  "manifest-invalidation",
+  "recordId":  "P0A.1-v6-invalidated-by-v7",
+  "invalidatedManifestId":  "P0A.1-v6",
+  "frozenArtifactPath":  "docs/verification/manifests/P0A.1-v6.yml",
+  "frozenArtifactSha256":  "e7afa6554e2eda77aa471eade20db990044509c01978f4944f5c0af56eb00f40",
+  "replacementManifestId":  "P0A.1-v7",
+  "invalidatedAt":  "2026-08-20T19:14:18Z",
+  "reason":  "Risk-lane manifest schema review found two blocking schema issues in the v6 governance set: the protocol fixture contained forbidden schemaVersion and contractCount properties, and the old P0A.1-v5 invalidation contained the forbidden reviewBinding property.",
+  "reviewer":  "clean-room-preservation-reviewer-03"
+}

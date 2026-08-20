@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v8-invalidated-by-v9",
+  "invalidatedManifestId": "P0A.1-v8",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v8.yml",
+  "frozenArtifactSha256": "7bc93dc23f961fbe183eeeaa32b6e01acf0707e041ed3fb4d7217231d7ed16b0",
+  "replacementManifestId": "P0A.1-v9",
+  "invalidatedAt": "2026-08-21T09:00:00Z",
+  "reason": "CI mapper review found that P0A.1-v8 and its validator conflate historical baseline provenance with live checkout identity by requiring Git HEAD to remain 43f9c288f843f7620ffee5eee3504f52875f4774. P0A.1-v9 preserves that historical baseline and the frozen production-root digests while introducing separate local and CI live-source identity contracts.",
+  "reviewer": "ci-mapper-source-identity-reviewer-01"
+}

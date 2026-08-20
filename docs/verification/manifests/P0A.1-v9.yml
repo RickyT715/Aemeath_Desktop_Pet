@@ -1,0 +1,343 @@
+{
+  "schemaVersion":  1,
+  "manifestType":  "risk-lane",
+  "manifestId":  "P0A.1-v9",
+  "revision":  9,
+  "previousManifestId":  "P0A.1-v8",
+  "invalidationReason":  null,
+  "stepId":  "P0A.1",
+  "status":  "frozen-before-red",
+  "baselineSha":  "43f9c288f843f7620ffee5eee3504f52875f4774",
+  "scope":  "Freeze the complete unchanged-production preservation specification, all application-owned durable targets and external read-only durable inputs, independent canary fixtures, literal/resource/protocol oracles, requirement disposition identity, versioned trace ownership, future Gate 0 lane decisions, supported environments, and an exact-source clean-room review contract; reject omissions, false compatibility, or hash drift without reading or running legacy tests.",
+  "requirementIds":  [
+              "CURRENT:AC-FUT-001",
+              "CURRENT:AC-FUT-002",
+              "CURRENT:AC-FUT-003",
+              "CURRENT:FR-FUT-001",
+              "CURRENT:FR-FUT-002",
+              "CURRENT:FR-FUT-003",
+              "CURRENT:LOC-ASSETS",
+              "CURRENT:LOC-GAPS",
+              "CURRENT:LOC-INTENT",
+              "CURRENT:LOC-PORTS",
+              "CURRENT:LOC-PRIVACY",
+              "CURRENT:LOC-RUNTIME",
+              "CURRENT:LOC-SCOPE",
+              "CURRENT:LOC-STATUS",
+              "CURRENT:LOC-STORAGE",
+              "CURRENT:LOC-TRANSMISSION",
+              "CURRENT:LOC-VERIFY",
+              "PRD:AC-FR-021-01",
+              "PRD:AC-FR-021-02",
+              "PRD:AC-FR-021-03",
+              "PRD:AC-FR-021-05",
+              "PRD:AC-FR-021-09",
+              "PRD:AC-FR-021-10",
+              "PRD:AC-FR-021-12",
+              "PRD:AC-FR-024-02",
+              "PRD:GATE-0-01",
+              "PRD:GATE-0-02",
+              "PRD:GATE-0-04",
+              "PRD:GATE-0-05",
+              "PRD:GATE-0-06",
+              "PRD:NFR-JA-005",
+              "PRD:NFR-JA-005-01",
+              "PRD:NFR-JA-005-02",
+              "PRD:RISK-010"
+            ],
+  "dispositionIds":  [
+              "REQMAP-CURRENT-V1",
+              "APP-001",
+              "APP-002",
+              "APP-003",
+              "APP-004",
+              "APP-005",
+              "APP-006",
+              "APP-007",
+              "APP-008",
+              "APP-009"
+            ],
+  "boundaryIds":  [
+            "PB-001",
+            "PB-002",
+            "PB-003",
+            "PB-004",
+            "PB-005",
+            "PB-006",
+            "PB-007",
+            "PB-008",
+            "PB-009",
+            "PB-010",
+            "PB-011",
+            "PB-012",
+            "PB-013",
+            "PB-014",
+            "PB-015",
+            "PB-016",
+            "PB-017",
+            "PB-018"
+          ],
+  "risks":  [
+         {
+           "id":  "P0A.1-R01",
+           "outcome":  "A retained boundary, component, public behavior, atomic durable target, integration boundary, or supported Windows journey is missing, duplicated, or assigned a false reachability contract.",
+           "laneIds":  [
+                   "V-STATIC"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ]
+         },
+         {
+           "id":  "P0A.1-R02",
+           "outcome":  "The current requirement disposition graph, source identity, trace owner, pending approval, or preservation source locator is incomplete or stale.",
+           "laneIds":  [
+                   "V-STATIC"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ]
+         },
+         {
+           "id":  "P0A.1-R03",
+           "outcome":  "A required Gate 0 lane or environment loses ownership, boundary coverage, a blocking gap, or its explicit future test identity.",
+           "laneIds":  [
+                   "V-STATIC"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ]
+         },
+         {
+           "id":  "P0A.1-R04",
+           "outcome":  "A fixture, resource, literal, geometry, stat, time, JSON, or protocol oracle drifts, claims false compatibility, or contains personal/secret data.",
+           "laneIds":  [
+                   "V-STATIC"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ]
+         },
+         {
+           "id":  "P0A.1-R05",
+           "outcome":  "The clean-room exact allowlist fails to cover every product and preservation oracle, or a predecessor, Git lineage artifact, or RED-run lineage artifact explicitly classified as governance-history and verified by the V-STATIC fixed authority is treated as an independent product oracle.",
+           "laneIds":  [
+                   "V-STATIC"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ]
+         }
+       ],
+  "lanes":  [
+         {
+           "id":  "V-STATIC",
+           "required":  true,
+           "rationale":  "P0A.1 changes only versioned specification, fixture, traceability, verification-tooling, documentation-truth, and exact-SHA delivery metadata; production source and legacy suites remain untouched.",
+           "riskIds":  [
+                   "P0A.1-R01",
+                   "P0A.1-R02",
+                   "P0A.1-R03",
+                   "P0A.1-R04",
+                   "P0A.1-R05"
+                 ],
+           "probeIds":  [
+                    "P0A.1-V-STATIC-STATIC-CONTRACT"
+                  ],
+           "environmentIds":  [
+                      "ENV-WINDOWS-LOCAL",
+                      "ENV-GHA-UBUNTU"
+                    ]
+         }
+       ],
+  "probes":  [
+          {
+            "id":  "P0A.1-V-STATIC-STATIC-CONTRACT",
+            "command":  "./tools/verification/Test-PreservationSpecification.ps1",
+            "minimumDiscovery":  8,
+            "redOracle":  "Clean-room review v6 is a frozen PASS with C=0, I=0, and M=0 at docs/verification/evidence/P0A.1-clean-room-review-v6.md, SHA-256 1c0ac44e73c78ae16ac063f256e24a596c4d08ee0328482836bfd5e421291476. Local GREEN evidence is frozen at docs/verification/evidence/P0A.1-preservation-spec-v4-green-v1.md, SHA-256 48cf0260ed05150919cc059685abb9482878b05611c8c95b27efcd291063adab. CI source-identity integration remains BLOCK because the current validator incorrectly requires live Git HEAD to equal the historical baseline 43f9c288f843f7620ffee5eee3504f52875f4774, which necessarily fails after a successor commit. V9 authorizes an immutable successor that preserves the historical baseline and production-root digests, requires lowercase 40-hex live HEAD, requires a non-empty SOURCE_SHA to be lowercase 40-hex and ordinal-equal to live HEAD, permits a local checkout with SOURCE_SHA empty or unset to differ from the historical baseline, and keeps discovery sourceSha bound to live HEAD. Discovery remains exactly 8 probes with seven mutations; all existing inventory, gap, source, binding, fixture, and root thresholds remain unchanged.",
+            "riskIds":  [
+                    "P0A.1-R01",
+                    "P0A.1-R02",
+                    "P0A.1-R03",
+                    "P0A.1-R04",
+                    "P0A.1-R05"
+                  ],
+            "laneIds":  [
+                    "V-STATIC"
+                  ],
+            "requirementIds":  [
+                       "CURRENT:AC-FUT-001",
+                       "CURRENT:AC-FUT-002",
+                       "CURRENT:AC-FUT-003",
+                       "CURRENT:FR-FUT-001",
+                       "CURRENT:FR-FUT-002",
+                       "CURRENT:FR-FUT-003",
+                       "CURRENT:LOC-ASSETS",
+                       "CURRENT:LOC-GAPS",
+                       "CURRENT:LOC-INTENT",
+                       "CURRENT:LOC-PORTS",
+                       "CURRENT:LOC-PRIVACY",
+                       "CURRENT:LOC-RUNTIME",
+                       "CURRENT:LOC-SCOPE",
+                       "CURRENT:LOC-STATUS",
+                       "CURRENT:LOC-STORAGE",
+                       "CURRENT:LOC-TRANSMISSION",
+                       "CURRENT:LOC-VERIFY",
+                       "PRD:AC-FR-021-01",
+                       "PRD:AC-FR-021-02",
+                       "PRD:AC-FR-021-03",
+                       "PRD:AC-FR-021-05",
+                       "PRD:AC-FR-021-09",
+                       "PRD:AC-FR-021-10",
+                       "PRD:AC-FR-021-12",
+                       "PRD:AC-FR-024-02",
+                       "PRD:GATE-0-01",
+                       "PRD:GATE-0-02",
+                       "PRD:GATE-0-04",
+                       "PRD:GATE-0-05",
+                       "PRD:GATE-0-06",
+                       "PRD:NFR-JA-005",
+                       "PRD:NFR-JA-005-01",
+                       "PRD:NFR-JA-005-02",
+                       "PRD:RISK-010"
+                     ],
+            "environmentIds":  [
+                       "ENV-WINDOWS-LOCAL",
+                       "ENV-GHA-UBUNTU"
+                     ],
+            "fixtureIds":  [
+                     "P0A1-DATA-V5",
+                     "P0A1-ORACLES-V1",
+                     "P0A1-PROTOCOL-V3",
+                     "P0A1-RESOURCES-V1"
+                   ],
+            "thresholds":  {
+                     "minimumDiscovery":  8,
+                     "maximumUnexpectedSkips":  0,
+                     "requiredMutationControls":  7,
+                     "requiredBoundaries":  18,
+                     "requiredRequirementIds":  34,
+                     "requiredCurrentDispositionRecords":  114,
+                     "requiredQualificationLanes":  14,
+                     "requiredFixtures":  4,
+                     "requiredDataRecords":  17,
+                     "requiredPersistedDataTargets":  16,
+                     "requiredApplicationOwnedTargets":  12,
+                     "requiredExternalReadOnlyTargets":  4,
+                     "requiredCurrentWritableTargets":  10,
+                     "requiredLatentWritableTargets":  2,
+                     "requiredOracleRecords":  28,
+                     "requiredProtocolContracts":  15,
+                     "requiredResources":  11,
+                     "requiredWindowsJourneys":  5,
+                     "requiredKnownGaps":  35,
+                     "requiredSupportedEnvironments":  5,
+                     "requiredProductionRoots":  2,
+                     "requiredProductionFiles":  140,
+                     "requiredReviewerSources":  21,
+                     "requiredCleanReviewBindings":  15,
+                     "artifactRetentionDays":  90
+                   }
+          }
+        ],
+  "environments":  [
+            {
+              "id":  "ENV-WINDOWS-LOCAL",
+              "os":  "Windows 11 x64 development environment",
+              "shell":  "Windows PowerShell 5.1 plus pinned Python jsonschema fallback",
+              "purpose":  "Local RED/GREEN, byte/hash verification, and PowerShell 5.1 portability"
+            },
+            {
+              "id":  "ENV-GHA-UBUNTU",
+              "os":  "ubuntu-latest",
+              "shell":  "PowerShell 7.4+",
+              "purpose":  "Blocking exact-head-SHA preservation specification verification with retained evidence"
+            },
+            {
+              "id":  "ENV-GHA-WINDOWS",
+              "os":  "windows-latest",
+              "shell":  "PowerShell 7.4+",
+              "purpose":  "Disposable hosted Windows capability observation"
+            },
+            {
+              "id":  "ENV-INTERACTIVE-WIN10",
+              "os":  "Windows 10 x64 interactive worker",
+              "shell":  "PowerShell 7.4+",
+              "purpose":  "Later real desktop and assistive-technology evidence"
+            },
+            {
+              "id":  "ENV-INTERACTIVE-WIN11",
+              "os":  "Windows 11 x64 interactive worker",
+              "shell":  "PowerShell 7.4+",
+              "purpose":  "Later UIA, real desktop, and assistive-technology evidence"
+            }
+          ],
+  "fixtures":  [
+          {
+            "id":  "P0A1-DATA-V5",
+            "path":  "tests/fixtures/preservation/v1/data-v5.json",
+            "sha256":  "4fa474e506e03ad1d3e2af9a9bce6d14e27100d450f310970d82969af860dfc0"
+          },
+          {
+            "id":  "P0A1-ORACLES-V1",
+            "path":  "tests/fixtures/preservation/v1/oracles-v1.json",
+            "sha256":  "4f00f6fbc478984a4ec074a2aa9c651399b688fe9d30ce0de9fb38f3bd5cce4d"
+          },
+          {
+            "id":  "P0A1-PROTOCOL-V3",
+            "path":  "tests/fixtures/preservation/v1/protocol-v3.json",
+            "sha256":  "cb3218e382f87264bef3a09349d7ffe2cf2d3dc999a060258bbaa02bc6fa9565"
+          },
+          {
+            "id":  "P0A1-RESOURCES-V1",
+            "path":  "tests/fixtures/preservation/v1/resources-v1.json",
+            "sha256":  "63e70f82566b91eea4781e3b1da7b8ad1a360b0f926549690757e36225f2f7f8"
+          }
+        ],
+  "services":  [
+
+        ],
+  "thresholds":  {
+            "minimumDiscovery":  8,
+            "maximumUnexpectedSkips":  0,
+            "requiredMutationControls":  7,
+            "requiredBoundaries":  18,
+            "requiredRequirementIds":  34,
+            "requiredCurrentDispositionRecords":  114,
+            "requiredQualificationLanes":  14,
+            "requiredFixtures":  4,
+            "requiredDataRecords":  17,
+            "requiredPersistedDataTargets":  16,
+            "requiredApplicationOwnedTargets":  12,
+            "requiredExternalReadOnlyTargets":  4,
+            "requiredCurrentWritableTargets":  10,
+            "requiredLatentWritableTargets":  2,
+            "requiredOracleRecords":  28,
+            "requiredProtocolContracts":  15,
+            "requiredResources":  11,
+            "requiredWindowsJourneys":  5,
+            "requiredKnownGaps":  35,
+            "requiredSupportedEnvironments":  5,
+            "requiredProductionRoots":  2,
+            "requiredProductionFiles":  140,
+            "requiredReviewerSources":  21,
+            "requiredCleanReviewBindings":  15,
+            "artifactRetentionDays":  90
+          },
+  "owners":  [
+          {
+            "role":  "step owner with disclosed legacy exposure",
+            "accountability":  "Freeze only independently derived requirements, public production contracts, canary fixtures, source hashes, and versioned successors; never reuse a legacy oracle or claim clean-room authorship."
+          },
+          {
+            "role":  "unexposed preservation specification reviewer",
+            "accountability":  "Review every oracle, durable target, owner link, and gap only from the exact normative and production-source allowlist without reading legacy test sources, helpers, snapshots, results, prior evidence, or validator implementation."
+          }
+        ],
+  "expectedArtifacts":  [
+               "source-identity.json",
+               "preservation-specification-tests.log"
+             ]
+}
+

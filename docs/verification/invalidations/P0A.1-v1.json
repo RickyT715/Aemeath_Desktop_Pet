@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v1-invalidated-by-v2",
+  "invalidatedManifestId": "P0A.1-v1",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v1.yml",
+  "frozenArtifactSha256": "2c373ca1671c65cd7c4bed70af3aa10de08df0f9450ed8b2d7c4d2eeb1c25dbd",
+  "replacementManifestId": "P0A.1-v2",
+  "invalidatedAt": "2026-08-20T14:47:09Z",
+  "reason": "The assigned clean-room preservation review blocked v1 after proving false SSE compatibility and material omissions in current gaps, Gate 0 lane coverage, supported environments, restart/stat fixtures, and source/provenance identity contracts.",
+  "reviewer": "clean-room-preservation-reviewer-01"
+}

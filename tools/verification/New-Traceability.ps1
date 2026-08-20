@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$OutputPath = "docs/verification/traceability-v1.yml"
+    [string]$OutputPath = "docs/verification/traceability-v2.yml"
 )
 
 $ErrorActionPreference = "Stop"
@@ -342,7 +342,7 @@ function Get-CurrentMapping {
         return New-Mapping $step "V-COMPONENT" $pbs "18-canonical-memory-architecture" "12-memory-center"
     }
     if ($key -match '^FR-FUT-') {
-        return New-Mapping "P4.5" "V-WPF" @("PB-002", "PB-004", "PB-018") "32-requirement-traceability" "23-ui-quality-gates"
+        return New-Mapping "P0A.1" "V-STATIC" @("PB-002", "PB-004", "PB-018") "32-requirement-traceability" "23-ui-quality-gates"
     }
     if ($key -match '^NFR-(\d{3})$') {
         $number = [int]$Matches[1]
@@ -767,7 +767,9 @@ function Get-TraceTargets {
             "FR-PET-008" = @("P4.5c", "V-WPF")
             "FR-PET-010" = @("P4.5d", "V-MANUAL-WIN")
             "FR-AI-005" = @("P2.2", "V-CONTRACT")
+            "FR-AI-006" = @("P9.2", "V-COMPONENT")
             "FR-AI-007" = @("P9.2", "V-FIXTURE-E2E")
+            "AR-004" = @("P2.3", "V-CONTRACT")
             "FR-VOICE-003" = @("P9.1b", "V-CONTRACT")
             "FR-VISION-004" = @("P6.3", "V-SECURITY")
             "FR-MEM-004" = @("P7.3", "V-COMPONENT")
@@ -776,9 +778,9 @@ function Get-TraceTargets {
             "PR-004" = @("P1.4", "V-SECURITY")
             "PR-005" = @("P7.4", "V-WPF")
             "PR-006" = @("P2.2", "V-SECURITY")
-            "FR-FUT-001" = @("P4.5e", "V-WPF")
-            "FR-FUT-002" = @("P4.5e", "V-WPF")
-            "FR-FUT-003" = @("P4.5e", "V-WPF")
+            "FR-FUT-001" = @("P0A.1", "V-STATIC")
+            "FR-FUT-002" = @("P0A.1", "V-STATIC")
+            "FR-FUT-003" = @("P0A.1", "V-STATIC")
         }
         if ($laterTargets.ContainsKey($canonicalId)) {
             $target = $laterTargets[$canonicalId]
@@ -807,8 +809,16 @@ function Get-TraceTargets {
         if ($criterion -lt 1 -or $criterion -gt $owners.Count) {
             throw "No leaf owner for '$Id'."
         }
-        $owner = $owners[$criterion - 1]
-        $lane = Get-PrimaryLaneForStep $owner $Text $BaseMapping.lane
+        $owner = if ($Id -eq "AC-FR-020-05") {
+            "P0A.2"
+        } else {
+            $owners[$criterion - 1]
+        }
+        $lane = if ($Id -eq "AC-FR-020-05") {
+            "V-FIXTURE-E2E"
+        } else {
+            Get-PrimaryLaneForStep $owner $Text $BaseMapping.lane
+        }
         if ($Id -ne "AC-FR-021-07") { Add-TestTarget $targets $owner $lane }
 
         $metaOwner = $owner -match '^(D0\.|P0A\.1|P0A\.9|P11\.4)' -or $Id -eq "AC-FR-021-07"
@@ -838,6 +848,7 @@ function Get-TraceTargets {
 
         $additionalTargets = @{
             "AC-FR-001-02" = @("P4.3|V-COMPONENT")
+            "AC-FR-017-01" = @("P4.5e|V-ACCESS")
             "AC-FR-007-02" = @("P4.2|V-WPF", "P4.2|V-ACCESS")
             "AC-FR-008-04" = @("P4.2|V-WPF", "P4.2|V-ACCESS")
             "AC-FR-020-04" = @("P7.4|V-WPF", "P7.4|V-ACCESS")
@@ -1209,11 +1220,40 @@ foreach ($entry in $entries) {
         }
     }
 }
+$exactBehaviorIdsByTestId = @{
+    "P0A.1-V-STATIC-STATIC-CONTRACT" = @(
+        1..18 | ForEach-Object { "PB-{0:D3}" -f $_ }
+    )
+    "P0A.2-V-FIXTURE-E2E-FIXTURE-JOURNEY" = @(
+        "PB-001", "PB-002", "PB-004", "PB-011", "PB-018"
+    )
+    "P4.5e-V-ACCESS-ACCESSIBILITY-JOURNEY" = @(
+        "PB-003", "PB-005", "PB-008", "PB-018"
+    )
+    "P0A.6-V-WPF-WPF-STATE" = @(
+        "PB-002", "PB-003", "PB-004", "PB-005", "PB-008", "PB-009",
+        "PB-016", "PB-017", "PB-018"
+    )
+    "P0A.6-V-UIA-UIA-JOURNEY" = @(
+        "PB-001", "PB-002", "PB-003", "PB-007", "PB-016", "PB-018"
+    )
+    "P0A.7-V-UIA-UIA-JOURNEY" = @(
+        "PB-003", "PB-004", "PB-005", "PB-008", "PB-016", "PB-017", "PB-018"
+    )
+    "P0A.6-V-ACCESS-ACCESSIBILITY-JOURNEY" = @(
+        "PB-001", "PB-002", "PB-003", "PB-004", "PB-005", "PB-006",
+        "PB-007", "PB-008", "PB-010", "PB-016", "PB-017", "PB-018"
+    )
+}
 foreach ($testId in @(Get-OrdinalUniqueStrings @($catalogRequirementIds.Keys))) {
     $metadata = $testMetadataById[$testId]
     if ($null -eq $metadata) { throw "Test '$testId' has no stable metadata." }
     $requirementIds = @(Get-OrdinalUniqueStrings @($catalogRequirementIds[$testId]))
     $behaviorIds = @(Get-OrdinalUniqueStrings @($requirementIds | ForEach-Object { $entryById[$_].behaviorIds }))
+    if ($exactBehaviorIdsByTestId.ContainsKey($testId)) {
+        $behaviorIds = @($exactBehaviorIdsByTestId[$testId])
+    }
+    $isP0a1StaticRedOwner = $metadata.ownerStep -eq "P0A.1" -and $metadata.lane -eq "V-STATIC"
     $testCatalog.Add([PSCustomObject][ordered]@{
             id = $testId
             status = "planned"
@@ -1222,8 +1262,8 @@ foreach ($testId in @(Get-OrdinalUniqueStrings @($catalogRequirementIds.Keys))) 
             testKind = $(if ($metadata.ownerStep -match '^D0\.') { "gate-probe" } elseif ($metadata.lane -match 'E2E|UIA|MANUAL') { "journey" } else { "suite" })
             requirementIds = $requirementIds
             behaviorIds = $behaviorIds
-            tddMode = $(if ($metadata.lane -eq "V-LEGACY") { "legacy-regression" } elseif ($metadata.ownerStep -match '^P0[AB]\.') { "characterization-first" } else { "red-first" })
-            executionExpectation = $(if ($metadata.lane -eq "V-LEGACY") { "separate-legacy-regression" } elseif ($metadata.ownerStep -match '^P0[AB]\.') { "passing-baseline-or-explicit-gap" } else { "expected-red-before-implementation" })
+            tddMode = $(if ($metadata.lane -eq "V-LEGACY") { "legacy-regression" } elseif ($isP0a1StaticRedOwner) { "red-first" } elseif ($metadata.ownerStep -match '^P0[AB]\.') { "characterization-first" } else { "red-first" })
+            executionExpectation = $(if ($metadata.lane -eq "V-LEGACY") { "separate-legacy-regression" } elseif ($isP0a1StaticRedOwner) { "expected-red-before-implementation" } elseif ($metadata.ownerStep -match '^P0[AB]\.') { "passing-baseline-or-explicit-gap" } else { "expected-red-before-implementation" })
             commandStatus = "freeze-in-step-manifest-before-red"
             oracleStatus = "freeze-in-step-manifest-before-red"
             environmentStatus = "freeze-in-step-manifest-before-red"
@@ -1278,5 +1318,5 @@ if ($parent -and -not (Test-Path -LiteralPath $parent -PathType Container)) {
 }
 $json = ConvertTo-CanonicalJson $traceability
 $utf8WithoutBom = New-Object Text.UTF8Encoding($false)
-[IO.File]::WriteAllText($resolvedOutputPath, "$json`n", $utf8WithoutBom)
+[IO.File]::WriteAllText($resolvedOutputPath, "$json`r`n", $utf8WithoutBom)
 Write-Host "Generated $OutputPath with $($entries.Count) normative nodes and $($testCatalog.Count) planned tests/probes."

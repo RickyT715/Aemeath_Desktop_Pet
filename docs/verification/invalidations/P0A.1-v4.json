@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v4-invalidated-by-v5",
+  "invalidatedManifestId": "P0A.1-v4",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v4.yml",
+  "frozenArtifactSha256": "f6b06092f7070c8c9ef8a02c7465e9397adafc3189cf150b779fafd022b51609",
+  "replacementManifestId": "P0A.1-v5",
+  "invalidatedAt": "2026-08-20T17:27:23Z",
+  "reason": "The assigned clean-room preservation review v3 blocked v4 because the frozen trace owner graph, future-approval mapping, persisted-data inventory, interactive P0A.2 environment targets, and reviewer allowlist were incomplete. V5 preserves the blocked artifacts, binds the reviewed DATA-V5 durable-state fixture, and governs versioned traceability-v2 and preservation-spec-v2 successors.",
+  "reviewer": "clean-room-preservation-reviewer-02"
+}

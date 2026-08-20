@@ -108,7 +108,7 @@
         "kind": "powershell-probe",
         "minimumDiscoveredTests": 24,
         "command": "./tools/verification/Test-VerificationContracts.ps1",
-        "rationale": "D0.3-v6 keeps its 24-probe parent floor while both the included D0.3 result and the independently mandatory, non-aggregated D0.5 Ubuntu static result are verified.",
+        "rationale": "D0.3-v6 keeps its 24-probe parent floor while the included D0.3 result and the independently mandatory, non-aggregated D0.5 Ubuntu and P0A.1 preservation results are all verified.",
         "results": [
           {
             "resultId": "D0.3-V-STATIC-001",
@@ -120,6 +120,12 @@
             "resultId": "D0.5-V-STATIC-UBUNTU",
             "evidencePath": "dependency-qualification-static-tests.log",
             "minimum": 45,
+            "includedInJobMinimum": false
+          },
+          {
+            "resultId": "P0A.1-V-STATIC-STATIC-CONTRACT",
+            "evidencePath": "preservation-specification-tests.log",
+            "minimum": 8,
             "includedInJobMinimum": false
           }
         ]
@@ -140,6 +146,10 @@
         {
           "path": "dependency-qualification-static-tests.log",
           "minimumBytes": 500
+        },
+        {
+          "path": "preservation-specification-tests.log",
+          "minimumBytes": 100
         }
       ]
     },

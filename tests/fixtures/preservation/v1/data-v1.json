@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "P0A1-DATA-V1",
+  "privacy": { "containsSecrets": false, "containsPersonalData": false, "canary": "AEMEATH_FIXTURE_USER" },
+  "coveragePolicy": "Each record declares whether it is a complete settable-field round-trip shape or an intentionally partial accepted-input canary. Computed, wall-clock, secret, machine-specific, and omitted-default fields are never implied by omission.",
+  "records": [
+    {
+      "id": "DATA-CONFIG-DEFAULTS",
+      "boundaryIds": ["PB-008", "PB-016"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+      "fixtureRole": "partial-deserialization-canary",
+      "contractRole": "deserialize-input",
+      "completeness": "partial",
+      "omittedFieldsUseProductionInitializers": true,
+      "coverage": "Selected non-secret defaults and nested shapes only. Omitted AppConfig properties deliberately retain their production defaults; this is not a complete serialized golden.",
+      "payload": {
+        "apiKey": "", "petSize": 200, "opacity": 1.0, "startWithWindows": false,
+        "enableGlitchEffect": true, "enableSinging": true, "enableBlackCat": true,
+        "catName": "Kuro", "closeToTray": true, "theme": "default",
+        "aiProvider": "claude", "geminiApiKey": "", "agentThreadId": "AEMEATH_FIXTURE_THREAD",
+        "backend": { "enabled": true, "mode": "auto", "port": 18900, "internalPort": 18901, "pythonPath": "python", "maxRetries": 3 },
+        "voiceInput": { "enabled": false, "sttProvider": "whisper", "language": "en", "includeScreenshot": false, "hotkey": "Ctrl+F2" },
+        "screenAwareness": { "enabled": false, "intervalSeconds": 60, "privacyTier": 1, "privacyDownscaleMaxWidth": 480, "monthlyBudgetCap": 5.0, "showScreenWatchIndicator": true },
+        "mcp": { "enabled": false, "exposeAsServer": false, "servers": [] }
+      }
+    },
+    {
+      "id": "DATA-CONFIG-POSITION-RESTART",
+      "boundaryIds": ["PB-003", "PB-008"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+      "fixtureRole": "position-restart-roundtrip-canary",
+      "contractRole": "serialize-deserialize-roundtrip",
+      "completeness": "targeted",
+      "payload": { "lastX": 320.5, "lastY": 240.25 },
+      "expected": {
+        "jsonNames": ["lastX", "lastY"],
+        "restoresWhenBothNonNegative": true,
+        "absoluteCoordinatesAreStableOracle": false
+      }
+    },
+    {
+      "id": "DATA-STATS-BASELINE",
+      "boundaryIds": ["PB-009"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/stats.json",
+      "fixtureRole": "settable-field-roundtrip-canary",
+      "excludedComputedProperties": ["daysTogether"],
+      "payload": { "mood": 70.0, "energy": 80.0, "affection": 50.0, "firstLaunch": "2026-01-01T00:00:00Z", "lastSeen": "2026-01-01T00:00:00Z", "totalChats": 0, "totalPets": 0, "totalSongs": 0, "totalPaperPlanes": 0, "totalGames": 0 }
+    },
+    {
+      "id": "DATA-MESSAGES-TURN",
+      "boundaryIds": ["PB-005", "PB-009"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/messages.json",
+      "fixtureRole": "settable-field-roundtrip-canary",
+      "excludedComputedProperties": ["isUser", "isAssistant"],
+      "payload": [
+        { "id": "fixture01", "role": "user", "content": "AEMEATH_FIXTURE_USER says hello", "timestamp": "2026-01-01T00:00:00Z", "isStreaming": false },
+        { "id": "fixture02", "role": "assistant", "content": "Hello from the fixture", "timestamp": "2026-01-01T00:00:01Z", "isStreaming": false }
+      ]
+    },
+    {
+      "id": "DATA-CORE-MEMORY",
+      "boundaryIds": ["PB-014", "PB-016"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/core_memory.json",
+      "fixtureRole": "shape-and-canary-content",
+      "payload": { "version": 1, "lastUpdated": "2026-01-01T00:00:00Z", "userProfile": { "name": "AEMEATH_FIXTURE_USER", "nickname": null, "ageRange": null, "occupation": null, "keyFacts": ["fixture fact"], "languages": ["en"] }, "personality": { "communicationStyle": "fixture style", "moodPatterns": null, "interests": ["fixtures"], "dislikes": [] }, "relationship": { "stage": "new", "daysTogether": 0, "trustLevel": "initial", "insideJokes": [], "milestones": [] } }
+    },
+    {
+      "id": "DATA-PROCEDURAL-MEMORY",
+      "boundaryIds": ["PB-014"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/procedural_memory.json",
+      "fixtureRole": "shape-only-canary",
+      "payload": { "version": 1, "routines": [], "scheduledEvents": [{ "id": "fixture-event", "event": "fixture only", "date": "2026-01-02", "source": "fixture", "followUp": "none", "createdAt": "2026-01-01T00:00:00Z" }], "learnedPreferences": [] },
+      "qualificationNote": "This proves only the serialized shape; current production has no ScheduledEvents writer, scheduler, or notification loop."
+    },
+    {
+      "id": "DATA-OBSERVATION-BUFFER",
+      "boundaryIds": ["PB-007", "PB-014", "PB-016"],
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/observation_buffer.json",
+      "fixtureRole": "settable-field-roundtrip-canary",
+      "excludedComputedProperties": ["entries[].isExpired"],
+      "payload": { "entries": [{ "id": "fixture-observation", "timestamp": "2026-01-01T00:00:00Z", "source": "fixture", "content": "non-personal fixture observation", "activityContext": "Default", "ttlHours": 24 }] }
+    }
+  ]
+}

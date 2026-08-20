@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v2-invalidated-by-v3",
+  "invalidatedManifestId": "P0A.1-v2",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v2.yml",
+  "frozenArtifactSha256": "60ae0b97ae95444b76ad064428801ed6988f7b2fcbdd5bccdfd69b5582d83d4e",
+  "replacementManifestId": "P0A.1-v3",
+  "invalidatedAt": "2026-08-20T15:08:25Z",
+  "reason": "The frozen v2 RED oracle incorrectly required semantic fixture diagnostics after those fixture bytes had already been corrected; v3 preserves the fixture identities and names only diagnostics produced by the actual pre-repair specification and traceability state.",
+  "reviewer": "p0a1-repair-validator-test-reviewer-v2"
+}

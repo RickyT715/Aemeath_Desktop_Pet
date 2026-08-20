@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "P0A.1-v7-invalidated-by-v8",
+  "invalidatedManifestId": "P0A.1-v7",
+  "frozenArtifactPath": "docs/verification/manifests/P0A.1-v7.yml",
+  "frozenArtifactSha256": "6944c536c8c804e4a7e790c97442d9aba27e17dc0d5f112c3997eab02ba0ebef",
+  "replacementManifestId": "P0A.1-v8",
+  "invalidatedAt": "2026-08-21T08:00:00Z",
+  "reason": "Clean-room review v5 at docs/verification/evidence/P0A.1-clean-room-review-v5.md, SHA-256 1be93b14dcc551025389b54c2cecd223cd31324f8ba57f7cd7cba6a539268074, found that unqualified SSE transport was incorrectly described as definite double-framing discard; P0A.1-v8 preserves the supported producer/consumer mismatches while removing those two wire-outcome overclaims.",
+  "reviewer": "clean-room-preservation-reviewer-04"
+}

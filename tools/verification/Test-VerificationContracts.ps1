@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$TraceabilityPath = "docs/verification/traceability-v1.yml",
+    [string]$TraceabilityPath = "docs/verification/traceability-v2.yml",
     [string]$FixtureDirectory = "tests/fixtures/verification/v1/invalid"
 )
 
@@ -36,6 +36,8 @@ $manifestV5InvalidationPath = "docs/verification/invalidations/D0.3-v5.json"
 $manifestV5RedEvidencePath = "docs/verification/evidence/D0.3-v5-red.md"
 $manifestV6RedEvidencePath = "docs/verification/evidence/D0.3-v6-red.md"
 $generatorPath = "tools/verification/New-Traceability.ps1"
+$frozenPredecessorTraceabilityPath = "docs/verification/traceability-v1.yml"
+$frozenPredecessorTraceabilitySha256 = "939fa28c670fe55a320af7b1d879257b6ee28193309946aca29bb06caeb6db55"
 $schemaFallbackPath = "tools/verification/Validate-JsonSchema.py"
 $requiredFixtureMutations = @(
     "missing-requirement", "duplicate-requirement", "stale-source-hash",
@@ -95,6 +97,38 @@ function Get-OrdinalUniqueStrings {
     $result = [string[]]@($set)
     [Array]::Sort($result, [StringComparer]::Ordinal)
     return $result
+}
+
+function Get-TracePropertyValue {
+    param([object]$InputObject, [string]$Name)
+    if ($null -eq $InputObject) { return $null }
+    $property = $InputObject.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $null }
+    return $property.Value
+}
+
+function Get-TraceArrayProperty {
+    param([object]$InputObject, [string]$Name)
+    $value = Get-TracePropertyValue $InputObject $Name
+    if ($null -eq $value) { return @() }
+    return @($value)
+}
+
+function Test-ExactOrdinalStringSet {
+    param([object[]]$Actual, [object[]]$Expected)
+    $actualValues = @($Actual | ForEach-Object { [string]$_ })
+    $expectedValues = @($Expected | ForEach-Object { [string]$_ })
+    if ($actualValues.Count -ne $expectedValues.Count) { return $false }
+
+    $actualSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($value in $actualValues) {
+        if ([string]::IsNullOrWhiteSpace($value) -or -not $actualSet.Add($value)) { return $false }
+    }
+    $expectedSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($value in $expectedValues) {
+        if ([string]::IsNullOrWhiteSpace($value) -or -not $expectedSet.Add($value)) { return $false }
+    }
+    return $actualSet.SetEquals($expectedSet)
 }
 
 function Get-ExpectedRequirementIds {
@@ -382,6 +416,188 @@ function Test-TraceabilityObject {
         if (-not $referencedTests.Contains($testId)) { Add-ValidationFailure $failures "TRACE-ORPHAN-TEST" "Orphan test '$testId'." }
     }
 
+    $catalog = @(Get-TraceArrayProperty $Traceability "testCatalog")
+    $p0a1StaticRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P0A.1" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-STATIC"
+        })
+    $p0a1Static = if ($p0a1StaticRows.Count -eq 1) { $p0a1StaticRows[0] } else { $null }
+    $expectedP0a1Requirements = @(
+        "CURRENT:AC-FUT-001", "CURRENT:AC-FUT-002", "CURRENT:AC-FUT-003",
+        "CURRENT:FR-FUT-001", "CURRENT:FR-FUT-002", "CURRENT:FR-FUT-003",
+        "CURRENT:LOC-ASSETS", "CURRENT:LOC-GAPS", "CURRENT:LOC-INTENT", "CURRENT:LOC-PORTS",
+        "CURRENT:LOC-PRIVACY", "CURRENT:LOC-RUNTIME", "CURRENT:LOC-SCOPE", "CURRENT:LOC-STATUS",
+        "CURRENT:LOC-STORAGE", "CURRENT:LOC-TRANSMISSION", "CURRENT:LOC-VERIFY",
+        "PRD:AC-FR-021-01", "PRD:AC-FR-021-02", "PRD:AC-FR-021-03", "PRD:AC-FR-021-05",
+        "PRD:AC-FR-021-09", "PRD:AC-FR-021-10", "PRD:AC-FR-021-12", "PRD:AC-FR-024-02",
+        "PRD:GATE-0-01", "PRD:GATE-0-02", "PRD:GATE-0-04", "PRD:GATE-0-05",
+        "PRD:GATE-0-06", "PRD:NFR-JA-005", "PRD:NFR-JA-005-01", "PRD:NFR-JA-005-02",
+        "PRD:RISK-010"
+    )
+    if ($p0a1StaticRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p0a1Static "id") -cne "P0A.1-V-STATIC-STATIC-CONTRACT" -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p0a1Static "requirementIds") $expectedP0a1Requirements) -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p0a1Static "behaviorIds") $allowedBehaviorIds) -or
+        [string](Get-TracePropertyValue $p0a1Static "tddMode") -cne "red-first" -or
+        [string](Get-TracePropertyValue $p0a1Static "executionExpectation") -cne "expected-red-before-implementation") {
+        Add-ValidationFailure $failures "TRACE-P0A1-STATIC-OWNER" "P0A.1 static ownership does not match the exact trace-v2 successor."
+    }
+
+    $p45eAccessRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P4.5e" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-ACCESS"
+        })
+    $p45eAccess = if ($p45eAccessRows.Count -eq 1) { $p45eAccessRows[0] } else { $null }
+    $p45eWpfRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P4.5e" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-WPF"
+        })
+    $p0b3eAccessRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "id") -ceq "P0B.3e-V-ACCESS-ACCESSIBILITY-JOURNEY"
+        })
+    $p0b3eAccess = if ($p0b3eAccessRows.Count -eq 1) { $p0b3eAccessRows[0] } else { $null }
+    if ($p45eAccessRows.Count -ne 1 -or $p45eWpfRows.Count -ne 0 -or
+        [string](Get-TracePropertyValue $p45eAccess "id") -cne "P4.5e-V-ACCESS-ACCESSIBILITY-JOURNEY" -or
+        [string](Get-TracePropertyValue $p45eAccess "tddMode") -cne "red-first" -or
+        [string](Get-TracePropertyValue $p45eAccess "executionExpectation") -cne "expected-red-before-implementation" -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p45eAccess "requirementIds") @("PRD:AC-FR-017-01")) -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p45eAccess "behaviorIds") @(
+                "PB-003", "PB-005", "PB-008", "PB-018"
+            )) -or
+        $p0b3eAccessRows.Count -ne 1 -or
+        @(Get-TraceArrayProperty $p0b3eAccess "requirementIds") -cnotcontains "PRD:AC-FR-017-01") {
+        Add-ValidationFailure $failures "TRACE-P45E-KEYBOARD-OWNER" "P4.5e keyboard accessibility ownership does not match the trace-v2 successor."
+    }
+
+    $p0a2FixtureRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P0A.2" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-FIXTURE-E2E"
+        })
+    $p0a2Fixture = if ($p0a2FixtureRows.Count -eq 1) { $p0a2FixtureRows[0] } else { $null }
+    if ($p0a2FixtureRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p0a2Fixture "id") -cne "P0A.2-V-FIXTURE-E2E-FIXTURE-JOURNEY" -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p0a2Fixture "requirementIds") @(
+                "CURRENT:AC-AR-001", "CURRENT:AR-001", "PRD:AC-FR-020-05"
+            )) -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p0a2Fixture "behaviorIds") @(
+                "PB-001", "PB-002", "PB-004", "PB-011", "PB-018"
+            ))) {
+        Add-ValidationFailure $failures "TRACE-P0A2-OFFLINE-OWNER" "P0A.2 offline fixture ownership does not match the trace-v2 successor."
+    }
+
+    $p92ComponentRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P9.2" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-COMPONENT"
+        })
+    $p92Component = if ($p92ComponentRows.Count -eq 1) { $p92ComponentRows[0] } else { $null }
+    $p92FixtureRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P9.2" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-FIXTURE-E2E"
+        })
+    $p92Fixture = if ($p92FixtureRows.Count -eq 1) { $p92FixtureRows[0] } else { $null }
+    $p92FixtureCurrentRequirements = @(Get-TraceArrayProperty $p92Fixture "requirementIds" | Where-Object {
+            [string]$_ -like "CURRENT:*"
+        })
+    if ($p92ComponentRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p92Component "id") -cne "P9.2-V-COMPONENT-COMPONENT-FLOW" -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p92Component "requirementIds") @(
+                "CURRENT:AC-AI-006", "CURRENT:FR-AI-006", "PRD:AC-FR-012-01",
+                "PRD:AC-FR-012-02", "PRD:AC-FR-012-03", "PRD:AC-FR-012-04", "PRD:AC-FR-012-05"
+            )) -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p92Component "behaviorIds") @(
+                "PB-013", "PB-016"
+            )) -or
+        $p92FixtureRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p92Fixture "id") -cne "P9.2-V-FIXTURE-E2E-FIXTURE-JOURNEY" -or
+        -not (Test-ExactOrdinalStringSet $p92FixtureCurrentRequirements @(
+                "CURRENT:AC-AI-007", "CURRENT:FR-AI-007"
+            ))) {
+        Add-ValidationFailure $failures "TRACE-P92-RAG-OWNER" "P9.2 RAG ownership does not match the trace-v2 successor."
+    }
+
+    $p23ContractRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P2.3" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-CONTRACT"
+        })
+    $p23Contract = if ($p23ContractRows.Count -eq 1) { $p23ContractRows[0] } else { $null }
+    $p33ContractRows = @($catalog | Where-Object {
+            [string](Get-TracePropertyValue $_ "ownerStep") -ceq "P3.3" -and
+            [string](Get-TracePropertyValue $_ "lane") -ceq "V-CONTRACT"
+        })
+    $p33Contract = if ($p33ContractRows.Count -eq 1) { $p33ContractRows[0] } else { $null }
+    if ($p23ContractRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p23Contract "id") -cne "P2.3-V-CONTRACT-CONTRACT-COMPATIBILITY" -or
+        -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $p23Contract "requirementIds") @(
+                "CURRENT:AC-AR-004", "CURRENT:AR-004", "PRD:AC-FR-001-04", "PRD:AC-FR-014-04"
+            )) -or
+        $p33ContractRows.Count -ne 1 -or
+        [string](Get-TracePropertyValue $p33Contract "id") -cne "P3.3-V-CONTRACT-CONTRACT-COMPATIBILITY" -or
+        @(Get-TraceArrayProperty $p33Contract "requirementIds") -cnotcontains "PRD:AC-FR-014-02") {
+        Add-ValidationFailure $failures "TRACE-CHAT-OWNER" "Chat contract ownership does not match the trace-v2 successor."
+    }
+
+    $p0a1StaticTestId = "P0A.1-V-STATIC-STATIC-CONTRACT"
+    $p0a9LegacyTestId = "P0A.9-V-LEGACY-LEGACY-REGRESSION"
+    $futureApprovalContracts = [ordered]@{
+        "CURRENT:AC-FUT-001" = @("APP-007", "future-red-only", $p0a1StaticTestId)
+        "CURRENT:FR-FUT-001" = @("APP-007", "future-red-only", $p0a1StaticTestId)
+        "CURRENT:AC-FUT-002" = @("APP-008", "baseline-plus-future-red", $p0a1StaticTestId, $p0a9LegacyTestId)
+        "CURRENT:FR-FUT-002" = @("APP-008", "baseline-plus-future-red", $p0a1StaticTestId, $p0a9LegacyTestId)
+        "CURRENT:AC-FUT-003" = @("APP-009", "future-red-only", $p0a1StaticTestId)
+        "CURRENT:FR-FUT-003" = @("APP-009", "future-red-only", $p0a1StaticTestId)
+    }
+    $futureLaneContracts = [ordered]@{
+        "CURRENT:AC-FUT-001" = @("V-STATIC")
+        "CURRENT:FR-FUT-001" = @("V-STATIC")
+        "CURRENT:AC-FUT-002" = @("V-LEGACY", "V-STATIC")
+        "CURRENT:FR-FUT-002" = @("V-LEGACY", "V-STATIC")
+        "CURRENT:AC-FUT-003" = @("V-STATIC")
+        "CURRENT:FR-FUT-003" = @("V-STATIC")
+    }
+    $futureApprovalGuardValid = $true
+    foreach ($futureId in $futureApprovalContracts.Keys) {
+        $futureEntry = $entryById[$futureId]
+        $expectedFuture = @($futureApprovalContracts[$futureId])
+        if ($null -eq $futureEntry -or
+            [string](Get-TracePropertyValue $futureEntry "approvalId") -cne $expectedFuture[0] -or
+            [string](Get-TracePropertyValue $futureEntry "approvalStatus") -cne "pending" -or
+            [string](Get-TracePropertyValue $futureEntry "proposedDisposition") -cne "defer" -or
+            [string](Get-TracePropertyValue $futureEntry "disposition") -cne "preserve" -or
+            [string](Get-TracePropertyValue $futureEntry "baselineTreatment") -cne $expectedFuture[1] -or
+            -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $futureEntry "lanes") @($futureLaneContracts[$futureId])) -or
+            -not (Test-ExactOrdinalStringSet @(Get-TraceArrayProperty $futureEntry "testIds") $expectedFuture[2..($expectedFuture.Count - 1)])) {
+            $futureApprovalGuardValid = $false
+        }
+    }
+    if (-not $futureApprovalGuardValid) {
+        Add-ValidationFailure $failures "TRACE-FUTURE-APPROVAL-GUARD" "Future parent and acceptance approval metadata or test backlinks do not match the trace-v2 successor."
+    }
+
+    $expectedGateZeroBehaviorSets = [ordered]@{
+        "P0A.6-V-WPF-WPF-STATE" = @(
+            "PB-002", "PB-003", "PB-004", "PB-005", "PB-008", "PB-009",
+            "PB-016", "PB-017", "PB-018"
+        )
+        "P0A.7-V-UIA-UIA-JOURNEY" = @(
+            "PB-003", "PB-004", "PB-005", "PB-008", "PB-016", "PB-017", "PB-018"
+        )
+        "P0A.6-V-ACCESS-ACCESSIBILITY-JOURNEY" = @(
+            "PB-001", "PB-002", "PB-003", "PB-004", "PB-005", "PB-006", "PB-007",
+            "PB-008", "PB-010", "PB-016", "PB-017", "PB-018"
+        )
+    }
+    foreach ($testId in $expectedGateZeroBehaviorSets.Keys) {
+        $matches = @($Traceability.testCatalog | Where-Object { [string]$_.id -ceq $testId })
+        $actualBehaviors = if ($matches.Count -eq 1) { @($matches[0].behaviorIds) } else { @() }
+        $expectedBehaviors = @($expectedGateZeroBehaviorSets[$testId])
+        if ($matches.Count -ne 1 -or
+            $actualBehaviors.Count -ne $expectedBehaviors.Count -or
+            (@(Get-OrdinalUniqueStrings $actualBehaviors) -join '|') -cne
+                (@(Get-OrdinalUniqueStrings $expectedBehaviors) -join '|')) {
+            Add-ValidationFailure $failures "TRACE-GATE0-LANE-BEHAVIOR" "Gate 0 test '$testId' has an incomplete PB behavior set."
+        }
+    }
+
     $d03Tests = @($Traceability.testCatalog | Where-Object { $_.ownerStep -eq "D0.3" })
     if ($d03Tests.Count -ne 1 -or [string]$d03Tests[0].id -ne "D0.3-V-STATIC-001" -or
         [string]$d03Tests[0].lane -ne "V-STATIC") {
@@ -391,7 +607,8 @@ function Test-TraceabilityObject {
     foreach ($entry in @($Traceability.entries | Where-Object { $_.baselineTreatment -eq "future-red-only" })) {
         $gateZeroTests = @($entry.testIds | Where-Object {
                 $parts = Get-TestIdParts ([string]$_)
-                $null -ne $parts -and $parts.step -match '^P0[AB]\.'
+                $null -ne $parts -and $parts.step -match '^P0[AB]\.' -and
+                [string]$_ -cne $p0a1StaticTestId
             })
         if ($gateZeroTests.Count -gt 0) {
             Add-ValidationFailure $failures "TRACE-FUTURE-RED-GATE0" "Future-only '$($entry.id)' is incorrectly treated as a Gate 0 pass case."
@@ -843,7 +1060,7 @@ function Test-InvalidationSemantics {
 }
 
 $requiredInputPaths = @(
-    $TraceabilityPath, $generatorPath, $schemaFallbackPath,
+    $TraceabilityPath, $generatorPath, $frozenPredecessorTraceabilityPath, $schemaFallbackPath,
     $manifestV1Path, $manifestV2Path, $manifestV3Path, $manifestV4Path, $manifestV5Path,
     $manifestV6Path,
     $manifestV1InvalidationPath, $manifestV2InvalidationPath, $manifestV3InvalidationPath,
@@ -856,6 +1073,11 @@ foreach ($mutation in $requiredFixtureMutations) { $requiredInputPaths += (Join-
 $missingFiles = @($requiredInputPaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
 if ($missingFiles.Count -gt 0) { throw "Verification contract inputs are missing: $($missingFiles -join ', ')." }
 
+$actualPredecessorTraceabilitySha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $frozenPredecessorTraceabilityPath).Hash.ToLowerInvariant()
+if ($actualPredecessorTraceabilitySha256 -cne $frozenPredecessorTraceabilitySha256) {
+    throw "Frozen traceability predecessor bytes have changed."
+}
+
 $activeManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV6Path | ConvertFrom-Json
 $requiredChecks = Get-Content -Raw -Encoding UTF8 -LiteralPath ".github/ci/required-checks.json" | ConvertFrom-Json
 $verificationJobs = @($requiredChecks.jobs | Where-Object { $_.id -eq "verification-contracts" })
@@ -864,11 +1086,32 @@ if ($verificationJobs.Count -ne 1 -or $verificationJobs[0].discovery.kind -ne "p
     [int]$verificationJobs[0].discovery.minimumDiscoveredTests -ne $manifestMinimum) {
     throw "D0.3 manifest and required CI discovery thresholds do not match."
 }
+$expectedResultContracts = @(
+    "D0.3-V-STATIC-001|verification-contract-tests.log|24|True",
+    "D0.5-V-STATIC-UBUNTU|dependency-qualification-static-tests.log|45|False",
+    "P0A.1-V-STATIC-STATIC-CONTRACT|preservation-specification-tests.log|8|False"
+)
+$actualResultContracts = @(foreach ($result in @($verificationJobs[0].discovery.results)) {
+        "$([string]$result.resultId)|$([string]$result.evidencePath)|$([int]$result.minimum)|$([bool]$result.includedInJobMinimum)"
+    })
+if (($actualResultContracts -join "`n") -cne ($expectedResultContracts -join "`n")) {
+    throw "Verification CI discovery results do not match the exact D0.3/D0.5/P0A.1 contract."
+}
 $ciEvidence = @($verificationJobs[0].evidenceFiles.path | Sort-Object)
-$manifestEvidence = @($activeManifest.expectedArtifacts | Sort-Object)
-if (($ciEvidence -join '|') -ne ($manifestEvidence -join '|')) { throw "D0.3 manifest and CI evidence artifacts do not match." }
+$expectedCiEvidence = @(
+    @($activeManifest.expectedArtifacts) +
+        @($verificationJobs[0].discovery.results.evidencePath) |
+        Sort-Object -Unique
+)
+if (($ciEvidence -join '|') -cne ($expectedCiEvidence -join '|')) {
+    throw "D0.3 manifest and exact discovery-result evidence do not match CI artifacts."
+}
 $workflow = Get-Content -Raw -Encoding UTF8 -LiteralPath ".github/workflows/ci.yml"
 if ($workflow -notmatch 'tools/verification/Test-VerificationContracts\.ps1') { throw "Required CI does not execute D0.3 verification." }
+$p0a1PipelinePattern = '(?m)^\s+\./tools/verification/Test-PreservationSpecification\.ps1 \*>\&1 \|\r?\n\s+Tee-Object artifacts/ci/verification-contracts/preservation-specification-tests\.log\s*$'
+if ([regex]::Matches($workflow, $p0a1PipelinePattern).Count -ne 1) {
+    throw "Required CI does not retain the exact P0A.1 preservation specification pipeline."
+}
 $activeProbe = @($activeManifest.probes | Where-Object { $_.id -eq "D0.3-V-STATIC-001" })[0]
 $ghaEnvironment = @($activeManifest.environments | Where-Object { $_.id -eq "ENV-GHA-UBUNTU" })[0]
 $verificationWorkflowBlock = [regex]::Match($workflow, '(?ms)^  verification-contracts:\s*(.+?)\z').Value
@@ -1026,30 +1269,30 @@ if ($historicalV1.manifestId -ne "D0.3-v1" -or $historicalV1.status -ne "frozen-
 Write-ProbePass "immutable v1-v6 payload and invalidation chain"
 
 $v5RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV5RedEvidencePath
-$frozenAtMatch = [regex]::Match($v5RedEvidence, '(?m)^- Frozen at: `([^`]+)`$')
-$redCompletedMatch = [regex]::Match($v5RedEvidence, '(?m)^- RED completed at: `([^`]+)`$')
+$frozenAtMatch = [regex]::Match($v5RedEvidence, '(?m)^- Frozen at: `([^`]+)`\r?$')
+$redCompletedMatch = [regex]::Match($v5RedEvidence, '(?m)^- RED completed at: `([^`]+)`\r?$')
 $frozenAt = [DateTimeOffset]::MinValue
 $redCompletedAt = [DateTimeOffset]::MinValue
-if ($v5RedEvidence -notmatch '(?m)^- Frozen manifest: `D0\.3-v5`$' -or
-    $v5RedEvidence -notmatch '(?m)^- Frozen manifest path: `docs/verification/manifests/D0\.3-v5\.yml`$' -or
-    $v5RedEvidence -notmatch "(?m)^- Frozen manifest SHA-256: ``$frozenV5Hash``$" -or
+if ($v5RedEvidence -notmatch '(?m)^- Frozen manifest: `D0\.3-v5`\r?$' -or
+    $v5RedEvidence -notmatch '(?m)^- Frozen manifest path: `docs/verification/manifests/D0\.3-v5\.yml`\r?$' -or
+    $v5RedEvidence -notmatch "(?m)^- Frozen manifest SHA-256: ``$frozenV5Hash``\r?$" -or
     -not $frozenAtMatch.Success -or -not $redCompletedMatch.Success -or
     -not [DateTimeOffset]::TryParse($frozenAtMatch.Groups[1].Value, [ref]$frozenAt) -or
     -not [DateTimeOffset]::TryParse($redCompletedMatch.Groups[1].Value, [ref]$redCompletedAt) -or
     $frozenAt -gt $redCompletedAt -or
-    $v5RedEvidence -notmatch '(?m)^- Exit code: `1` \(expected RED\)$') {
+    $v5RedEvidence -notmatch '(?m)^- Exit code: `1` \(expected RED\)\r?$') {
     throw "D0.3-v5 RED evidence does not bind the exact frozen manifest bytes and chronology."
 }
 Write-ProbePass "v5 frozen-before-red provenance"
 
 $v6RedEvidence = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestV6RedEvidencePath
-$v6FrozenAtMatch = [regex]::Match($v6RedEvidence, '(?m)^- Frozen at: `([^`]+)`$')
-$v6RedCompletedMatch = [regex]::Match($v6RedEvidence, '(?m)^- RED completed at: `([^`]+)`$')
+$v6FrozenAtMatch = [regex]::Match($v6RedEvidence, '(?m)^- Frozen at: `([^`]+)`\r?$')
+$v6RedCompletedMatch = [regex]::Match($v6RedEvidence, '(?m)^- RED completed at: `([^`]+)`\r?$')
 $v6FrozenAt = [DateTimeOffset]::MinValue
 $v6RedCompletedAt = [DateTimeOffset]::MinValue
 if ($v6RedEvidence -notmatch
-        '(?m)^- Frozen manifest: `docs/verification/manifests/D0\.3-v6\.yml`$' -or
-    $v6RedEvidence -notmatch "(?m)^- Frozen manifest SHA-256: ``$frozenV6Hash``$" -or
+        '(?m)^- Frozen manifest: `docs/verification/manifests/D0\.3-v6\.yml`\r?$' -or
+    $v6RedEvidence -notmatch "(?m)^- Frozen manifest SHA-256: ``$frozenV6Hash``\r?$" -or
     -not $v6FrozenAtMatch.Success -or -not $v6RedCompletedMatch.Success -or
     -not [DateTimeOffset]::TryParse(
         $v6FrozenAtMatch.Groups[1].Value, [ref]$v6FrozenAt
@@ -1058,7 +1301,7 @@ if ($v6RedEvidence -notmatch
         $v6RedCompletedMatch.Groups[1].Value, [ref]$v6RedCompletedAt
     ) -or
     $v6FrozenAt -gt $v6RedCompletedAt -or
-    $v6RedEvidence -notmatch '(?m)^- Exit code: `1` \(expected RED\)$') {
+    $v6RedEvidence -notmatch '(?m)^- Exit code: `1` \(expected RED\)\r?$') {
     throw "D0.3-v6 RED evidence does not bind the exact frozen manifest bytes and chronology."
 }
 Write-ProbePass "v6 exact third-artifact frozen-before-red provenance"

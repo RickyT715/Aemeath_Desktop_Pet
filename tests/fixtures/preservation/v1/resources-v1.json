@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "P0A1-RESOURCES-V1",
+  "derivation": "Raw production resource bytes and independently decoded GIF metadata; no legacy test input was used.",
+  "resources": [
+    { "path": "src/AemeathDesktopPet/Resources/Icons/tray_icon.ico", "bytes": 80963, "sha256": "5f8767540b2480d47d2fd6b52c2c70469544a2af9bd24d53950cc0330c4c6c8c", "kind": "icon", "runtimeStatus": "packaged-and-used" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/happy_hand_waving.gif", "bytes": 124893, "sha256": "b5da3d7e7bbfa655142fa98d335eb5ad7e96c0da469df7a797be2033046c81d5", "kind": "gif", "frames": 8, "width": 200, "height": 200, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/happy_jumping.gif", "bytes": 117433, "sha256": "7a3e368164f06cedf53f19ad9a3ae5d9382fec2089ee5172f48e56ba61703433", "kind": "gif", "frames": 7, "width": 200, "height": 200, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/laugh.gif", "bytes": 127935, "sha256": "dd00df434bd9022f7e754600addefdc5c1dee565ff70491b0e04038754d62fa2", "kind": "gif", "frames": 7, "width": 200, "height": 200, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/laugh_flying.gif", "bytes": 124762, "sha256": "7d123a4a686000d0091a66f96e44e04974d1c825d89378edcb74dff400ae1b98", "kind": "gif", "frames": 8, "width": 200, "height": 200, "runtimeStatus": "preloaded-but-unmapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/listening_music.gif", "bytes": 4458762, "sha256": "53eaed43551bb78b5b8a6886d5e0fc7e9bcf7b8025f624fdc6b63f181560bec2", "kind": "gif", "frames": 37, "width": 1000, "height": 1000, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/normal.gif", "bytes": 231230, "sha256": "f9618f963bb5a8ef3b1e1cd54487e28ea1d4e24eebd236691bdef81245ce420a", "kind": "gif", "frames": 16, "width": 200, "height": 200, "runtimeStatus": "preloaded-mapped-and-fallback" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/normal_flying.gif", "bytes": 135292, "sha256": "56edf4df3bbffa2eaf9e735eed19f1e738025e792b681001bde85c3cd52d974e", "kind": "gif", "frames": 8, "width": 200, "height": 200, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Aemeath/sign.gif", "bytes": 368696, "sha256": "12d7165ef2e05c173307abf7f98ae9b9c1da64de89b8b78fc5aa1eb323443ae8", "kind": "gif", "frames": 25, "width": 200, "height": 200, "runtimeStatus": "preloaded-and-mapped" },
+    { "path": "src/AemeathDesktopPet/Resources/Sprites/Seal/seal.gif", "bytes": 11971, "sha256": "cc1032a88b51877c83320624a940c64be8724b5457e5ab6fee6f528f09c26433", "kind": "gif", "frames": 4, "width": 300, "height": 250, "runtimeStatus": "packaged-but-not-preloaded" },
+    { "path": "src/AemeathDesktopPet/Themes/AemeathTheme.xaml", "bytes": 4117, "sha256": "ebcf2b748ce58731c5b488f2a2b2c60260646b552d8a96c478ed86097891dd10", "kind": "semantic-theme", "runtimeStatus": "merged-at-application-startup" }
+  ]
+}

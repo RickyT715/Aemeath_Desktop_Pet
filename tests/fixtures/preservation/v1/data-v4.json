@@ -1,0 +1,751 @@
+{
+  "schemaVersion": 4,
+  "fixtureId": "P0A1-DATA-V4",
+  "predecessor": {
+    "fixtureId": "P0A1-DATA-V3",
+    "path": "tests/fixtures/preservation/v1/data-v3.json",
+    "sha256": "a7ce95ef2124e517f5b9433cadfbecb6e08d1129d46538d3a4e5b6f2e6b18bbd",
+    "recordCount": 17,
+    "atomicTargetCount": 16
+  },
+  "lineage": [
+    {
+      "fixtureId": "P0A1-DATA-V1",
+      "path": "tests/fixtures/preservation/v1/data-v1.json",
+      "sha256": "fd6bbc92497fec791f432bd0109175a702cd64ad837c23a7c5d831323ab111fa",
+      "recordCount": 7
+    },
+    {
+      "fixtureId": "P0A1-DATA-V2",
+      "path": "tests/fixtures/preservation/v1/data-v2.json",
+      "sha256": "c1a18b2acd22a07568425567291a34bd43a0df839276d17258162d3da98fb315",
+      "recordCount": 17
+    },
+    {
+      "fixtureId": "P0A1-DATA-V3",
+      "path": "tests/fixtures/preservation/v1/data-v3.json",
+      "sha256": "a7ce95ef2124e517f5b9433cadfbecb6e08d1129d46538d3a4e5b6f2e6b18bbd",
+      "recordCount": 17
+    }
+  ],
+  "privacy": {
+    "containsSecrets": false,
+    "containsPersonalData": false,
+    "canary": "AEMEATH_FIXTURE_USER"
+  },
+  "coveragePolicy": "Seventeen unique canary records cover sixteen atomic durable targets because DATA-CONFIG has separate defaults and position records. The seven v1 payload value spans are copied byte-for-byte. Every record declares ownership, access, lifecycle, path authority, mutation contract, and read/write/delete reachability. Shapes are non-secret and non-personal; successful side effects, live binaries, complete serialized goldens, and machine paths are not implied.",
+  "targetCensus": {
+    "recordCount": 17,
+    "atomicTargetCount": 16,
+    "appOwnedTargetCount": 12,
+    "externalReadOnlyTargetCount": 4,
+    "currentProductionWritableTargetCount": 10,
+    "latentWritableCurrentlyReadOnlyTargetCount": 2,
+    "v1RawPayloadByteMatchCount": 7
+  },
+  "records": [
+    {
+      "id": "DATA-CONFIG-DEFAULTS",
+      "targetId": "DATA-CONFIG",
+      "boundaryIds": ["PB-008", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AppConfig.cs",
+        "src/AemeathDesktopPet/Services/ConfigService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+        "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "Whole-file JSON deserialization is attempted; absent or malformed input falls back to production initializers.",
+        "write": "An absent file and later Save calls attempt whole-file rewrites; caught exceptions are not success.",
+        "delete": "No production file-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel construction calls ConfigService.Load."},
+        "write": {"status": "current", "caller": "ConfigService.Load on absence, SettingsWindow save, and PetViewModel position/shutdown paths call Save."},
+        "delete": {"status": "forbidden", "caller": "No production caller or file-delete API."}
+      },
+      "fixtureRole": "partial-deserialization-canary",
+      "contractRole": "deserialize-input",
+      "completeness": "partial",
+      "omittedFieldsUseProductionInitializers": true,
+      "coverage": "Selected non-secret defaults and nested shapes only. Omitted AppConfig properties deliberately retain their production defaults; this is not a complete serialized golden.",
+      "payload": {
+        "apiKey": "", "petSize": 200, "opacity": 1.0, "startWithWindows": false,
+        "enableGlitchEffect": true, "enableSinging": true, "enableBlackCat": true,
+        "catName": "Kuro", "closeToTray": true, "theme": "default",
+        "aiProvider": "claude", "geminiApiKey": "", "agentThreadId": "AEMEATH_FIXTURE_THREAD",
+        "backend": { "enabled": true, "mode": "auto", "port": 18900, "internalPort": 18901, "pythonPath": "python", "maxRetries": 3 },
+        "voiceInput": { "enabled": false, "sttProvider": "whisper", "language": "en", "includeScreenshot": false, "hotkey": "Ctrl+F2" },
+        "screenAwareness": { "enabled": false, "intervalSeconds": 60, "privacyTier": 1, "privacyDownscaleMaxWidth": 480, "monthlyBudgetCap": 5.0, "showScreenWatchIndicator": true },
+        "mcp": { "enabled": false, "exposeAsServer": false, "servers": [] }
+      }
+    },
+    {
+      "id": "DATA-CONFIG-POSITION-RESTART",
+      "targetId": "DATA-CONFIG",
+      "boundaryIds": ["PB-003", "PB-008"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/config.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AppConfig.cs",
+        "src/AemeathDesktopPet/Services/ConfigService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+        "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "PetViewModel restores LastX and LastY only when both are non-negative.",
+        "write": "PetViewModel shutdown calls SavePosition, which attempts a whole-config rewrite.",
+        "delete": "No production file-delete or position-key-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel.Initialize() reads LastX and LastY."},
+        "write": {"status": "current", "caller": "PetViewModel.Shutdown() calls ConfigService.SavePosition."},
+        "delete": {"status": "forbidden", "caller": "No production caller or delete API."}
+      },
+      "fixtureRole": "position-restart-roundtrip-canary",
+      "contractRole": "serialize-deserialize-roundtrip",
+      "completeness": "targeted",
+      "payload": { "lastX": 320.5, "lastY": 240.25 },
+      "expected": {
+        "jsonNames": ["lastX", "lastY"],
+        "restoresWhenBothNonNegative": true,
+        "absoluteCoordinatesAreStableOracle": false
+      }
+    },
+    {
+      "id": "DATA-STATS-BASELINE",
+      "targetId": "DATA-STATS",
+      "boundaryIds": ["PB-009"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/stats.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/stats.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AemeathStats.cs",
+        "src/AemeathDesktopPet/Services/JsonPersistenceService.cs",
+        "src/AemeathDesktopPet/Services/StatsService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+      ],
+      "mutationContract": {
+        "read": "JsonPersistenceService can round-trip the stored shape; StatsService.Load then applies offline decay and Clamp, so service-level load is not identity.",
+        "write": "JsonPersistenceService attempts a whole-file rewrite; StatsService.Save first overwrites LastSeen with DateTime.UtcNow.",
+        "delete": "No production file-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel.Initialize() calls StatsService.Load."},
+        "write": {"status": "current", "caller": "PetViewModel.Shutdown() calls StatsService.Stop, which calls Save."},
+        "delete": {"status": "forbidden", "caller": "No production caller or file-delete API."}
+      },
+      "fixtureRole": "json-persistence-roundtrip-canary",
+      "contractRole": "JsonPersistenceService-serialize-deserialize-only",
+      "completeness": "settable-fields",
+      "excludedComputedProperties": ["daysTogether"],
+      "payload": { "mood": 70.0, "energy": 80.0, "affection": 50.0, "firstLaunch": "2026-01-01T00:00:00Z", "lastSeen": "2026-01-01T00:00:00Z", "totalChats": 0, "totalPets": 0, "totalSongs": 0, "totalPaperPlanes": 0, "totalGames": 0 },
+      "qualificationNote": "The fixed payload is a JsonPersistenceService shape canary, not a StatsService load/save identity oracle: Load mutates values through offline decay and clamping, and Save replaces LastSeen."
+    },
+    {
+      "id": "DATA-MESSAGES-TURN",
+      "targetId": "DATA-MESSAGES",
+      "boundaryIds": ["PB-005", "PB-009", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/messages.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/messages.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/ChatMessage.cs",
+        "src/AemeathDesktopPet/Services/JsonPersistenceService.cs",
+        "src/AemeathDesktopPet/Services/MemoryService.cs",
+        "src/AemeathDesktopPet/ViewModels/ChatViewModel.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+      ],
+      "mutationContract": {
+        "read": "MemoryService.Load accepts the complete stored array and does not trim an over-limit file.",
+        "write": "Only AddMessage trims the in-memory list to the newest 200 entries; Save attempts a whole-file rewrite of the current list.",
+        "delete": "Clear only empties memory and has no production caller; persistence would require a later Save and never deletes the file."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "ChatViewModel initialization calls MemoryService.Load."},
+        "write": {"status": "current", "caller": "ChatViewModel calls AddMessage and Save; PetViewModel.Shutdown() also calls Save."},
+        "delete": {"status": "latent", "caller": "MemoryService.Clear exists but has no production caller and is not a file delete."}
+      },
+      "fixtureRole": "json-persistence-turn-shape-canary",
+      "contractRole": "JsonPersistenceService-roundtrip-with-AddMessage-only-bound",
+      "completeness": "settable-fields",
+      "excludedComputedProperties": ["isUser", "isAssistant"],
+      "payload": [
+        { "id": "fixture01", "role": "user", "content": "AEMEATH_FIXTURE_USER says hello", "timestamp": "2026-01-01T00:00:00Z", "isStreaming": false },
+        { "id": "fixture02", "role": "assistant", "content": "Hello from the fixture", "timestamp": "2026-01-01T00:00:01Z", "isStreaming": false }
+      ],
+      "qualificationNote": "The 200-message bound is enforced only when AddMessage runs. A file containing more than 200 entries is loaded without normalization until future additions trim the in-memory list."
+    },
+    {
+      "id": "DATA-CORE-MEMORY",
+      "targetId": "DATA-CORE-MEMORY",
+      "boundaryIds": ["PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write-api",
+      "lifecycle": "latent-writable-currently-read-only",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/core_memory.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/core_memory.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/CoreMemory.cs",
+        "src/AemeathDesktopPet/Services/CoreMemoryService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+      ],
+      "mutationContract": {
+        "read": "Current production constructs the service and attempts whole-file deserialization.",
+        "write": "Save and UpdateFact APIs exist but have no current production caller.",
+        "delete": "RemoveFact mutates selected logical fields and calls Save but has no current production caller; no file-delete API exists."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel construction calls CoreMemoryService.Load."},
+        "write": {"status": "latent", "caller": "CoreMemoryService.Save and UpdateFact have no production caller."},
+        "delete": {"status": "latent", "caller": "CoreMemoryService.RemoveFact has no production caller and is not a file delete."}
+      },
+      "fixtureRole": "shape-and-canary-content",
+      "contractRole": "deserialize-input-and-latent-api-shape",
+      "completeness": "shape",
+      "payload": { "version": 1, "lastUpdated": "2026-01-01T00:00:00Z", "userProfile": { "name": "AEMEATH_FIXTURE_USER", "nickname": null, "ageRange": null, "occupation": null, "keyFacts": ["fixture fact"], "languages": ["en"] }, "personality": { "communicationStyle": "fixture style", "moodPatterns": null, "interests": ["fixtures"], "dislikes": [] }, "relationship": { "stage": "new", "daysTogether": 0, "trustLevel": "initial", "insideJokes": [], "milestones": [] } },
+      "qualificationNote": "This freezes an accepted shape and latent APIs only; it does not claim that current production writes this file."
+    },
+    {
+      "id": "DATA-PROCEDURAL-MEMORY",
+      "targetId": "DATA-PROCEDURAL-MEMORY",
+      "boundaryIds": ["PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write-api",
+      "lifecycle": "latent-writable-currently-read-only",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/procedural_memory.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/procedural_memory.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/ProceduralMemory.cs",
+        "src/AemeathDesktopPet/Services/ProceduralMemoryService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs"
+      ],
+      "mutationContract": {
+        "read": "Current production constructs the service and attempts whole-file deserialization.",
+        "write": "A Save API exists but has no current production caller.",
+        "delete": "No logical-delete or file-delete API."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel construction calls ProceduralMemoryService.Load."},
+        "write": {"status": "latent", "caller": "ProceduralMemoryService.Save has no production caller."},
+        "delete": {"status": "forbidden", "caller": "No production caller or delete API."}
+      },
+      "fixtureRole": "shape-only-canary",
+      "contractRole": "deserialize-input-and-latent-api-shape",
+      "completeness": "shape",
+      "payload": { "version": 1, "routines": [], "scheduledEvents": [{ "id": "fixture-event", "event": "fixture only", "date": "2026-01-02", "source": "fixture", "followUp": "none", "createdAt": "2026-01-01T00:00:00Z" }], "learnedPreferences": [] },
+      "qualificationNote": "This proves only the serialized shape; current production has no ScheduledEvents writer, scheduler, or notification loop."
+    },
+    {
+      "id": "DATA-OBSERVATION-BUFFER",
+      "targetId": "DATA-OBSERVATION-BUFFER",
+      "boundaryIds": ["PB-007", "PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/observation_buffer.json",
+      "pathSemantics": {
+        "authority": "windows-local-application-data",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/observation_buffer.json",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/ObservationEntry.cs",
+        "src/AemeathDesktopPet/Services/ObservationBufferService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+        "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "Load deserializes the file and immediately calls PurgeExpired.",
+        "write": "AddObservation, ClearProcessed, and an effective PurgeExpired attempt whole-file rewrites.",
+        "delete": "ClearProcessed and PurgeExpired remove logical entries; no file-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "PetViewModel construction calls ObservationBufferService.Load."},
+        "write": {"status": "current", "caller": "PetWindow event paths call AddObservation and periodic purge/distillation paths can rewrite."},
+        "delete": {"status": "current", "caller": "Load/PetWindow purge expired entries and successful distillation calls ClearProcessed."}
+      },
+      "fixtureRole": "expired-input-load-purge-canary",
+      "contractRole": "accepted-deserialization-shape-not-stable-roundtrip",
+      "completeness": "targeted",
+      "excludedComputedProperties": ["entries[].isExpired"],
+      "payload": { "entries": [{ "id": "fixture-observation", "timestamp": "2026-01-01T00:00:00Z", "source": "fixture", "content": "non-personal fixture observation", "activityContext": "Default", "ttlHours": 24 }] },
+      "qualificationNote": "The fixed 2026-01-01 entry is expired under current wall clock. Production Load purges it and attempts a rewrite, so this payload is an accepted-input and purge canary, not a stable roundtrip golden."
+    },
+    {
+      "id": "DATA-STARTUP-RUN-REGISTRY",
+      "targetId": "DATA-STARTUP-RUN-REGISTRY",
+      "boundaryIds": ["PB-001", "PB-008", "PB-017"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable",
+      "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AemeathDesktopPet",
+      "pathSemantics": {
+        "authority": "windows-current-user-registry",
+        "default": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\AemeathDesktopPet",
+        "fallback": null,
+        "configuredBy": "config.json:startWithWindows",
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AppConfig.cs",
+        "src/AemeathDesktopPet/Services/StartupService.cs",
+        "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "IsStartWithWindows checks only whether the named value exists; it does not compare value content or executable path.",
+        "write": "When enabled and the Run key opens writable, SetStartWithWindows attempts to set the quoted current executable path.",
+        "delete": "When disabled and the Run key opens writable, SetStartWithWindows attempts to delete only the named value."
+      },
+      "reachability": {
+        "read": {"status": "latent", "caller": "StartupService.IsStartWithWindows exists but has no production caller."},
+        "write": {"status": "current", "caller": "SettingsWindow save calls StartupService.SetStartWithWindows when enabled."},
+        "delete": {"status": "current", "caller": "SettingsWindow save calls StartupService.SetStartWithWindows when disabled."}
+      },
+      "fixtureRole": "registry-path-and-operation-canary",
+      "contractRole": "metadata-only-no-registry-mutation",
+      "completeness": "targeted",
+      "canary": {
+        "hive": "HKCU",
+        "keyPath": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        "valueName": "AemeathDesktopPet",
+        "enabledValueShape": "\"AEMEATH_FIXTURE_EXE\""
+      },
+      "qualificationNote": "No real registry access is permitted. A missing Run key can make the guarded mutation a no-op; no success is asserted."
+    },
+    {
+      "id": "DATA-AGENT-CHECKPOINT",
+      "targetId": "DATA-AGENT-CHECKPOINT",
+      "boundaryIds": ["PB-005", "PB-011", "PB-012", "PB-013", "PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-conditionally-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/agent_state.db",
+      "pathSemantics": {
+        "authority": "pydantic-setting",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/agent_state.db when LOCALAPPDATA is non-empty",
+        "fallback": "~/.aemeath/agent_state.db when LOCALAPPDATA is empty",
+        "configuredBy": "AEMEATH_AGENT_DB_PATH",
+        "relativeTo": "sidecar-current-working-directory only when the configured override is relative"
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/api/models.py",
+        "python-backend/aemeath_agent/api/routes_agent.py",
+        "python-backend/aemeath_agent/api/routes_health.py",
+        "python-backend/aemeath_agent/agent/checkpointer.py",
+        "python-backend/aemeath_agent/agent/graph.py",
+        "python-backend/aemeath_agent/config.py",
+        "python-backend/aemeath_agent/main.py"
+      ],
+      "mutationContract": {
+        "read": "AsyncSqliteSaver owns checkpoint reads keyed by routes_agent configurable.thread_id.",
+        "write": "Agent initialization creates the parent directory and attempts provider setup; later agent invoke/stream operations may write checkpoints.",
+        "delete": "No application-owned checkpoint deletion operation."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "routes_agent invoke/stream can reach AsyncSqliteSaver only after successful lifespan agent initialization."},
+        "write": {"status": "conditional", "caller": "main lifespan calls create_aemeath_agent; successful setup and later routes_agent calls may write."},
+        "delete": {"status": "forbidden", "caller": "No production caller or application delete API."}
+      },
+      "fixtureRole": "path-resolution-and-provider-schema-authority-canary",
+      "contractRole": "metadata-only-no-sqlite-binary",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "storageKind": "sqlite",
+        "schemaAuthority": "langgraph.checkpoint.sqlite.aio.AsyncSqliteSaver.setup",
+        "applicationTableNamesFrozen": false,
+        "applicationColumnSchemaFrozen": false,
+        "threadIdentitySource": "routes_agent configurable.thread_id"
+      },
+      "qualificationNote": "Initialization failure is caught by main.lifespan, which still prints READY; /health still returns status ok, while routes_agent reports Agent not initialized. Health or READY therefore does not prove checkpoint setup or agent availability."
+    },
+    {
+      "id": "DATA-PYTHON-MEMORY-STORE",
+      "targetId": "DATA-PYTHON-MEMORY-STORE",
+      "boundaryIds": ["PB-005", "PB-013", "PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-conditionally-writable",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/memory_store.json",
+      "pathSemantics": {
+        "authority": "application-default",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/memory_store.json when LOCALAPPDATA is non-empty",
+        "fallback": "~/.aemeath/memory_store.json when LOCALAPPDATA is empty",
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/agent/graph.py",
+        "python-backend/aemeath_agent/agent/memory_store.py",
+        "python-backend/aemeath_agent/api/routes_memory.py",
+        "python-backend/aemeath_agent/tools/save_memory.py"
+      ],
+      "mutationContract": {
+        "read": "Agent initialization constructs the singleton and attempts whole-file load when present.",
+        "write": "Store put attempts a whole-file JSON flush.",
+        "delete": "Store delete removes one logical item and attempts a whole-file flush; no file delete."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "create_aemeath_agent, memory API routes, and memory tools can independently call get_memory_store; route-level instantiation and load do not require successful agent initialization."},
+        "write": {"status": "conditional", "caller": "Memory API routes can independently instantiate the store and call put even when agent initialization failed; the save_memory tool can also write when its tool path is available."},
+        "delete": {"status": "conditional", "caller": "The /memory/forget route can independently instantiate the store and call delete for query matches even when agent initialization failed."}
+      },
+      "fixtureRole": "minimal-json-store-shape-canary",
+      "contractRole": "deserialize-input-and-logical-mutation-shape",
+      "completeness": "targeted",
+      "payload": {
+        "memory::facts": {
+          "fixture-memory": {
+            "value": {
+              "content": "non-personal fixture memory",
+              "tags": ["fixture"]
+            },
+            "created_at": "2026-01-01T00:00:00+00:00",
+            "updated_at": "2026-01-01T00:00:00+00:00"
+          }
+        }
+      }
+    },
+    {
+      "id": "DATA-PYTHON-MEMORY-BLOCKS",
+      "targetId": "DATA-PYTHON-MEMORY-BLOCKS",
+      "boundaryIds": ["PB-005", "PB-013", "PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-writable-on-first-access",
+      "path": "%LOCALAPPDATA%/AemeathDesktopPet/memory_blocks.json",
+      "pathSemantics": {
+        "authority": "application-default",
+        "default": "%LOCALAPPDATA%/AemeathDesktopPet/memory_blocks.json when LOCALAPPDATA is non-empty",
+        "fallback": "~/.aemeath/memory_blocks.json when LOCALAPPDATA is empty",
+        "configuredBy": null,
+        "relativeTo": null
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/agent/memory_store.py",
+        "python-backend/aemeath_agent/agent/prompts.py",
+        "python-backend/aemeath_agent/api/routes_memory.py",
+        "python-backend/aemeath_agent/tools/update_user_block.py"
+      ],
+      "mutationContract": {
+        "read": "Prompt construction gets the singleton and attempts whole-file load when present.",
+        "write": "First access with no file attempts a default user-block flush; update_user_block attempts later whole-file flushes.",
+        "delete": "No production block-delete or file-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "build_system_prompt during agent initialization and /memory/status independently call get_memory_blocks; either first access attempts load without requiring an initialized agent."},
+        "write": {"status": "conditional", "caller": "/memory/status first access can independently attempt the default-block flush when the file is absent; update_user_block may later call put."},
+        "delete": {"status": "forbidden", "caller": "No production caller or delete API."}
+      },
+      "fixtureRole": "minimal-user-block-shape-canary",
+      "contractRole": "deserialize-input-and-logical-put-shape",
+      "completeness": "targeted",
+      "payload": {
+        "user": "AEMEATH_FIXTURE_USER_BLOCK"
+      },
+      "qualificationNote": "First-access creation is an attempted write guarded by exception handling, not a guaranteed successful file."
+    },
+    {
+      "id": "DATA-CHROMA",
+      "targetId": "DATA-CHROMA",
+      "boundaryIds": ["PB-013", "PB-014", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-conditionally-writable",
+      "path": "data/chromadb/",
+      "pathSemantics": {
+        "authority": "pydantic-setting",
+        "default": "data/chromadb",
+        "fallback": null,
+        "configuredBy": "AEMEATH_CHROMADB_PATH",
+        "relativeTo": "sidecar-current-working-directory when the selected value is relative"
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/config.py",
+        "python-backend/aemeath_agent/api/routes_memory.py",
+        "python-backend/aemeath_agent/api/routes_rag.py",
+        "python-backend/aemeath_agent/rag/ingestion.py",
+        "python-backend/aemeath_agent/rag/memory_vectorstore.py",
+        "python-backend/aemeath_agent/rag/vectorstore.py",
+        "python-backend/aemeath_agent/tools/retrieve_memory.py",
+        "python-backend/aemeath_agent/tools/save_memory.py"
+      ],
+      "mutationContract": {
+        "read": "Provider-owned collection reads are attempted by retrieval, status, and memory paths.",
+        "write": "Initialization may create the directory; successful ingestion or memory extraction may add documents.",
+        "delete": "The memory-forget route may request logical episodic deletion; no directory-delete operation."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "RAG and memory routes/tools lazily initialize and query a provider collection."},
+        "write": {"status": "conditional", "caller": "/rag/ingest, /memory/extract, /memory/distill, and the save_memory tool may add documents after provider initialization."},
+        "delete": {"status": "conditional", "caller": "The memory-forget route may call vectorstore.delete when it obtains matching IDs."}
+      },
+      "fixtureRole": "path-and-collection-authority-canary",
+      "contractRole": "metadata-only-no-provider-binary",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "storageKind": "provider-owned-persistent-directory",
+        "collectionNames": ["user_knowledge", "aemeath_memories"],
+        "providerBinaryLayoutFrozen": false,
+        "documentContentFrozen": false
+      },
+      "qualificationNote": "Directory creation, provider initialization, embedding, and mutation may fail; no live persistence success is asserted."
+    },
+    {
+      "id": "DATA-TODO",
+      "targetId": "DATA-TODO",
+      "boundaryIds": ["PB-013", "PB-016"],
+      "ownership": "application",
+      "access": "read-write",
+      "lifecycle": "current-production-conditionally-writable",
+      "path": "data/todos.db",
+      "pathSemantics": {
+        "authority": "application-hard-coded-tool-configuration",
+        "default": "data/todos.db",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": "sidecar-current-working-directory"
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/tools/__init__.py",
+        "python-backend/aemeath_agent/tools/todo.py"
+      ],
+      "mutationContract": {
+        "read": "Every manage_todo invocation calls _get_connection, which attempts parent/table creation before the selected action; list then reads rows.",
+        "write": "Every invocation attempts database/table initialization; add and complete additionally attempt row writes.",
+        "delete": "The delete action attempts one logical row delete; no database-file delete operation."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "A model/tool caller must invoke manage_todo; each invocation opens and initializes before dispatch."},
+        "write": {"status": "conditional", "caller": "Each manage_todo invocation may create the DB/table; add and complete may mutate rows."},
+        "delete": {"status": "conditional", "caller": "manage_todo with action delete may remove one row."}
+      },
+      "fixtureRole": "sqlite-path-and-application-schema-canary",
+      "contractRole": "metadata-only-no-sqlite-binary",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "table": "todos",
+        "columns": [
+          {"name": "id", "logicalType": "integer-primary-key-autoincrement"},
+          {"name": "task", "logicalType": "text-not-null"},
+          {"name": "due_date", "logicalType": "text-default-empty"},
+          {"name": "completed", "logicalType": "integer-default-zero"},
+          {"name": "created_at", "logicalType": "text-default-current-sqlite-datetime"}
+        ]
+      },
+      "qualificationNote": "The schema is source-derived and contains no live database; every invocation can fail and is not represented as success."
+    },
+    {
+      "id": "DATA-ACTIVITY-SQLITE-READONLY",
+      "targetId": "DATA-ACTIVITY-SQLITE",
+      "boundaryIds": ["PB-010", "PB-014", "PB-016"],
+      "ownership": "external-user",
+      "access": "read-only",
+      "lifecycle": "external-user-managed",
+      "path": "user-configured SQLite path",
+      "pathSemantics": {
+        "authority": "desktop-application-config",
+        "default": "machine-specific production initializer intentionally not frozen",
+        "fallback": null,
+        "configuredBy": "config.json:activityMonitor.databasePath",
+        "relativeTo": "desktop-process-current-working-directory when the configured value is relative"
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AppConfig.cs",
+        "src/AemeathDesktopPet/Services/ActivityMonitorService.cs",
+        "src/AemeathDesktopPet/Views/PetWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "Enabled activity paths explicitly request SqliteOpenMode.ReadOnly and tolerate missing tables/errors.",
+        "write": "Forbidden by the application contract.",
+        "delete": "Forbidden by the application contract."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "PetWindow monitoring paths call ActivityMonitorService only when configured and available."},
+        "write": {"status": "forbidden", "caller": "No production caller; connections use read-only mode."},
+        "delete": {"status": "forbidden", "caller": "No production caller; connections use read-only mode."}
+      },
+      "fixtureRole": "external-read-only-sqlite-contract-canary",
+      "contractRole": "metadata-only-no-external-file",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "queriedTables": ["window_sessions", "chrome_sessions", "attention_sessions"],
+        "tablePresenceRequired": false,
+        "externalRowsFrozen": false
+      }
+    },
+    {
+      "id": "DATA-SIDECAR-ENVFILE-READONLY",
+      "targetId": "DATA-SIDECAR-ENVFILE",
+      "boundaryIds": ["PB-011", "PB-013", "PB-016", "PB-017"],
+      "ownership": "external-operator",
+      "access": "read-only",
+      "lifecycle": "external-operator-managed",
+      "path": ".env",
+      "pathSemantics": {
+        "authority": "pydantic-settings-model-config",
+        "default": ".env",
+        "fallback": null,
+        "configuredBy": null,
+        "relativeTo": "sidecar-current-working-directory"
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/config.py",
+        "python-backend/aemeath_agent/main.py"
+      ],
+      "mutationContract": {
+        "read": "Settings construction attempts UTF-8 loading with AEMEATH_ prefixes and ignores extra names.",
+        "write": "No production env-file write operation.",
+        "delete": "No production env-file delete operation."
+      },
+      "reachability": {
+        "read": {"status": "current", "caller": "main lifespan calls get_settings before agent initialization."},
+        "write": {"status": "forbidden", "caller": "No production caller or write API."},
+        "delete": {"status": "forbidden", "caller": "No production caller or delete API."}
+      },
+      "fixtureRole": "external-read-only-config-source-canary",
+      "contractRole": "metadata-only-no-env-file",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "encoding": "utf-8",
+        "prefix": "AEMEATH_",
+        "nonSecretPathKeys": ["AEMEATH_AGENT_DB_PATH", "AEMEATH_CHROMADB_PATH"],
+        "secretValuesFrozen": false
+      }
+    },
+    {
+      "id": "DATA-MUSIC-LIBRARY-READONLY",
+      "targetId": "DATA-MUSIC-LIBRARY",
+      "boundaryIds": ["PB-004", "PB-006", "PB-010"],
+      "ownership": "external-user",
+      "access": "read-only",
+      "lifecycle": "external-user-managed",
+      "path": "user-configured music directory",
+      "pathSemantics": {
+        "authority": "desktop-application-config",
+        "default": "",
+        "fallback": null,
+        "configuredBy": "config.json:musicFolderPath",
+        "relativeTo": "desktop-process-current-working-directory when the configured value is relative"
+      },
+      "sourceLocators": [
+        "src/AemeathDesktopPet/Models/AppConfig.cs",
+        "src/AemeathDesktopPet/Services/MusicService.cs",
+        "src/AemeathDesktopPet/ViewModels/PetViewModel.cs",
+        "src/AemeathDesktopPet/Views/SettingsWindow.xaml.cs"
+      ],
+      "mutationContract": {
+        "read": "Configured directory enumeration is non-recursive; a selected supported audio file may be opened for playback.",
+        "write": "Forbidden by the application contract.",
+        "delete": "Forbidden by the application contract."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "PetViewModel construction scans the configured directory, SettingsWindow can scan it for supported files, and playback later opens a selected file."},
+        "write": {"status": "forbidden", "caller": "No production caller or write API."},
+        "delete": {"status": "forbidden", "caller": "No production caller or delete API."}
+      },
+      "fixtureRole": "external-read-only-directory-contract-canary",
+      "contractRole": "metadata-only-no-audio-file",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "supportedExtensions": [".mp3", ".wav", ".wma", ".m4a", ".flac", ".aac"],
+        "recursiveEnumeration": false,
+        "fileNamesFrozen": false,
+        "audioBytesFrozen": false
+      }
+    },
+    {
+      "id": "DATA-RAG-SOURCE-FILE-OR-DIRECTORY-READONLY",
+      "targetId": "DATA-RAG-SOURCE-DOCUMENTS",
+      "boundaryIds": ["PB-013", "PB-016"],
+      "ownership": "external-user",
+      "access": "read-only",
+      "lifecycle": "external-user-managed",
+      "path": "request-supplied file or directory",
+      "pathSemantics": {
+        "authority": "rag-ingest-request",
+        "default": null,
+        "fallback": null,
+        "configuredBy": "POST /rag/ingest request.path and request.is_directory",
+        "relativeTo": "sidecar-current-working-directory when the request path is relative"
+      },
+      "sourceLocators": [
+        "python-backend/aemeath_agent/api/models.py",
+        "python-backend/aemeath_agent/api/routes_rag.py",
+        "python-backend/aemeath_agent/rag/ingestion.py",
+        "python-backend/aemeath_agent/rag/vectorstore.py"
+      ],
+      "mutationContract": {
+        "read": "The ingest route may load one supported file or traverse one supplied directory using the request glob.",
+        "write": "Forbidden for the source; successful processing may request derived writes only to DATA-CHROMA.",
+        "delete": "Forbidden for the source; no source-file delete operation."
+      },
+      "reachability": {
+        "read": {"status": "conditional", "caller": "A caller must invoke POST /rag/ingest with a supported accessible file or directory."},
+        "write": {"status": "forbidden", "caller": "No production source-file write API; derived chunks target DATA-CHROMA."},
+        "delete": {"status": "forbidden", "caller": "No production source-file delete API."}
+      },
+      "fixtureRole": "external-read-only-file-or-directory-contract-canary",
+      "contractRole": "metadata-only-no-personal-document",
+      "completeness": "targeted",
+      "schemaCanary": {
+        "requestModes": ["single-file", "directory"],
+        "supportedExtensions": [".pdf", ".docx", ".txt", ".md", ".py", ".json", ".csv"],
+        "defaultDirectoryGlob": "**/*.*",
+        "sourceContentFrozen": false,
+        "derivedDestinationTargetId": "DATA-CHROMA"
+      }
+    }
+  ]
+}
+

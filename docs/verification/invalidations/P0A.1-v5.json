@@ -1,0 +1,22 @@
+{
+  "schemaVersion":  1,
+  "recordType":  "manifest-invalidation",
+  "recordId":  "P0A.1-v5-invalidated-by-v6",
+  "invalidatedManifestId":  "P0A.1-v5",
+  "frozenArtifactPath":  "docs/verification/manifests/P0A.1-v5.yml",
+  "frozenArtifactSha256":  "17f262ff6f2e9c038ce3001b554080b5e39c3e6bb4428ee02b5d47e890c8da91",
+  "replacementManifestId":  "P0A.1-v6",
+  "invalidatedAt":  "2026-08-20T19:05:57Z",
+  "reason":  "Clean-room preservation review v4 blocked v5 on seven findings: C01 source closure did not cover every product and preservation oracle; the workflow locator was absent; the checkpoint dependency gap was incomplete; the records census algorithm was not independently auditable; the SSE exact wire claim was not derivable from allowed sources; validator and readiness behavior was not sufficiently auditable; and the D0.4 relationship lacked an explicit explanation.",
+  "reviewBinding":  {
+             "path":  "docs/verification/evidence/P0A.1-clean-room-review-v4.md",
+             "sha256":  "c49f52ecb73a5d882c818941cbe9cac5b221570e925cbe9c297517eaa176e439",
+             "status":  "BLOCK",
+             "findings":  {
+                      "critical":  1,
+                      "important":  5,
+                      "minor":  1
+                    }
+           },
+  "reviewer":  "clean-room-preservation-reviewer-03"
+}

@@ -161,6 +161,12 @@ jobs:
           ./tools/verification/Test-DependencyQualification.ps1 -Mode Static *>&1 |
             Tee-Object artifacts/ci/verification-contracts/dependency-qualification-static-tests.log
 
+      - name: Run P0A.1 preservation specification probes
+        shell: pwsh
+        run: |
+          ./tools/verification/Test-PreservationSpecification.ps1 *>&1 |
+            Tee-Object artifacts/ci/verification-contracts/preservation-specification-tests.log
+
       - name: Upload verification contract evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
