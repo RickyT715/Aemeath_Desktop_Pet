@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "manifestType": "risk-lane",
+  "manifestId": "D0.2-v2",
+  "revision": 2,
+  "previousManifestId": "D0.2-v1",
+  "invalidationReason": null,
+  "stepId": "D0.2",
+  "status": "frozen-before-red",
+  "baselineSha": "0db89c1fbea4152be52e1de9e6f76b214075ead8",
+  "scope": "Repair the exact-SHA delivery gate so every declared runtime-discovery component is mandatory, separately attributed, source-bound, and read from its existing retained log without changing product behavior, workflow jobs, or artifact inventories. The marker is evidence from reviewed source, not cryptographic attestation against a malicious same-commit producer.",
+  "requirementIds": [
+    "PRD:NFR-JA-007-01",
+    "PRD:NFR-JA-007-02",
+    "PRD:NFR-JA-007-03",
+    "PRD:NFR-JA-007-04",
+    "PRD:NFR-JA-008-01",
+    "PRD:NFR-JA-008-02",
+    "PRD:RISK-011",
+    "PRD:RISK-012"
+  ],
+  "dispositionIds": ["REQMAP-CURRENT-V1"],
+  "boundaryIds": ["PB-017"],
+  "risks": [
+    {
+      "id": "D0.2-R01",
+      "outcome": "A successful job with an absent, zero, or below-floor runtime-discovery component is accepted because its retained log is merely nonempty.",
+      "laneIds": ["V-COMPONENT"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"]
+    },
+    {
+      "id": "D0.2-R02",
+      "outcome": "A missing lane is hidden by another component's higher count, or a duplicate, unknown, malformed, case-drifted, or wrong-log marker is accepted.",
+      "laneIds": ["V-COMPONENT"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"]
+    },
+    {
+      "id": "D0.2-R03",
+      "outcome": "A quoted, commented, or echoed command string satisfies the static workflow contract without executing the declared probe.",
+      "laneIds": ["V-STATIC"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"]
+    },
+    {
+      "id": "D0.2-R04",
+      "outcome": "A marker for another source SHA, or a marker reporting failed or skipped work, is accepted as exact-SHA success.",
+      "laneIds": ["V-COMPONENT"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"]
+    },
+    {
+      "id": "D0.2-R05",
+      "outcome": "The declared component set, inclusion rule, command, retention, or exact artifact inventory drifts from this pre-RED contract.",
+      "laneIds": ["V-STATIC", "V-COMPONENT"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "V-STATIC",
+      "required": true,
+      "rationale": "Under reviewed exact-SHA source, reject manifest drift and an accidental or stubbed workflow that only prints the configured command or a plausible marker.",
+      "riskIds": ["D0.2-R03", "D0.2-R05"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU"]
+    },
+    {
+      "id": "V-COMPONENT",
+      "required": true,
+      "rationale": "Parse the exact downloaded logs and require each declared result independently before the exact-SHA waiter can succeed.",
+      "riskIds": ["D0.2-R01", "D0.2-R02", "D0.2-R04", "D0.2-R05"],
+      "probeIds": ["D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY"],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU", "ENV-GHA-WINDOWS"]
+    }
+  ],
+  "probes": [
+    {
+      "id": "D0.2R-V-COMPONENT-EXACT-SHA-DISCOVERY",
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ci/Test-CiDelivery.ps1",
+      "minimumDiscovery": 47,
+      "redOracle": "With the frozen result table present but before the central parser exists, all ten independently mutated downloaded-log fixtures are accepted; separately, the substring-only workflow validator accepts an echoed configured command. RED is valid only when each failure is the intended acceptance defect.",
+      "riskIds": ["D0.2-R01", "D0.2-R02", "D0.2-R03", "D0.2-R04", "D0.2-R05"],
+      "laneIds": ["V-STATIC", "V-COMPONENT"],
+      "requirementIds": [
+        "PRD:NFR-JA-007-01",
+        "PRD:NFR-JA-007-02",
+        "PRD:NFR-JA-007-03",
+        "PRD:NFR-JA-007-04",
+        "PRD:NFR-JA-008-01",
+        "PRD:NFR-JA-008-02",
+        "PRD:RISK-011",
+        "PRD:RISK-012"
+      ],
+      "environmentIds": ["ENV-WINDOWS-LOCAL", "ENV-GHA-UBUNTU", "ENV-GHA-WINDOWS"],
+      "fixtureIds": [],
+      "thresholds": {
+        "minimumDiscovery": 47,
+        "maximumUnexpectedSkips": 0
+      }
+    }
+  ],
+  "environments": [
+    {
+      "id": "ENV-WINDOWS-LOCAL",
+      "os": "Windows development environment",
+      "shell": "Windows PowerShell 5.1",
+      "purpose": "Freeze the oracle, observe deterministic RED, and run the portable parser and safe local producer checks."
+    },
+    {
+      "id": "ENV-GHA-UBUNTU",
+      "os": "ubuntu-latest",
+      "shell": "PowerShell 7.4+ pwsh",
+      "purpose": "Run the Delivery Contract and Verification Contracts producers at the exact pushed SHA."
+    },
+    {
+      "id": "ENV-GHA-WINDOWS",
+      "os": "windows-latest",
+      "shell": "PowerShell 7.4+ pwsh",
+      "purpose": "Run hosted-environment and clean-install producer components at the exact pushed SHA."
+    }
+  ],
+  "fixtures": [],
+  "services": ["GitHub Actions", "GitHub artifact storage"],
+  "thresholds": {
+    "minimumDiscovery": 47,
+    "minimumStaticContractDiscovery": 21,
+    "minimumResultContractDiscovery": 26,
+    "requiredDiscoveryMutations": 10,
+    "requiredNoOpMutations": 1,
+    "maximumAcceptedMutations": 0,
+    "maximumUnexpectedSkips": 0,
+    "maximumFailed": 0,
+    "artifactRetentionDays": 90,
+    "frozenAt": "2026-08-19T18:34:42Z",
+    "sourceBranch": "agent/jarvis-tdd-execution",
+    "previousManifestHashMode": "normalized-text",
+    "previousManifestSha256": "1117ac1f29a27c742126d7493142a9b2285b7217e3fe5feabf6b034e4749512e",
+    "trustBoundary": {
+      "supportedClaim": "Detect accidental, omitted, reduced, misattributed, or stubbed probe execution when the exact-SHA producer, manifest, parser, and workflow source have been independently reviewed.",
+      "unsupportedClaim": "The marker is not cryptographic attestation and cannot prove resistance to a malicious committer who changes the producer, manifest, parser, and fixtures together in one commit.",
+      "compensatingControls": ["independent exact-byte review", "exact-SHA branch delivery", "parent-commit active-step governance before Gate 0A"]
+    },
+    "markerPrefix": "AEMEATH_CI_DISCOVERY_V1=",
+    "markerFields": ["schemaVersion", "resultId", "sourceSha", "actualDiscovery", "failed", "skipped"],
+    "resultContracts": [
+      { "jobId": "delivery-contract", "resultId": "D0.2R-V-STATIC-STATIC-CONTRACT", "evidencePath": "delivery-contract-tests.log", "minimum": 21, "includedInJobMinimum": true },
+      { "jobId": "delivery-contract", "resultId": "D0.2R-V-COMPONENT-RESULT-CONTRACT", "evidencePath": "delivery-contract-tests.log", "minimum": 26, "includedInJobMinimum": true },
+      { "jobId": "verification-contracts", "resultId": "D0.3-V-STATIC-001", "evidencePath": "verification-contract-tests.log", "minimum": 24, "includedInJobMinimum": true },
+      { "jobId": "verification-contracts", "resultId": "D0.5-V-STATIC-UBUNTU", "evidencePath": "dependency-qualification-static-tests.log", "minimum": 45, "includedInJobMinimum": false },
+      { "jobId": "delivery-environment", "resultId": "D0.4-V-STATIC-STATIC-CONTRACT", "evidencePath": "environment-readiness-tests.log", "minimum": 16, "includedInJobMinimum": true },
+      { "jobId": "delivery-environment", "resultId": "D0.4-V-REAL-E2E-HOSTED-WINDOWS", "evidencePath": "environment-readiness-tests.log", "minimum": 9, "includedInJobMinimum": true },
+      { "jobId": "dependency-qualification", "resultId": "D0.5-V-STATIC-WINDOWS", "evidencePath": "dependency-qualification-tests.log", "minimum": 45, "includedInJobMinimum": true },
+      { "jobId": "dependency-qualification", "resultId": "D0.5-V-PACKAGE-CLEAN-INSTALL", "evidencePath": "dependency-qualification-tests.log", "minimum": 15, "includedInJobMinimum": true }
+    ],
+    "jobMinimums": {
+      "delivery-contract": 47,
+      "verification-contracts": 24,
+      "delivery-environment": 25,
+      "dependency-qualification": 60
+    },
+    "artifactInventories": {
+      "delivery-contract": ["source-identity.json", "delivery-contract-tests.log"],
+      "dotnet-build": ["source-identity.json", "restore.log", "build.log"],
+      "verification-contracts": ["source-identity.json", "verification-contract-tests.log", "dependency-qualification-static-tests.log"],
+      "delivery-environment": ["source-identity.json", "environment-readiness-tests.log", "hosted-windows-capabilities.json"],
+      "dependency-qualification": ["source-identity.json", "dependency-qualification-tests.log", "dependency-qualification.json", "tool-versions.json", "dotnet-restore.log", "python-install.log", "python-freeze.txt", "checkpoint-wheel.sha256.json", "pip-check.log", "import-smoke.log"]
+    },
+    "closure": {
+      "workflowFile": ".github/workflows/ci.yml",
+      "requiredEvent": "push",
+      "sourceSha": "focused-commit-self",
+      "requiredJobCount": 5,
+      "requiredResultCount": 8,
+      "allRequiredJobsMustSucceed": true,
+      "runtimeResultStoredExternally": true,
+      "recursiveClosureCommitForbidden": true
+    }
+  },
+  "owners": [
+    {
+      "role": "delivery owner",
+      "accountability": "Keep the marker/parser change within the frozen write set, preserve artifact inventories, and close the focused commit with the external exact-SHA run."
+    },
+    {
+      "role": "independent verification reviewer",
+      "accountability": "Challenge false aggregation, fixture coupling, malformed-marker acceptance, PowerShell portability, command no-op substitution, and overstatement of the marker trust boundary."
+    }
+  ],
+  "expectedArtifacts": ["source-identity.json", "delivery-contract-tests.log"]
+}

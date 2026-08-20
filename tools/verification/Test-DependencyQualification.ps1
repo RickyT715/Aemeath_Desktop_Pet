@@ -9,6 +9,9 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+$ciDeliveryContractModule = Join-Path $PSScriptRoot "../ci/CiDeliveryContract.psm1"
+Import-Module $ciDeliveryContractModule -Force
+
 $riskManifestPath = "docs/verification/manifests/D0.5-v3.yml"
 $riskSchemaPath = "docs/verification/schemas/risk-lane-manifest-v1.schema.json"
 $qualificationSchemaPath = "docs/verification/schemas/dependency-qualification-v3.schema.json"
@@ -1775,6 +1778,19 @@ if ($Mode -ceq "Static") {
     ) -PathType Leaf
     Test-EvidencePacket $context $directory $complete $ExpectedSourceSha
     Write-Host "PASS AuditEvidence generated or partial evidence is privacy-safe and source-bound"
+}
+
+if ($Mode -ceq "Static") {
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        Write-CiDiscoveryMarker -ResultId "D0.5-V-STATIC-WINDOWS" `
+            -ActualDiscovery $staticProbeCount
+    } else {
+        Write-CiDiscoveryMarker -ResultId "D0.5-V-STATIC-UBUNTU" `
+            -ActualDiscovery $staticProbeCount
+    }
+} elseif ($Mode -ceq "Qualify") {
+    Write-CiDiscoveryMarker -ResultId "D0.5-V-PACKAGE-CLEAN-INSTALL" `
+        -ActualDiscovery $packageProbeCount
 }
 
 Write-Host "D0.5 dependency qualification passed ($probeCount probes; static=$staticProbeCount; package=$packageProbeCount; unexpected skips=0)."

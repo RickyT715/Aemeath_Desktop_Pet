@@ -34,9 +34,24 @@
       "executionModel": "single",
       "expectedInstances": 1,
       "discovery": {
-        "kind": "not-applicable",
-        "minimumDiscoveredTests": 0,
-        "rationale": "Delivery Preflight validates CI mechanics before Gate 0A freezes an independent product test suite."
+        "kind": "powershell-probe",
+        "minimumDiscoveredTests": 47,
+        "command": "./tools/ci/Test-CiDelivery.ps1",
+        "rationale": "D0.2R requires 21 counted static-contract checks plus 26 counted result-contract checks; child-process output is excluded from both components.",
+        "results": [
+          {
+            "resultId": "D0.2R-V-STATIC-STATIC-CONTRACT",
+            "evidencePath": "delivery-contract-tests.log",
+            "minimum": 21,
+            "includedInJobMinimum": true
+          },
+          {
+            "resultId": "D0.2R-V-COMPONENT-RESULT-CONTRACT",
+            "evidencePath": "delivery-contract-tests.log",
+            "minimum": 26,
+            "includedInJobMinimum": true
+          }
+        ]
       },
       "artifactPrefix": "delivery-contract-",
       "artifactPath": "artifacts/ci/delivery-contract/",
@@ -93,7 +108,21 @@
         "kind": "powershell-probe",
         "minimumDiscoveredTests": 24,
         "command": "./tools/verification/Test-VerificationContracts.ps1",
-        "rationale": "D0.3-v6 freezes at least 24 counted semantic probes covering trace semantics, regeneration, mutations, executable schemas, linked manifests, measured semantic/schema negatives, and the exact separate D0.5 Ubuntu static evidence expansion."
+        "rationale": "D0.3-v6 keeps its 24-probe parent floor while both the included D0.3 result and the independently mandatory, non-aggregated D0.5 Ubuntu static result are verified.",
+        "results": [
+          {
+            "resultId": "D0.3-V-STATIC-001",
+            "evidencePath": "verification-contract-tests.log",
+            "minimum": 24,
+            "includedInJobMinimum": true
+          },
+          {
+            "resultId": "D0.5-V-STATIC-UBUNTU",
+            "evidencePath": "dependency-qualification-static-tests.log",
+            "minimum": 45,
+            "includedInJobMinimum": false
+          }
+        ]
       },
       "artifactPrefix": "verification-contracts-",
       "artifactPath": "artifacts/ci/verification-contracts/",
@@ -124,7 +153,21 @@
         "kind": "powershell-probe",
         "minimumDiscoveredTests": 25,
         "command": "./tools/verification/Test-EnvironmentReadiness.ps1 -Mode HostedWindows -EvidenceDirectory artifacts/ci/delivery-environment",
-        "rationale": "D0.4 requires at least 16 static contract probes plus nine independently counted exact-SHA hosted Windows OS, UIA, display, storage, network, cleanup, timeout, and redaction probes."
+        "rationale": "D0.4 requires at least 16 static contract probes plus nine independently counted exact-SHA hosted Windows OS, UIA, display, storage, network, cleanup, timeout, and redaction probes.",
+        "results": [
+          {
+            "resultId": "D0.4-V-STATIC-STATIC-CONTRACT",
+            "evidencePath": "environment-readiness-tests.log",
+            "minimum": 16,
+            "includedInJobMinimum": true
+          },
+          {
+            "resultId": "D0.4-V-REAL-E2E-HOSTED-WINDOWS",
+            "evidencePath": "environment-readiness-tests.log",
+            "minimum": 9,
+            "includedInJobMinimum": true
+          }
+        ]
       },
       "artifactPrefix": "delivery-environment-",
       "artifactPath": "artifacts/ci/delivery-environment/",
@@ -155,7 +198,21 @@
         "kind": "powershell-probe",
         "minimumDiscoveredTests": 60,
         "command": "./tools/verification/Invoke-DependencyQualification.ps1 -EvidenceDirectory artifacts/ci/dependency-qualification",
-        "rationale": "D0.5-v3 requires at least 45 static schema, runtime-provenance, actual-argument mutation, privacy, source-binding, cross-platform process-tree, trace, and workflow probes plus 15 bounded real clean-install package probes."
+        "rationale": "D0.5-v3 requires at least 45 static schema, runtime-provenance, actual-argument mutation, privacy, source-binding, cross-platform process-tree, trace, and workflow probes plus 15 bounded real clean-install package probes.",
+        "results": [
+          {
+            "resultId": "D0.5-V-STATIC-WINDOWS",
+            "evidencePath": "dependency-qualification-tests.log",
+            "minimum": 45,
+            "includedInJobMinimum": true
+          },
+          {
+            "resultId": "D0.5-V-PACKAGE-CLEAN-INSTALL",
+            "evidencePath": "dependency-qualification-tests.log",
+            "minimum": 15,
+            "includedInJobMinimum": true
+          }
+        ]
       },
       "artifactPrefix": "dependency-qualification-",
       "artifactPath": "artifacts/ci/dependency-qualification/",

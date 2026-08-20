@@ -5,11 +5,103 @@ param(
     [ValidateRange(30, 7200)]
     [int]$TimeoutSeconds = 1800,
     [ValidateRange(2, 60)]
-    [int]$PollSeconds = 10
+    [int]$PollSeconds = 10,
+    [switch]$SelfTestOnly
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
+function ConvertTo-CiDiscoverySummary {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$RequiredJob,
+        [Parameter(Mandatory = $true)]
+        [object]$DiscoveryResult
+    )
+
+    $discoveryKind = [string]$RequiredJob.discovery.kind
+    if ($discoveryKind -ceq "not-applicable") {
+        return [PSCustomObject]@{
+            kind = "not-applicable"
+            minimumDiscoveredTests = 0
+            actualDiscoveredTests = 0
+            results = @()
+        }
+    }
+
+    $discoveryResults = @(
+        foreach ($result in @($DiscoveryResult.results)) {
+            [PSCustomObject]@{
+                resultId = [string]$result.resultId
+                evidencePath = [string]$result.evidencePath
+                minimum = [long]$result.minimum
+                includedInJobMinimum = [bool]$result.includedInJobMinimum
+                actualDiscovery = [long]$result.actualDiscovery
+            }
+        }
+    )
+    return [PSCustomObject]@{
+        kind = $discoveryKind
+        minimumDiscoveredTests = [long]$RequiredJob.discovery.minimumDiscoveredTests
+        actualDiscoveredTests = [long]$DiscoveryResult.actualDiscoveredTests
+        results = $discoveryResults
+    }
+}
+
+if ($SelfTestOnly) {
+    $probeJob = [PSCustomObject]@{
+        discovery = [PSCustomObject]@{
+            kind = "powershell-probe"
+            minimumDiscoveredTests = 24
+        }
+    }
+    $probeDiscovery = [PSCustomObject]@{
+        actualDiscoveredTests = 27
+        results = @(
+            [PSCustomObject]@{
+                resultId = "D0.3-V-STATIC-001"
+                evidencePath = "verification-contract-tests.log"
+                minimum = 24
+                includedInJobMinimum = $true
+                actualDiscovery = 27
+            },
+            [PSCustomObject]@{
+                resultId = "D0.5-V-STATIC-UBUNTU"
+                evidencePath = "dependency-qualification-static-tests.log"
+                minimum = 45
+                includedInJobMinimum = $false
+                actualDiscovery = 67
+            }
+        )
+    }
+    $notApplicableJob = [PSCustomObject]@{
+        discovery = [PSCustomObject]@{
+            kind = "not-applicable"
+            minimumDiscoveredTests = 0
+        }
+    }
+    $notApplicableDiscovery = [PSCustomObject]@{
+        actualDiscoveredTests = 0
+        results = @()
+    }
+
+    [PSCustomObject]@{
+        schemaVersion = 1
+        jobs = @(
+            [PSCustomObject]@{
+                id = "probe"
+                discovery = ConvertTo-CiDiscoverySummary -RequiredJob $probeJob -DiscoveryResult $probeDiscovery
+            },
+            [PSCustomObject]@{
+                id = "not-applicable"
+                discovery = ConvertTo-CiDiscoverySummary -RequiredJob $notApplicableJob `
+                    -DiscoveryResult $notApplicableDiscovery
+            }
+        )
+    } | ConvertTo-Json -Depth 8 -Compress
+    exit 0
+}
 
 function Invoke-Gh {
     param(
@@ -158,6 +250,16 @@ try {
         $job = @($runDetails.jobs | Where-Object { $_.name -eq $requiredJob.name })[0]
         $artifactName = "$($requiredJob.artifactPrefix)$Sha"
         $artifact = @($artifacts | Where-Object { $_.name -eq $artifactName })[0]
+        $discoveryResult = Get-CiDiscoveryResult -RequiredJob $requiredJob -Sha $Sha `
+            -EvidenceRoot $evidenceRoots[$artifactName]
+        $discoveryFailures = @($discoveryResult.failures)
+        if ($discoveryFailures.Count -gt 0) {
+            throw ("Exact-SHA discovery summary failed for '$($requiredJob.id)':`n - " +
+                ($discoveryFailures -join "`n - "))
+        }
+        $discoverySummary = ConvertTo-CiDiscoverySummary -RequiredJob $requiredJob `
+            -DiscoveryResult $discoveryResult
+
         [PSCustomObject]@{
             id = $requiredJob.id
             name = $requiredJob.name
@@ -167,6 +269,7 @@ try {
             artifactDigest = $artifact.digest
             artifactExpiresAt = $artifact.expires_at
             evidenceFiles = @($requiredJob.evidenceFiles.path)
+            discovery = $discoverySummary
         }
     }
 
@@ -179,7 +282,7 @@ try {
         runUrl = $run.url
         conclusion = $run.conclusion
         jobs = @($jobSummaries)
-    } | ConvertTo-Json -Depth 6
+    } | ConvertTo-Json -Depth 8
 } finally {
     $resolvedDownloadRoot = [IO.Path]::GetFullPath($downloadRoot)
     $systemTemp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())

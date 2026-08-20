@@ -8,6 +8,9 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+$ciDeliveryContractModule = Join-Path $PSScriptRoot "../ci/CiDeliveryContract.psm1"
+Import-Module $ciDeliveryContractModule -Force
+
 $readinessPath = "docs/verification/environments/D0.4-readiness-v1.json"
 $readinessSchemaPath = "docs/verification/schemas/environment-readiness-v1.schema.json"
 $riskSchemaPath = "docs/verification/schemas/risk-lane-manifest-v1.schema.json"
@@ -836,5 +839,11 @@ namespace Aemeath.Verification {
 $discoveryFailures = @(Get-DiscoveryFailures $probeCount $hostedProbeCount $Mode)
 if ($discoveryFailures.Count -gt 0 -or $unexpectedSkips -ne 0) {
     throw "Environment readiness discovery failed ($($discoveryFailures -join ', ')); total=$probeCount, hosted=$hostedProbeCount, skips=$unexpectedSkips."
+}
+Write-CiDiscoveryMarker -ResultId "D0.4-V-STATIC-STATIC-CONTRACT" `
+    -ActualDiscovery ([long]($probeCount - $hostedProbeCount))
+if ($Mode -ceq "HostedWindows") {
+    Write-CiDiscoveryMarker -ResultId "D0.4-V-REAL-E2E-HOSTED-WINDOWS" `
+        -ActualDiscovery $hostedProbeCount
 }
 Write-Host "Environment readiness tests passed ($probeCount total probes; $hostedProbeCount hosted probes; zero skips)."

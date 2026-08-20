@@ -7,6 +7,9 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+$ciDeliveryContractModule = Join-Path $PSScriptRoot "../ci/CiDeliveryContract.psm1"
+Import-Module $ciDeliveryContractModule -Force
+
 $requiredSchemaPaths = @(
     "docs/verification/schemas/traceability-v1.schema.json",
     "docs/verification/schemas/risk-lane-manifest-v1.schema.json",
@@ -1102,4 +1105,5 @@ if ($schemaNegativeControlsExecuted -ne [int]$activeManifest.thresholds.required
 if ($discoveredProbes -lt $manifestMinimum) {
     throw "D0.3 discovered $discoveredProbes semantic probes; frozen minimum is $manifestMinimum."
 }
+Write-CiDiscoveryMarker -ResultId "D0.3-V-STATIC-001" -ActualDiscovery $discoveredProbes
 Write-Host "Verification contract tests passed ($discoveredProbes semantic probes; minimum $manifestMinimum)."

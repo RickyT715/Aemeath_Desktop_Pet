@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "recordType": "manifest-invalidation",
+  "recordId": "D0.2-v1-invalidated-by-v2",
+  "invalidatedManifestId": "D0.2-v1",
+  "frozenArtifactPath": "docs/verification/manifests/D0.2-v1.yml",
+  "frozenArtifactSha256": "1117ac1f29a27c742126d7493142a9b2285b7217e3fe5feabf6b034e4749512e",
+  "replacementManifestId": "D0.2-v2",
+  "invalidatedAt": "2026-08-19T18:34:42Z",
+  "reason": "D0.2-v1 stated that zero or reduced discovery must fail, but the central exact-SHA artifact consumer verified only job status, artifact metadata, file inventory, and byte floors. D0.2-v2 adds mandatory per-component runtime discovery evidence without rewriting the historical manifest.",
+  "reviewer": "codex-agent:/root/d02r_oracle_review"
+}
