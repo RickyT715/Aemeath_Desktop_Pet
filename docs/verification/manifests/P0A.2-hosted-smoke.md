@@ -38,3 +38,27 @@ The workflow has read-only repository permissions and requires no provider crede
 Still required in P0A.2: restart continuity for config/position/stats/history, transparent/topmost
 real-boundary observation, and keyboard companion journeys on qualified disposable Windows 10/11.
 Hosted evidence is not a substitute for those lanes, and a setup refusal is not a product failure.
+
+## Next portion: offline conversation and restart continuity
+
+The initial Pet/Chat/Settings/Quit journey passed on source
+`2cf35692161c2dbcc06867144e8450aec42eff22` in
+[run 34995850350](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/34995850350).
+The following extension is specified before its executable checks are added:
+
+- Seed only the synthetic `messages.json` and `stats.json` fixtures in the same newly created
+  disposable profile, retaining all existing identity, path, integration, and firewall guards.
+- Observe the seeded conversation in Chat, send one fixed fake text message through its existing
+  input/Send controls, and require a nonempty offline response with the UI returning to ready.
+  The screenshot toggle must remain off; no microphone action is permitted.
+- Quit cleanly, read only this owned profile, and check ordered history, non-streaming response,
+  preserved first-launch/counters (chat count increases once), valid non-secret configuration,
+  and a quit-time-bounded `lastSeen`. Use documented ranges for decay/time-dependent values.
+- Restart the same executable once under the same effective network block and owned process job.
+  Observe the persisted conversation and pet position/configuration, then quit cleanly again.
+- Report each completed stage separately. Require two clean exits and final cleanup for success;
+  missing/false restart or response evidence must fail the result check. Fixed fixtures and a
+  known-bad result provide failure-detection coverage without running the app on the local host.
+
+This extension uses the same process/safety lanes and does not claim Windows 10/11, accessibility,
+keyboard-entry, or the rest of Gate 0A has passed. It adds no production behavior or data-root seam.

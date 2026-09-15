@@ -403,7 +403,7 @@ legacy results first become a gate input in P0A.9 and never become independent o
 
 ### P0A.2 Prove black-box offline launch on disposable Windows workers
 
-- [ ] Author a process probe that launches the unchanged Release application with no provider,
+- [x] Author a process probe that launches the unchanged Release application with no provider,
   network, or sidecar and observes a usable pet, Chat, Settings, and bounded clean exit.
 - [ ] Author a black-box restart journey for config/position/stats/history using a resettable,
   disposable Windows user/VM; do not add a production data-root seam.

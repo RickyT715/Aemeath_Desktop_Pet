@@ -1,0 +1,16 @@
+[
+  {
+    "id": "smokeu01",
+    "role": "user",
+    "content": "OFFLINE_SMOKE_USER_SENTINEL_7C4A",
+    "timestamp": "2030-02-03T04:05:06Z",
+    "isStreaming": false
+  },
+  {
+    "id": "smokea01",
+    "role": "assistant",
+    "content": "OFFLINE_SMOKE_ASSISTANT_SENTINEL_9D2F",
+    "timestamp": "2030-02-03T04:05:07Z",
+    "isStreaming": false
+  }
+]

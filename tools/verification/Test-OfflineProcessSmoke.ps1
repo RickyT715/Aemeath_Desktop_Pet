@@ -59,6 +59,20 @@ $hasher = [Security.Cryptography.SHA256]::Create()
 try { $fixtureHash = [BitConverter]::ToString($hasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($fixtureText))).Replace('-', '') }
 finally { $hasher.Dispose() }
 if ($fixtureHash -cne '0703351F1249663547FDBBCC7008FFE88C5A45DE25326CC25BEDDE1A4237C1A9') { Refuse "UNSAFE_FIXTURE" }
+$fixtureTexts = @{ 'config.json' = $fixtureText }
+foreach ($entry in @{
+        'messages.json' = '3BE2810A95B901089082CC494CE84F7F4A4BE0ECB4D5C7CA81AFD49216E27CAE'
+        'stats.json' = '7C0C0D70AF40B2EED4F32268CA45DF4D74E7285FC4109523F180CECB02B6CD3A'
+    }.GetEnumerator()) {
+    $file = Join-Path (Split-Path $fixture) $entry.Key
+    Assert-PlainPath $file
+    $text = [IO.File]::ReadAllText($file).Replace("`r`n", "`n")
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    try { $hash = [BitConverter]::ToString($hasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($text))).Replace('-', '') }
+    finally { $hasher.Dispose() }
+    if ($hash -cne $entry.Value) { Refuse 'UNSAFE_FIXTURE' }
+    $fixtureTexts[$entry.Key] = $text
+}
 if (@(Get-NetFirewallProfile -PolicyStore ActiveStore | Where-Object { -not $_.Enabled }).Count -ne 0) {
     Refuse "FIREWALL_DISABLED"
 }
@@ -198,6 +212,69 @@ public static class OfflineSmokeNative {
         uint owner; GetWindowThreadProcessId(window, out owner);
         if (owner != pid || !PostMessage(window, 0x10, IntPtr.Zero, IntPtr.Zero)) throw new Exception("WINDOW_CLOSE");
     }
+    private static T Uia<T>(Func<T> operation) {
+        var task = Task.Run(operation);
+        if (!task.Wait(5000)) throw new Exception("CHAT_UIA_TIMEOUT");
+        return task.Result;
+    }
+    private static AutomationElement Control(int pid, string title, string id) {
+        IntPtr handle = FindWindow(pid, title);
+        if (handle == IntPtr.Zero) throw new Exception("COMPANION_WINDOW_MISSING");
+        var window = AutomationElement.FromHandle(handle);
+        var control = window.FindFirst(TreeScope.Descendants, new AndCondition(
+            new PropertyCondition(AutomationElement.AutomationIdProperty, id),
+            new PropertyCondition(AutomationElement.ProcessIdProperty, pid)));
+        if (control == null) throw new Exception("COMPANION_CONTROL_MISSING");
+        return control;
+    }
+    public static string[] ReadChat(int pid) {
+        return Uia(delegate {
+            var items = Control(pid, "Chat with Aemeath", "MessageList").FindAll(TreeScope.Children,
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem));
+            var result = new string[items.Count]; int index = 0;
+            foreach (AutomationElement item in items) {
+                object scroll;
+                if (item.TryGetCurrentPattern(ScrollItemPattern.Pattern, out scroll)) ((ScrollItemPattern)scroll).ScrollIntoView();
+                var texts = item.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text));
+                var content = new StringBuilder();
+                foreach (AutomationElement text in texts) content.Append(text.Current.Name);
+                result[index++] = content.ToString();
+            }
+            return result;
+        });
+    }
+    public static bool ScreenshotOff(int pid) {
+        return Uia(delegate { return ((TogglePattern)Control(pid, "Chat with Aemeath", "ScreenshotToggle")
+            .GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState == ToggleState.Off; });
+    }
+    public static void Draft(int pid, string text) {
+        Uia(delegate {
+            var input = Control(pid, "Chat with Aemeath", "InputBox"); input.SetFocus();
+            ((ValuePattern)input.GetCurrentPattern(ValuePattern.Pattern)).SetValue(text); return true;
+        });
+    }
+    public static bool SendEnabled(int pid) {
+        return Uia(delegate { return Control(pid, "Chat with Aemeath", "SendButton").Current.IsEnabled; });
+    }
+    public static void Send(int pid) {
+        if (!ScreenshotOff(pid)) throw new Exception("SCREENSHOT_NOT_OFF");
+        Uia(delegate { ((InvokePattern)Control(pid, "Chat with Aemeath", "SendButton")
+            .GetCurrentPattern(InvokePattern.Pattern)).Invoke(); return true; });
+    }
+    public static bool SafeSettingsObserved(int pid) {
+        return Uia(delegate {
+            foreach (string id in new string[] { "StartWithWindowsCheck", "LaunchMonitorCheck", "LaunchTodoCheck", "EnablePomodoroIntegrationCheck" }) {
+                if (((TogglePattern)Control(pid, "Aemeath Settings", id).GetCurrentPattern(TogglePattern.Pattern)).Current.ToggleState != ToggleState.Off) return false;
+            }
+            return true;
+        });
+    }
+    public static double[] PetRectangle(int pid) {
+        return Uia(delegate {
+            var rectangle = AutomationElement.FromHandle(FindWindow(pid, "Aemeath")).Current.BoundingRectangle;
+            return new double[] { rectangle.Left, rectangle.Top, rectangle.Width, rectangle.Height };
+        });
+    }
 }
 '@
 
@@ -216,11 +293,48 @@ function Open-PetMenu([string]$ItemName) {
         # WPF rejects inactive-window mouse reports if the real cursor is elsewhere.
         Wait-Until { [OfflineSmokeNative]::RightClick($window, $app.Id) } 5 'NO_OWNED_CLICK_POINT'
         Wait-Until { [OfflineSmokeNative]::InvokeMenu($app.Id, $ItemName) } 10 'MENU_ITEM_UNAVAILABLE'
+        if (-not [OfflineSmokeNative]::RestoreCursor()) { throw 'CURSOR_RESTORE_FAILED' }
     } finally {
         $report.menuAttempts += @{ item = $ItemName; cursorTargetVerified = [OfflineSmokeNative]::CursorTargetVerified
             inputEventsSent = [OfflineSmokeNative]::InputEventsSent; ownedUiaWindows = [OfflineSmokeNative]::OwnedUiaWindows
             ownedMenuItems = [OfflineSmokeNative]::OwnedMenuItems }
     }
+}
+
+function Assert-OwnedPersistence([datetime]$QuitStarted, [datetime]$QuitEnded) {
+    $snapshot = @{}
+    foreach ($name in @('config', 'stats', 'messages')) {
+        $path = Join-Path $dataDirectory ($name + '.json')
+        Assert-PlainPath $path
+        $snapshot[$name] = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+    }
+    $history = @($snapshot.messages)
+    if ($history.Count -ne 4) { throw 'HISTORY_COUNT' }
+    for ($i = 0; $i -lt 2; $i++) {
+        foreach ($field in @('id', 'role', 'content', 'timestamp')) {
+            if ($history[$i].$field -cne $seedMessages[$i].$field) { throw 'SEED_HISTORY_CHANGED' }
+        }
+    }
+    if ($history[2].role -cne 'user' -or $history[2].content -cne $sentText -or
+        $history[3].role -cne 'assistant' -or $history[3].content -cne $assistantReply) { throw 'NEW_HISTORY_CHANGED' }
+    if (@($history | Where-Object { $_.isStreaming }).Count -ne 0) { throw 'PERSISTED_STREAMING_MESSAGE' }
+    $stats = $snapshot.stats
+    foreach ($counter in @{ totalChats = 12; totalPets = 13; totalSongs = 17; totalPaperPlanes = 19; totalGames = 23 }.GetEnumerator()) {
+        if ($stats.($counter.Key) -ne $counter.Value) { throw 'STATS_COUNTER_CHANGED' }
+    }
+    if ([datetimeoffset]$stats.firstLaunch -ne [datetimeoffset]'2024-02-03T04:05:06Z') { throw 'FIRST_LAUNCH_CHANGED' }
+    $lastSeen = [datetimeoffset]$stats.lastSeen
+    if ($lastSeen.UtcDateTime -lt $QuitStarted -or $lastSeen.UtcDateTime -gt $QuitEnded) { throw 'LAST_SEEN_OUTSIDE_QUIT' }
+    if ($stats.mood -lt 30 -or $stats.mood -gt 86.25 -or $stats.energy -lt 20 -or $stats.energy -gt 64.5 -or
+        $stats.affection -lt 40 -or $stats.affection -gt 79.75) { throw 'STATS_OUTSIDE_DECAY_RANGE' }
+    foreach ($flag in @('backend', 'pomodoroIntegration', 'tts', 'voiceInput', 'screenAwareness', 'activityMonitor', 'mcp')) {
+        if ($snapshot.config.$flag.enabled) { throw 'CONFIG_INTEGRATION_CHANGED' }
+    }
+    if ($snapshot.config.startWithWindows -or $snapshot.config.companionApps.launchMonitor -or
+        $snapshot.config.companionApps.launchTodoList -or $snapshot.config.voiceInput.includeScreenshot -or
+        $snapshot.config.apiKey -or $snapshot.config.geminiApiKey -or $snapshot.config.petSize -ne 200 -or
+        $snapshot.config.opacity -ne 1.0) { throw 'CONFIG_CHANGED' }
+    return [pscustomobject]$snapshot
 }
 
 $rules = @()
@@ -234,9 +348,16 @@ $report = [ordered]@{
     osVersion = [Environment]::OSVersion.Version.ToString(); sessionId = (Get-Process -Id $PID).SessionId
     petVisibleResponding = $false; chatOpened = $false; settingsOpened = $false; cleanExit = $false
     processId = $null; exitCode = $null; firewallBlockedBeforeLaunch = $false; cleanupPassed = $false
-    limitations = @('No restart continuity journey', 'No Windows 10/11 real-boundary qualification', 'No accessibility or keyboard-entry qualification')
-    createdData = @(); menuAttempts = @()
+    limitations = @('No Windows 10/11 real-boundary qualification', 'No accessibility or keyboard-entry qualification')
+    createdData = @(); menuAttempts = @(); cleanExitCount = 0; processIds = @(); exitCodes = @()
+    seedConversationObserved = $false; screenshotOffVerified = $false; offlineTurnCompleted = $false
+    firstPersistenceVerified = $false; restartConversationObserved = $false; restartConfigPositionVerified = $false
+    secondPersistenceVerified = $false; sameExecutableVerified = $false
+    assistantReplyLength = 0; savedMessageCount = 0; savedTotalChats = 0
 }
+$seedMessages = @($fixtureTexts['messages.json'] | ConvertFrom-Json)
+$sentText = 'OFFLINE_SMOKE_NEW_TURN_51B8: hello from the synthetic test.'
+$assistantReply = $null
 New-Item -ItemType Directory -Path $evidence | Out-Null
 try {
     foreach ($direction in @('Inbound', 'Outbound')) {
@@ -256,13 +377,23 @@ try {
         throw 'ISOLATION_CHANGED'
     }
     New-Item -ItemType Directory -Path $dataDirectory | Out-Null
-    [IO.File]::WriteAllText((Join-Path $dataDirectory 'config.json'), $fixtureText, (New-Object Text.UTF8Encoding($false)))
+    foreach ($entry in $fixtureTexts.GetEnumerator()) {
+        [IO.File]::WriteAllText((Join-Path $dataDirectory $entry.Key), $entry.Value, (New-Object Text.UTF8Encoding($false)))
+    }
     $job = [OfflineSmokeNative]::CreateJobObject([IntPtr]::Zero, $null)
     if ($job -eq [IntPtr]::Zero) { throw 'JOB_CREATE_FAILED' }
-    $report.stage = 'launch'
+    for ($launch = 1; $launch -le 2; $launch++) {
+    $report.stage = "launch-$launch"
+    if ((Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash.ToLowerInvariant() -cne $report.executableSha256) { throw 'EXE_CHANGED' }
+    foreach ($name in $rules) {
+        $rule = Get-NetFirewallRule -Name $name -PolicyStore ActiveStore
+        if ($rule.Enabled -ne 'True' -or $rule.Action -ne 'Block' -or
+            ($rule | Get-NetFirewallApplicationFilter).Program -ine $executable) { throw 'FIREWALL_BLOCK_LOST' }
+    }
     # A visible application is the subject of this probe on the disposable interactive worker.
     $app = Start-Process -FilePath $executable -WorkingDirectory (Split-Path $executable) -PassThru -WindowStyle Normal
     $report.processId = $app.Id
+    $report.processIds += $app.Id
     if (-not [OfflineSmokeNative]::AssignProcessToJobObject($job, $app.Handle)) { throw 'JOB_ASSIGN_FAILED' }
     $report.stage = 'pet-visible-responding'
     Wait-Until {
@@ -271,6 +402,13 @@ try {
         $pet -ne [IntPtr]::Zero -and [OfflineSmokeNative]::Responding($pet)
     } 30 'PET_NOT_VISIBLE_RESPONDING'
     $report.petVisibleResponding = $true
+    if ($launch -eq 2) {
+        $restored = [OfflineSmokeNative]::PetRectangle($app.Id)
+        if ([math]::Abs($restored[0] - $firstSaved.config.lastX) -gt 2 -or
+            [math]::Abs($restored[1] - $firstSaved.config.lastY) -gt 2 -or
+            [math]::Abs($restored[2] - 200) -gt 2 -or [math]::Abs($restored[3] - 200) -gt 2) { throw 'RESTORED_POSITION_SIZE_MISMATCH' }
+        $report.sameExecutableVerified = $true
+    }
     foreach ($surface in @(@{ menu = 'Chat with Aemeath'; title = 'Chat with Aemeath'; field = 'chatOpened' },
             @{ menu = 'Settings'; title = 'Aemeath Settings'; field = 'settingsOpened' })) {
         $report.stage = $surface.field
@@ -280,16 +418,51 @@ try {
             $handle -ne [IntPtr]::Zero -and [OfflineSmokeNative]::Responding($handle)
         } 15 'COMPANION_NOT_VISIBLE_RESPONDING'
         $report[$surface.field] = $true
+        if ($surface.field -eq 'chatOpened') {
+            $observed = @([OfflineSmokeNative]::ReadChat($app.Id))
+            if ($observed.Count -lt 2 -or $observed[0] -cne $seedMessages[0].content -or
+                $observed[1] -cne $seedMessages[1].content) { throw 'SEED_CHAT_NOT_OBSERVED' }
+            if (-not [OfflineSmokeNative]::ScreenshotOff($app.Id)) { throw 'SCREENSHOT_NOT_OFF' }
+            $report.seedConversationObserved = $true; $report.screenshotOffVerified = $true
+            if ($launch -eq 1) {
+                [OfflineSmokeNative]::Draft($app.Id, $sentText)
+                Wait-Until { [OfflineSmokeNative]::SendEnabled($app.Id) } 5 'SEND_NOT_READY'
+                [OfflineSmokeNative]::Send($app.Id)
+                Wait-Until { $items = @([OfflineSmokeNative]::ReadChat($app.Id)); $items.Count -eq 4 -and
+                    $items[2] -ceq $sentText -and -not [string]::IsNullOrWhiteSpace($items[3]) } 30 'OFFLINE_REPLY_MISSING'
+                [OfflineSmokeNative]::Draft($app.Id, 'OFFLINE_SMOKE_UNSENT_READY_DRAFT')
+                Wait-Until { [OfflineSmokeNative]::SendEnabled($app.Id) } 10 'CHAT_NOT_READY_AFTER_REPLY'
+                [OfflineSmokeNative]::Draft($app.Id, '')
+                $assistantReply = @([OfflineSmokeNative]::ReadChat($app.Id))[3]
+                $report.assistantReplyLength = $assistantReply.Length; $report.offlineTurnCompleted = $true
+            } else {
+                if ($observed.Count -ne 4 -or $observed[2] -cne $sentText -or $observed[3] -cne $assistantReply) { throw 'RESTART_CHAT_CHANGED' }
+                $report.restartConversationObserved = $true
+            }
+        } elseif ($launch -eq 2) {
+            if (-not [OfflineSmokeNative]::SafeSettingsObserved($app.Id)) { throw 'RESTART_SETTINGS_CHANGED' }
+            $report.restartConfigPositionVerified = $true
+        }
         [OfflineSmokeNative]::CloseWindow([OfflineSmokeNative]::FindWindow($app.Id, $surface.title), $app.Id)
         Wait-Until { [OfflineSmokeNative]::FindWindow($app.Id, $surface.title) -eq [IntPtr]::Zero } 10 'COMPANION_DID_NOT_CLOSE'
     }
-    $report.stage = 'quit'
+    $report.stage = "quit-$launch"
+    $quitStarted = [datetime]::UtcNow
     Open-PetMenu 'Quit'
     if (-not $app.WaitForExit(15000)) { throw 'QUIT_TIMEOUT' }
     $report.exitCode = $app.ExitCode
+    $quitEnded = [datetime]::UtcNow
     if ($app.ExitCode -ne 0) { throw 'NONZERO_PRODUCT_EXIT' }
     if ([OfflineSmokeNative]::ActiveProcesses($job) -ne 0) { throw 'ORPHAN_PROCESS' }
-    $report.cleanExit = $true
+    $report.cleanExitCount++; $report.exitCodes += $app.ExitCode
+    $report.stage = "persistence-$launch"
+    $saved = Assert-OwnedPersistence $quitStarted $quitEnded
+    $report.savedMessageCount = @($saved.messages).Count; $report.savedTotalChats = $saved.stats.totalChats
+    if ($launch -eq 1) { $firstSaved = $saved; $report.firstPersistenceVerified = $true }
+    else { $report.secondPersistenceVerified = $true }
+    $app.Dispose(); $app = $null
+    }
+    $report.cleanExit = $report.cleanExitCount -eq 2
     $report.status = 'passed'
     $report.stage = 'complete'
     $exitStatus = 0

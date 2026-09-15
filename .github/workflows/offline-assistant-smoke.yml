@@ -60,8 +60,12 @@ jobs:
         run: |
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeSafety.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeResult.ps1 -SelfTest
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/Test-OfflineProcessSmoke.ps1 -EvidenceDirectory artifacts/ci/offline-process-smoke *>&1 |
             Tee-Object artifacts/ci/offline-process-smoke.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeResult.ps1 -ResultPath artifacts/ci/offline-process-smoke/offline-process-smoke.json
           exit $LASTEXITCODE
 
       - name: Retain smoke results
