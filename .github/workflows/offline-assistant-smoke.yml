@@ -1,0 +1,74 @@
+name: Offline Assistant Smoke
+
+on:
+  push:
+    branches:
+      - 'agent/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+concurrency:
+  group: offline-assistant-smoke-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  offline-launch:
+    name: Offline pet, Chat, and Settings
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact source SHA
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+
+      - name: Record source identity
+        shell: pwsh
+        run: |
+          $actualSha = (git rev-parse HEAD).Trim()
+          if ($actualSha -cne $env:SOURCE_SHA) { throw 'Unexpected source checkout.' }
+          New-Item -ItemType Directory -Force artifacts/ci | Out-Null
+          [PSCustomObject]@{
+            sourceSha = $actualSha
+            runId = '${{ github.run_id }}'
+            scope = 'Hosted disposable offline smoke; Windows 10/11 qualification remains separate.'
+          } | ConvertTo-Json | Set-Content artifacts/ci/offline-process-smoke-source.json
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build the desktop assistant
+        shell: pwsh
+        run: |
+          dotnet restore src/AemeathDesktopPet/AemeathDesktopPet.csproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build src/AemeathDesktopPet/AemeathDesktopPet.csproj -c Release --no-restore
+          exit $LASTEXITCODE
+
+      - name: Run offline launch on this disposable worker
+        shell: pwsh
+        run: |
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeSafety.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/Test-OfflineProcessSmoke.ps1 -EvidenceDirectory artifacts/ci/offline-process-smoke *>&1 |
+            Tee-Object artifacts/ci/offline-process-smoke.log
+          exit $LASTEXITCODE
+
+      - name: Retain smoke results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: offline-assistant-smoke-${{ env.SOURCE_SHA }}
+          path: artifacts/ci/offline-process-smoke*
+          if-no-files-found: error
+          retention-days: 90

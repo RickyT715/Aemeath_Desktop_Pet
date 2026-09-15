@@ -392,14 +392,14 @@ legacy results first become a gate input in P0A.9 and never become independent o
 
 ### P0A.1 Freeze preservation specification and risk map
 
-- [ ] Inventory retained components, public behaviors, persisted data, integration boundaries, and
+- [x] Inventory retained components, public behaviors, persisted data, integration boundaries, and
   Windows journeys as PB-001 through PB-018.
-- [ ] Freeze literal/stat/geometry/time oracles, resource manifest and hashes, JSON/protocol fixtures,
+- [x] Freeze literal/stat/geometry/time oracles, resource manifest and hashes, JSON/protocol fixtures,
   supported environments, lane assignment, exposure declarations, and reviewer provenance.
-- [ ] Write a failing completeness probe for missing PBs, requirement-map entries, lane decisions,
+- [x] Write a failing completeness probe for missing PBs, requirement-map entries, lane decisions,
   or fixture hashes; make only the manifest/tooling change needed to pass.
-- [ ] Required lanes: static/meta-test and documentation truth.
-- [ ] Commit, push, and obtain exact-SHA CI success.
+- [x] Required lanes: static/meta-test and documentation truth.
+- [x] Commit, push, and obtain exact-SHA CI success.
 
 ### P0A.2 Prove black-box offline launch on disposable Windows workers
 

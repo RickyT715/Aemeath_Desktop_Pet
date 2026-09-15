@@ -1,0 +1,29 @@
+{
+  "apiKey": "",
+  "geminiApiKey": "",
+  "aiProvider": "claude",
+  "petSize": 200,
+  "opacity": 1.0,
+  "lastX": 300,
+  "lastY": 300,
+  "startWithWindows": false,
+  "enableBlackCat": false,
+  "enableGlitchEffect": false,
+  "enableSinging": false,
+  "enableAmbientPaperPlanes": false,
+  "musicFolderPath": "",
+  "backend": { "enabled": false },
+  "pomodoroIntegration": { "enabled": false },
+  "companionApps": {
+    "launchMonitor": false,
+    "launchTodoList": false,
+    "monitorPath": "",
+    "todoListPath": ""
+  },
+  "tts": { "enabled": false },
+  "voiceInput": { "enabled": false, "includeScreenshot": false },
+  "screenAwareness": { "enabled": false },
+  "activityMonitor": { "enabled": false, "databasePath": "" },
+  "mcp": { "enabled": false, "exposeAsServer": false, "servers": [] },
+  "speechFrequency": { "default": "Silent" }
+}
