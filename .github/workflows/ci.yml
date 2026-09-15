@@ -164,6 +164,8 @@ jobs:
       - name: Run P0A.1 preservation specification probes
         shell: pwsh
         run: |
+          # Preserve JSON timestamp text for the frozen manifest contract.
+          $PSDefaultParameterValues['ConvertFrom-Json:DateKind'] = 'String'
           ./tools/verification/Test-PreservationSpecification.ps1 *>&1 |
             Tee-Object artifacts/ci/verification-contracts/preservation-specification-tests.log
 
