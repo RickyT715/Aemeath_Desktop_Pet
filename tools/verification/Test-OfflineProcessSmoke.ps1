@@ -366,8 +366,10 @@ $report = [ordered]@{
     firstPersistenceVerified = $false; restartConversationObserved = $false; restartConfigPositionVerified = $false
     secondPersistenceVerified = $false; sameExecutableVerified = $false
     assistantReplyLength = 0; savedMessageCount = 0; savedTotalChats = 0
+    failureExceptionType = $null; failureScriptLine = 0
 }
-$seedMessages = @($fixtureTexts['messages.json'] | ConvertFrom-Json)
+# PS5 emits a JSON array as one pipeline object; assignment preserves that array without nesting it.
+$seedMessages = $fixtureTexts['messages.json'] | ConvertFrom-Json
 $sentText = 'OFFLINE_SMOKE_NEW_TURN_51B8: hello from the synthetic test.'
 $assistantReply = $null
 New-Item -ItemType Directory -Path $evidence | Out-Null
@@ -494,8 +496,11 @@ try {
     $exitStatus = 0
 } catch {
     # Exception text can contain runner paths; retain only the bounded test diagnostic.
-    $code = $_.Exception.GetBaseException().Message
+    $baseException = $_.Exception.GetBaseException()
+    $code = $baseException.Message
     $report.failureCode = if ($code -cmatch '^[A-Z_]{3,80}$') { $code } else { 'HOSTED_PROBE_EXCEPTION' }
+    $report.failureExceptionType = $baseException.GetType().FullName
+    $report.failureScriptLine = $_.InvocationInfo.ScriptLineNumber
 } finally {
     $cleanupErrors = @()
     if ($job -ne [IntPtr]::Zero) {

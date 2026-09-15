@@ -33,3 +33,9 @@ In progress. The result checker rejects the earlier launch-only result at
 `OFFLINE-RESULT-MISSING: seedConversationObserved`. Synthetic message and stat fixtures contain no
 personal information. A future successful run must supply the actual response and restart evidence;
 the earlier smoke result cannot be reused as proof of those behaviors.
+
+The first extension run (`54d1682`) failed its seeded-history comparison. The next run (`8aa79f8`)
+also exposed an exception in its diagnostic path. A local Windows PowerShell 5 reproducer using
+the real fixture-loading expression identified an extra array wrapper: the two JSON messages
+became one outer element. That both invalidated the comparison and made diagnostic indexing fail.
+The correction unwraps the JSON result before use; no production persistence change is implied.
