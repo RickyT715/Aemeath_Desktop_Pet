@@ -102,6 +102,8 @@ public static class OfflineSmokeNative {
     public static bool CursorTargetVerified;
     public static uint InputEventsSent;
     public static int OwnedUiaWindows, OwnedMenuItems;
+    public static int ChatReadAttempts, ChatItemCount;
+    public static int[] ChatItemNameLengths = new int[0], ChatTextCounts = new int[0], ChatTextLengths = new int[0];
     [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point point);
     [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
     [DllImport("user32.dll")] private static extern IntPtr WindowFromPoint(Point point);
@@ -229,16 +231,26 @@ public static class OfflineSmokeNative {
     }
     public static string[] ReadChat(int pid) {
         return Uia(delegate {
+            ChatReadAttempts++;
             var items = Control(pid, "Chat with Aemeath", "MessageList").FindAll(TreeScope.Children,
-                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem));
-            var result = new string[items.Count]; int index = 0;
-            foreach (AutomationElement item in items) {
+                new AndCondition(new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
+                    new PropertyCondition(AutomationElement.ProcessIdProperty, pid)));
+            ChatItemCount = items.Count;
+            int count = Math.Min(items.Count, 6);
+            ChatItemNameLengths = new int[count]; ChatTextCounts = new int[count]; ChatTextLengths = new int[count];
+            var result = new string[count];
+            for (int index = 0; index < count; index++) {
+                var item = items[index];
                 object scroll;
                 if (item.TryGetCurrentPattern(ScrollItemPattern.Pattern, out scroll)) ((ScrollItemPattern)scroll).ScrollIntoView();
-                var texts = item.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text));
+                ChatItemNameLengths[index] = item.Current.Name.Length;
+                var texts = item.FindAll(TreeScope.Descendants, new AndCondition(
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text),
+                    new PropertyCondition(AutomationElement.ProcessIdProperty, pid)));
+                ChatTextCounts[index] = texts.Count;
                 var content = new StringBuilder();
                 foreach (AutomationElement text in texts) content.Append(text.Current.Name);
-                result[index++] = content.ToString();
+                result[index] = content.ToString(); ChatTextLengths[index] = result[index].Length;
             }
             return result;
         });
@@ -349,7 +361,7 @@ $report = [ordered]@{
     petVisibleResponding = $false; chatOpened = $false; settingsOpened = $false; cleanExit = $false
     processId = $null; exitCode = $null; firewallBlockedBeforeLaunch = $false; cleanupPassed = $false
     limitations = @('No Windows 10/11 real-boundary qualification', 'No accessibility or keyboard-entry qualification')
-    createdData = @(); menuAttempts = @(); cleanExitCount = 0; processIds = @(); exitCodes = @()
+    createdData = @(); menuAttempts = @(); chatObservations = @(); cleanExitCount = 0; processIds = @(); exitCodes = @()
     seedConversationObserved = $false; screenshotOffVerified = $false; offlineTurnCompleted = $false
     firstPersistenceVerified = $false; restartConversationObserved = $false; restartConfigPositionVerified = $false
     secondPersistenceVerified = $false; sameExecutableVerified = $false
@@ -419,9 +431,23 @@ try {
         } 15 'COMPANION_NOT_VISIBLE_RESPONDING'
         $report[$surface.field] = $true
         if ($surface.field -eq 'chatOpened') {
-            $observed = @([OfflineSmokeNative]::ReadChat($app.Id))
-            if ($observed.Count -lt 2 -or $observed[0] -cne $seedMessages[0].content -or
-                $observed[1] -cne $seedMessages[1].content) { throw 'SEED_CHAT_NOT_OBSERVED' }
+            # A responsive HWND does not imply WPF item-container/text-peer realization.
+            $chatRead = @{ items = @() }
+            [OfflineSmokeNative]::ChatReadAttempts = 0
+            try {
+                Wait-Until {
+                    $chatRead.items = @([OfflineSmokeNative]::ReadChat($app.Id))
+                    $chatRead.items.Count -ge 2 -and $chatRead.items[0] -ceq $seedMessages[0].content -and
+                        $chatRead.items[1] -ceq $seedMessages[1].content
+                } 15 'SEED_CHAT_NOT_OBSERVED'
+            } finally {
+                $report.chatObservations += @{ launch = $launch; attempts = [OfflineSmokeNative]::ChatReadAttempts
+                    itemCount = [OfflineSmokeNative]::ChatItemCount; itemNameLengths = @([OfflineSmokeNative]::ChatItemNameLengths)
+                    childTextCounts = @([OfflineSmokeNative]::ChatTextCounts); childTextLengths = @([OfflineSmokeNative]::ChatTextLengths)
+                    seedUserMatched = $chatRead.items.Count -ge 1 -and $chatRead.items[0] -ceq $seedMessages[0].content
+                    seedAssistantMatched = $chatRead.items.Count -ge 2 -and $chatRead.items[1] -ceq $seedMessages[1].content }
+            }
+            $observed = $chatRead.items
             if (-not [OfflineSmokeNative]::ScreenshotOff($app.Id)) { throw 'SCREENSHOT_NOT_OFF' }
             $report.seedConversationObserved = $true; $report.screenshotOffVerified = $true
             if ($launch -eq 1) {
