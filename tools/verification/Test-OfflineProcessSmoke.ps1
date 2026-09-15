@@ -76,6 +76,26 @@ using System.Threading.Tasks;
 using System.Windows.Automation;
 public static class OfflineSmokeNative {
     private delegate bool EnumProc(IntPtr window, IntPtr parameter);
+    [StructLayout(LayoutKind.Sequential)] private struct Point { public int x, y; }
+    [StructLayout(LayoutKind.Sequential)] private struct Rect { public int left, top, right, bottom; }
+    [StructLayout(LayoutKind.Sequential)] private struct MouseInput { public int dx, dy; public uint data, flags, time; public UIntPtr extra; }
+    [StructLayout(LayoutKind.Sequential)] private struct Input { public uint type; public MouseInput mouse; }
+    [StructLayout(LayoutKind.Sequential)] private struct GuiThreadInfo {
+        public uint size, flags; public IntPtr active, focus, capture, menuOwner, moveSize, caret; public Rect caretRect;
+    }
+    private static Point originalCursor;
+    private static bool cursorSaved;
+    public static bool CursorTargetVerified;
+    public static uint InputEventsSent;
+    public static int OwnedUiaWindows, OwnedMenuItems;
+    [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point point);
+    [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] private static extern IntPtr WindowFromPoint(Point point);
+    [DllImport("user32.dll")] private static extern bool GetClientRect(IntPtr window, out Rect rectangle);
+    [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr window, ref Point point);
+    [DllImport("user32.dll")] private static extern bool GetGUIThreadInfo(uint thread, ref GuiThreadInfo info);
+    [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
+    [DllImport("user32.dll")] private static extern uint SendInput(uint count, Input[] inputs, int size);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumProc callback, IntPtr parameter);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, out uint pid);
@@ -109,17 +129,58 @@ public static class OfflineSmokeNative {
         IntPtr result;
         return SendMessageTimeout(window, 0, IntPtr.Zero, IntPtr.Zero, 2, 1000, out result) != IntPtr.Zero;
     }
-    public static void RightClick(IntPtr window, int pid) {
+    public static bool RightClick(IntPtr window, int pid) {
+        CursorTargetVerified = false; InputEventsSent = 0; OwnedUiaWindows = 0; OwnedMenuItems = 0;
         uint owner; GetWindowThreadProcessId(window, out owner);
-        if (owner != pid) throw new Exception("WINDOW_OWNER");
-        IntPtr point = new IntPtr((100 << 16) | 100);
-        if (!PostMessage(window, 0x204, new IntPtr(2), point) || !PostMessage(window, 0x205, IntPtr.Zero, point)) throw new Exception("MENU_INPUT");
+        if (owner != pid || !IsWindowVisible(window)) throw new Exception("WINDOW_OWNER");
+        Rect bounds;
+        if (!GetClientRect(window, out bounds)) throw new Exception("CLIENT_RECT_UNAVAILABLE");
+        Point point = new Point(); bool found = false;
+        int[] fractions = { 5, 4, 6, 3, 7, 2, 8, 1, 9 };
+        foreach (int y in fractions) {
+            foreach (int x in fractions) {
+                point = new Point { x = bounds.left + (bounds.right - bounds.left) * x / 10,
+                    y = bounds.top + (bounds.bottom - bounds.top) * y / 10 };
+                if (!ClientToScreen(window, ref point)) throw new Exception("CLIENT_RECT_UNAVAILABLE");
+                if (WindowFromPoint(point) == window) { found = true; break; }
+            }
+            if (found) break;
+        }
+        if (!found) return false;
+        var gui = new GuiThreadInfo { size = (uint)Marshal.SizeOf(typeof(GuiThreadInfo)) };
+        if (!GetGUIThreadInfo(0, ref gui) || gui.capture != IntPtr.Zero) throw new Exception("INPUT_DESKTOP_CAPTURED");
+        foreach (int key in new int[] { 1, 2, 4, 5, 6, 16, 17, 18 }) {
+            if ((GetAsyncKeyState(key) & 0x8000) != 0) throw new Exception("INPUT_ALREADY_PRESSED");
+        }
+        if (!cursorSaved) {
+            if (!GetCursorPos(out originalCursor)) throw new Exception("CURSOR_UNAVAILABLE");
+            cursorSaved = true;
+        }
+        if (!SetCursorPos(point.x, point.y) || !GetCursorPos(out point)) throw new Exception("CURSOR_UNAVAILABLE");
+        GetWindowThreadProcessId(window, out owner);
+        if (owner != pid || WindowFromPoint(point) != window) return false;
+        CursorTargetVerified = true;
+        var inputs = new Input[] { new Input { mouse = new MouseInput { flags = 0x0008 } },
+            new Input { mouse = new MouseInput { flags = 0x0010 } } };
+        InputEventsSent = SendInput(2, inputs, Marshal.SizeOf(typeof(Input)));
+        if (InputEventsSent != 2) {
+            if (InputEventsSent == 1) SendInput(1, new Input[] { inputs[1] }, Marshal.SizeOf(typeof(Input)));
+            throw new Exception("MOUSE_INPUT_REJECTED");
+        }
+        return true;
+    }
+    public static bool RestoreCursor() {
+        return !cursorSaved || SetCursorPos(originalCursor.x, originalCursor.y);
     }
     public static bool InvokeMenu(int pid, string name) {
         var task = Task.Run(delegate {
             var windows = AutomationElement.RootElement.FindAll(TreeScope.Children,
                 new PropertyCondition(AutomationElement.ProcessIdProperty, pid));
+            OwnedUiaWindows = windows.Count; OwnedMenuItems = 0;
             foreach (AutomationElement window in windows) {
+                OwnedMenuItems += window.FindAll(TreeScope.Descendants, new AndCondition(
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.MenuItem),
+                    new PropertyCondition(AutomationElement.ProcessIdProperty, pid))).Count;
                 var item = window.FindFirst(TreeScope.Descendants, new AndCondition(
                     new PropertyCondition(AutomationElement.NameProperty, name),
                     new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.MenuItem),
@@ -151,8 +212,15 @@ function Wait-Until([scriptblock]$Condition, [int]$Seconds, [string]$Failure) {
 function Open-PetMenu([string]$ItemName) {
     $window = [OfflineSmokeNative]::FindWindow($app.Id, 'Aemeath')
     if ($window -eq [IntPtr]::Zero) { throw 'PET_WINDOW_MISSING' }
-    [OfflineSmokeNative]::RightClick($window, $app.Id)
-    Wait-Until { [OfflineSmokeNative]::InvokeMenu($app.Id, $ItemName) } 10 'MENU_ITEM_UNAVAILABLE'
+    try {
+        # WPF rejects inactive-window mouse reports if the real cursor is elsewhere.
+        Wait-Until { [OfflineSmokeNative]::RightClick($window, $app.Id) } 5 'NO_OWNED_CLICK_POINT'
+        Wait-Until { [OfflineSmokeNative]::InvokeMenu($app.Id, $ItemName) } 10 'MENU_ITEM_UNAVAILABLE'
+    } finally {
+        $report.menuAttempts += @{ item = $ItemName; cursorTargetVerified = [OfflineSmokeNative]::CursorTargetVerified
+            inputEventsSent = [OfflineSmokeNative]::InputEventsSent; ownedUiaWindows = [OfflineSmokeNative]::OwnedUiaWindows
+            ownedMenuItems = [OfflineSmokeNative]::OwnedMenuItems }
+    }
 }
 
 $rules = @()
@@ -167,7 +235,7 @@ $report = [ordered]@{
     petVisibleResponding = $false; chatOpened = $false; settingsOpened = $false; cleanExit = $false
     processId = $null; exitCode = $null; firewallBlockedBeforeLaunch = $false; cleanupPassed = $false
     limitations = @('No restart continuity journey', 'No Windows 10/11 real-boundary qualification', 'No accessibility or keyboard-entry qualification')
-    createdData = @()
+    createdData = @(); menuAttempts = @()
 }
 New-Item -ItemType Directory -Path $evidence | Out-Null
 try {
@@ -227,7 +295,7 @@ try {
     $exitStatus = 0
 } catch {
     # Exception text can contain runner paths; retain only the bounded test diagnostic.
-    $code = $_.Exception.Message
+    $code = $_.Exception.GetBaseException().Message
     $report.failureCode = if ($code -cmatch '^[A-Z_]{3,80}$') { $code } else { 'HOSTED_PROBE_EXCEPTION' }
 } finally {
     $cleanupErrors = @()
@@ -244,6 +312,7 @@ try {
         } catch { $cleanupErrors += 'process' }
         finally { $app.Dispose() }
     }
+    if (-not [OfflineSmokeNative]::RestoreCursor()) { $cleanupErrors += 'cursor' }
     foreach ($name in $rules) {
         try {
             Get-NetFirewallRule -Name $name -ErrorAction SilentlyContinue | Remove-NetFirewallRule
