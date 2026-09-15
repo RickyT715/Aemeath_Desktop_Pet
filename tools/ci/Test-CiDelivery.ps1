@@ -1759,6 +1759,148 @@ function Assert-P0A1CiIntegrationContract {
     }
 }
 
+function Get-MissingPreservationByteRules {
+    param(
+        [string[]]$ActiveLines,
+        [string[]]$ExpectedRules
+    )
+
+    $missing = [System.Collections.Generic.List[string]]::new()
+    foreach ($rule in $ExpectedRules) {
+        if ($ActiveLines -cnotcontains $rule) {
+            $missing.Add($rule)
+        }
+    }
+    return @($missing.ToArray())
+}
+
+function Get-PreservationProductionRootFiles {
+    param([string]$RelativeRoot)
+
+    $fullRoot = (Get-Item -Force -LiteralPath $RelativeRoot).FullName
+    $rootItem = Get-Item -Force -LiteralPath $fullRoot
+    if (($rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Preservation production root cannot be a reparse point: $RelativeRoot"
+    }
+    $pathComparison = if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+    $rootPrefix = $fullRoot.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    foreach ($file in @(Get-ChildItem -Force -LiteralPath $fullRoot -Recurse -File)) {
+        if (($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { continue }
+        $directory = $file.Directory
+        $reachedRoot = $false
+        $hasReparsePoint = $false
+        while ($null -ne $directory) {
+            if (($directory.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                $hasReparsePoint = $true
+                break
+            }
+            if ($directory.FullName.Equals($fullRoot, $pathComparison)) {
+                $reachedRoot = $true
+                break
+            }
+            $directory = $directory.Parent
+        }
+        if ($hasReparsePoint -or -not $reachedRoot) { continue }
+        $relativePath = $file.FullName.Substring($repositoryRoot.Length + 1).Replace("\", "/")
+        if ($relativePath -match '(^|/)(bin|obj|__pycache__|\.pytest_cache)(/|$)' -or
+            $relativePath.EndsWith(".pyc", [StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+        $relativePath
+    }
+}
+
+function Assert-PreservationByteAttributes {
+    $expectedRules = @(
+        "docs/verification/preservation-spec-v*.yml -text",
+        "docs/verification/manifests/P0A.1-v*.yml -text",
+        "docs/verification/invalidations/P0A.1-*.json -text",
+        "docs/verification/evidence/P0A.1-*.md -text",
+        "docs/verification/traceability-v*.yml -text",
+        "tests/fixtures/preservation/** -text",
+        "tools/verification/Test-PreservationSpecification.ps1 -text",
+        "tools/ci/CiDeliveryContract.psm1 -text",
+        "docs/verification/manifests/D0.4-v3.yml -text",
+        "docs/verification/environments/D0.4-readiness-v1.json -text",
+        "python-backend/pyproject.toml -text",
+        ".github/workflows/release.yml -text",
+        "src/AemeathDesktopPet/** -text",
+        "python-backend/aemeath_agent/** -text"
+    )
+    $activeLines = @($attributes -split "\r?\n" | ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -and -not $_.StartsWith("#") })
+    $missingRules = @(Get-MissingPreservationByteRules $activeLines $expectedRules)
+    if ($missingRules.Count -ne 0) {
+        throw "Preservation authority bytes must be declared -text: $($missingRules -join ', ')"
+    }
+    foreach ($rule in $expectedRules) {
+        $mutatedActiveLines = @($activeLines | Where-Object { $_ -cne $rule })
+        $mutationFailures = @(Get-MissingPreservationByteRules $mutatedActiveLines $expectedRules)
+        if ($mutationFailures.Count -ne 1 -or $mutationFailures[0] -cne $rule) {
+            throw "Preservation attribute mutation did not diagnose only '$rule'."
+        }
+    }
+
+    $paths = [System.Collections.Generic.List[string]]::new()
+    foreach ($pattern in @(
+            "docs/verification/preservation-spec-v*.yml",
+            "docs/verification/manifests/P0A.1-v*.yml",
+            "docs/verification/invalidations/P0A.1-*.json",
+            "docs/verification/evidence/P0A.1-*.md",
+            "docs/verification/traceability-v*.yml"
+        )) {
+        foreach ($file in @(Get-ChildItem -Path $pattern -File)) {
+            $paths.Add($file.FullName.Substring($repositoryRoot.Length + 1).Replace("\", "/"))
+        }
+    }
+    foreach ($file in @(Get-ChildItem -Path "tests/fixtures/preservation" -File -Recurse)) {
+        $paths.Add($file.FullName.Substring($repositoryRoot.Length + 1).Replace("\", "/"))
+    }
+    foreach ($root in @("src/AemeathDesktopPet", "python-backend/aemeath_agent")) {
+        foreach ($path in @(Get-PreservationProductionRootFiles $root)) {
+            $paths.Add($path)
+        }
+    }
+    foreach ($path in @(
+            "tools/verification/Test-PreservationSpecification.ps1",
+            "tools/ci/CiDeliveryContract.psm1",
+            "docs/verification/manifests/D0.4-v3.yml",
+            "docs/verification/environments/D0.4-readiness-v1.json",
+            "python-backend/pyproject.toml",
+            ".github/workflows/release.yml"
+        )) {
+        $paths.Add($path)
+    }
+
+    $uniquePaths = @($paths.ToArray() | Sort-Object -Unique)
+    foreach ($path in $uniquePaths) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Preservation byte authority is missing: $path"
+        }
+        $attribute = (& git check-attr text -- $path 2>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0 -or $attribute -notmatch ': text: unset$') {
+            throw "Preservation byte authority '$path' is not -text: $attribute"
+        }
+        $rawObject = (& git hash-object --no-filters -- $path 2>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0) { throw "git hash-object --no-filters failed for '$path'." }
+        $filteredObject = (& git hash-object -- $path 2>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0 -or $rawObject -cne $filteredObject) {
+            throw "Git filters change preservation byte authority '$path'."
+        }
+        $indexedObject = (& git rev-parse ":$path" 2>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0 -or $rawObject -cne $indexedObject) {
+            throw "Git index does not retain preservation byte authority '$path'."
+        }
+    }
+    Write-StaticContractPass "preservation authorities retain exact repository bytes"
+}
+
 try {
     $wrappedDiagnostic = ([char]27).ToString() +
         "[31;1mtop-level SOURCE_SHA must select pull-request`n | head or github.sha" +
@@ -1770,6 +1912,7 @@ try {
     Write-StaticContractPass "wrapped/ANSI diagnostic normalization"
 
     Assert-P0A1CiIntegrationContract
+    Assert-PreservationByteAttributes
     $baseline = Invoke-StaticContract -WorkflowContent $workflow -Manifest (Copy-Manifest)
     if ($baseline.ExitCode -ne 0) {
         throw "Valid static CI contract failed: $($baseline.Output)"

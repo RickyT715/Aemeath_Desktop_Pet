@@ -1,1 +1,15 @@
 docs/verification/dependencies/** -text
+docs/verification/preservation-spec-v*.yml -text
+docs/verification/manifests/P0A.1-v*.yml -text
+docs/verification/invalidations/P0A.1-*.json -text
+docs/verification/evidence/P0A.1-*.md -text
+docs/verification/traceability-v*.yml -text
+tests/fixtures/preservation/** -text
+tools/verification/Test-PreservationSpecification.ps1 -text
+tools/ci/CiDeliveryContract.psm1 -text
+docs/verification/manifests/D0.4-v3.yml -text
+docs/verification/environments/D0.4-readiness-v1.json -text
+python-backend/pyproject.toml -text
+.github/workflows/release.yml -text
+src/AemeathDesktopPet/** -text
+python-backend/aemeath_agent/** -text
