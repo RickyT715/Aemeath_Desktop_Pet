@@ -6,7 +6,8 @@ Set-StrictMode -Version Latest
 $requiredTrue = @('petVisibleResponding', 'chatOpened', 'settingsOpened', 'cleanExit', 'cleanupPassed',
     'firewallBlockedBeforeLaunch', 'seedConversationObserved', 'screenshotOffVerified', 'offlineTurnCompleted',
     'firstPersistenceVerified', 'restartConversationObserved', 'restartConfigPositionVerified',
-    'secondPersistenceVerified', 'sameExecutableVerified')
+    'secondPersistenceVerified', 'sameExecutableVerified', 'petWindowPolicyObserved',
+    'chatKeyboardCloseObserved', 'petAliveAfterKeyboardClose')
 function Assert-Result([object]$Result) {
     foreach ($name in $requiredTrue) {
         $property = $Result.PSObject.Properties[$name]

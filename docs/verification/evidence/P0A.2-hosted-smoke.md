@@ -95,3 +95,39 @@ focused real-XAML regression adds two seeded messages plus one immediate reply, 
 containers, readiness, and dispatcher failures. It uses a test-owned WPF Application and temporary
 persistence, never the product startup or the real user profile. Local validation is compile-only;
 the UI regression runs on the disposable hosted worker.
+
+### Repaired-source conversation and restart passed
+
+Source `461f50445aaa18bd633ff20f18ab41d463b69101`,
+[hosted run 35058872108](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35058872108),
+passed the unchanged offline conversation/restart assertions. The downloaded result checker exited
+0: four ordered messages persisted, the chat counter increased once to 12, the same executable
+restored history/configuration/position, both clean exits returned 0, and final cleanup passed.
+Screenshot capture stayed off. The real-XAML `ChatWindowTests` regression also passed (1 test,
+0 failures, 0 skips). Release compilation passed locally without running the app or UI test.
+
+This is repaired-source GREEN after the recorded baseline RED, not unchanged-baseline qualification
+or completion of the assistant. The separate main CI preservation check correctly rejects the
+production digest change until the explicit one-file exception is integrated. Its exact historical
+byte-source clarification is awaiting approval; no frozen baseline identity/hash has been changed.
+
+For this same source, [main CI run 35058872091](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35058872091)
+passed Delivery Contract, .NET Release Build, Delivery Environment, and Dependency Qualification.
+Verification Contracts failed with `P0A1-FIXED-INPUT-AUTHORITY` for
+`production-root:src/AemeathDesktopPet`. Overall main CI is therefore not green. Both the exact
+pre-repair byte-source clarification and routing CI through the additive one-file exception
+wrapper require explicit approval before integration; the original validator remains unchanged.
+
+### Native window policy and keyboard close extension
+
+The extended result checker first rejected the earlier successful repaired-source artifact at
+`OFFLINE-RESULT-MISSING: petWindowPolicyObserved`; that earlier run is not evidence for new checks.
+The pure helper contract first failed on missing `RequirePetStyle`. After implementation, local
+Windows PowerShell 5 checks passed: native layout/style/target/key-up planning without native calls,
+35 result acceptance/rejection cases, the real non-hosted refusal with exit 23 before writes, and
+the existing 8 canned chat-observation cases. No product process or native input ran locally.
+
+The hosted extension requires native layered/topmost/tool-window policy and guarded Alt+F4 close
+on both launches, followed by a still-running responsive Pet. The original conversation, restart,
+firewall, screenshot-off, and cleanup requirements remain. Real execution evidence is pending;
+keyboard-only entry, accessibility, and the Windows 10/11 matrix remain unqualified.

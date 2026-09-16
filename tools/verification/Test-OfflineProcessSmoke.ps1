@@ -93,7 +93,12 @@ public static class OfflineSmokeNative {
     [StructLayout(LayoutKind.Sequential)] private struct Point { public int x, y; }
     [StructLayout(LayoutKind.Sequential)] private struct Rect { public int left, top, right, bottom; }
     [StructLayout(LayoutKind.Sequential)] private struct MouseInput { public int dx, dy; public uint data, flags, time; public UIntPtr extra; }
-    [StructLayout(LayoutKind.Sequential)] private struct Input { public uint type; public MouseInput mouse; }
+    [StructLayout(LayoutKind.Sequential)] private struct KeyboardInput { public ushort virtualKey, scan; public uint flags, time; public UIntPtr extra; }
+    [StructLayout(LayoutKind.Explicit)] private struct InputUnion {
+        [FieldOffset(0)] public MouseInput mouse;
+        [FieldOffset(0)] public KeyboardInput keyboard;
+    }
+    [StructLayout(LayoutKind.Sequential)] private struct Input { public uint type; public InputUnion data; }
     [StructLayout(LayoutKind.Sequential)] private struct GuiThreadInfo {
         public uint size, flags; public IntPtr active, focus, capture, menuOwner, moveSize, caret; public Rect caretRect;
     }
@@ -101,6 +106,8 @@ public static class OfflineSmokeNative {
     private static bool cursorSaved;
     public static bool CursorTargetVerified;
     public static uint InputEventsSent;
+    public static bool KeyboardTargetVerified, KeyboardKeyUpCleanupPassed = true;
+    public static uint KeyboardEventsSent;
     public static int OwnedUiaWindows, OwnedMenuItems;
     public static int ChatReadAttempts, ChatItemCount;
     public static string ChatReadOperation = "not-started";
@@ -113,6 +120,9 @@ public static class OfflineSmokeNative {
     [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr window, ref Point point);
     [DllImport("user32.dll")] private static extern bool GetGUIThreadInfo(uint thread, ref GuiThreadInfo info);
     [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll", EntryPoint="GetWindowLongPtrW")] private static extern IntPtr GetWindowLongPtr(IntPtr window, int index);
+    [DllImport("user32.dll", EntryPoint="GetWindowLongW")] private static extern int GetWindowLong(IntPtr window, int index);
     [DllImport("user32.dll")] private static extern uint SendInput(uint count, Input[] inputs, int size);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumProc callback, IntPtr parameter);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
@@ -147,6 +157,59 @@ public static class OfflineSmokeNative {
         IntPtr result;
         return SendMessageTimeout(window, 0, IntPtr.Zero, IntPtr.Zero, 2, 1000, out result) != IntPtr.Zero;
     }
+    private static void RequirePetStyle(long style) {
+        const long required = 0x00080088; // WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+        if ((style & required) != required || (style & 0x20) != 0) throw new Exception("PET_WINDOW_POLICY_MISMATCH");
+    }
+    public static long ObservePetPolicy(int pid) {
+        IntPtr window = FindWindow(pid, "Aemeath");
+        uint owner; GetWindowThreadProcessId(window, out owner);
+        if (window == IntPtr.Zero || owner != pid || !IsWindowVisible(window) || !Responding(window)) throw new Exception("PET_NOT_VISIBLE_RESPONDING");
+        long style = (IntPtr.Size == 8 ? GetWindowLongPtr(window, -20).ToInt64() : GetWindowLong(window, -20)) & 0xFFFFFFFFL;
+        RequirePetStyle(style);
+        return style;
+    }
+    private static void RequireKeyboardTarget(IntPtr window, int pid, IntPtr foreground, uint owner,
+        bool visible, bool responding, bool captured, bool pressed) {
+        if (window == IntPtr.Zero || pid <= 0 || foreground != window || owner != pid || !visible || !responding || captured || pressed)
+            throw new Exception("KEYBOARD_TARGET_UNSAFE");
+    }
+    private static Input Key(ushort virtualKey, uint flags) {
+        return new Input { type = 1, data = new InputUnion { keyboard = new KeyboardInput { virtualKey = virtualKey, flags = flags } } };
+    }
+    private static Input[] AltF4Inputs() {
+        return new Input[] { Key(0x12, 0), Key(0x73, 0), Key(0x73, 2), Key(0x12, 2) };
+    }
+    private static Input[] PendingKeyUps(uint sent) {
+        if (sent == 2) return new Input[] { Key(0x73, 2), Key(0x12, 2) };
+        if (sent == 1 || sent == 3) return new Input[] { Key(0x12, 2) };
+        return new Input[0];
+    }
+    public static void CloseChatWithKeyboard(int pid) {
+        KeyboardTargetVerified = false; KeyboardEventsSent = 0; KeyboardKeyUpCleanupPassed = true;
+        IntPtr window = FindWindow(pid, "Chat with Aemeath");
+        bool visible = IsWindowVisible(window), responding = window != IntPtr.Zero && Responding(window);
+        var gui = new GuiThreadInfo { size = (uint)Marshal.SizeOf(typeof(GuiThreadInfo)) };
+        bool captured = !GetGUIThreadInfo(0, ref gui) || gui.capture != IntPtr.Zero || gui.menuOwner != IntPtr.Zero;
+        bool pressed = false;
+        foreach (int key in new int[] { 1, 2, 4, 5, 6, 16, 17, 18, 91, 92, 115 })
+            pressed |= (GetAsyncKeyState(key) & 0x8000) != 0;
+        uint owner; GetWindowThreadProcessId(window, out owner);
+        RequireKeyboardTarget(window, pid, GetForegroundWindow(), owner, visible, responding, captured, pressed);
+        KeyboardTargetVerified = true;
+        KeyboardEventsSent = SendInput(4, AltF4Inputs(), Marshal.SizeOf(typeof(Input)));
+        if (KeyboardEventsSent == 4) return;
+        var pending = PendingKeyUps(KeyboardEventsSent);
+        KeyboardKeyUpCleanupPassed = pending.Length == 0;
+        // Never replay the shortcut; bounded recovery releases only keys this partial batch pressed.
+        for (int attempt = 0; attempt < 2 && pending.Length > 0; attempt++) {
+            uint released = SendInput((uint)pending.Length, pending, Marshal.SizeOf(typeof(Input)));
+            var remaining = new Input[pending.Length - (int)released];
+            Array.Copy(pending, (int)released, remaining, 0, remaining.Length); pending = remaining;
+        }
+        KeyboardKeyUpCleanupPassed = pending.Length == 0;
+        throw new Exception(KeyboardKeyUpCleanupPassed ? "KEYBOARD_INPUT_REJECTED" : "KEYBOARD_KEYUP_CLEANUP_FAILED");
+    }
     public static bool RightClick(IntPtr window, int pid) {
         CursorTargetVerified = false; InputEventsSent = 0; OwnedUiaWindows = 0; OwnedMenuItems = 0;
         uint owner; GetWindowThreadProcessId(window, out owner);
@@ -178,8 +241,8 @@ public static class OfflineSmokeNative {
         GetWindowThreadProcessId(window, out owner);
         if (owner != pid || WindowFromPoint(point) != window) return false;
         CursorTargetVerified = true;
-        var inputs = new Input[] { new Input { mouse = new MouseInput { flags = 0x0008 } },
-            new Input { mouse = new MouseInput { flags = 0x0010 } } };
+        var inputs = new Input[] { new Input { data = new InputUnion { mouse = new MouseInput { flags = 0x0008 } } },
+            new Input { data = new InputUnion { mouse = new MouseInput { flags = 0x0010 } } } };
         InputEventsSent = SendInput(2, inputs, Marshal.SizeOf(typeof(Input)));
         if (InputEventsSent != 2) {
             if (InputEventsSent == 1) SendInput(1, new Input[] { inputs[1] }, Marshal.SizeOf(typeof(Input)));
@@ -422,8 +485,11 @@ $report = [ordered]@{
     executableSha256 = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash.ToLowerInvariant()
     osVersion = [Environment]::OSVersion.Version.ToString(); sessionId = (Get-Process -Id $PID).SessionId
     petVisibleResponding = $false; chatOpened = $false; settingsOpened = $false; cleanExit = $false
+    petWindowPolicyObserved = $false; chatKeyboardCloseObserved = $false; petAliveAfterKeyboardClose = $false
+    petWindowPolicies = @(); keyboardCloseAttempts = @()
     processId = $null; exitCode = $null; firewallBlockedBeforeLaunch = $false; cleanupPassed = $false
-    limitations = @('No Windows 10/11 real-boundary qualification', 'No accessibility or keyboard-entry qualification')
+    limitations = @('No Windows 10/11 real-boundary qualification', 'Native styles do not prove whole-client boundary behavior',
+        'No accessibility qualification', 'Keyboard-only Chat entry remains an explicit gap; opening is mouse-assisted')
     createdData = @(); menuAttempts = @(); chatObservations = @(); cleanExitCount = 0; processIds = @(); exitCodes = @()
     seedConversationObserved = $false; screenshotOffVerified = $false; offlineTurnCompleted = $false
     firstPersistenceVerified = $false; restartConversationObserved = $false; restartConfigPositionVerified = $false
@@ -481,6 +547,8 @@ try {
         $pet -ne [IntPtr]::Zero -and [OfflineSmokeNative]::Responding($pet)
     } 30 'PET_NOT_VISIBLE_RESPONDING'
     $report.petVisibleResponding = $true
+    $report.petWindowPolicies += @{ launch = $launch; extendedStyle = [OfflineSmokeNative]::ObservePetPolicy($app.Id) }
+    $report.petWindowPolicyObserved = $report.petWindowPolicies.Count -eq 2
     if ($launch -eq 2) {
         $restored = [OfflineSmokeNative]::PetRectangle($app.Id)
         if ([math]::Abs($restored[0] - $firstSaved.config.lastX) -gt 2 -or
@@ -537,8 +605,29 @@ try {
             if (-not [OfflineSmokeNative]::SafeSettingsObserved($app.Id)) { throw 'RESTART_SETTINGS_CHANGED' }
             $report.restartConfigPositionVerified = $true
         }
-        [OfflineSmokeNative]::CloseWindow([OfflineSmokeNative]::FindWindow($app.Id, $surface.title), $app.Id)
+        if ($surface.field -eq 'chatOpened') {
+            $report.stage = "chat-keyboard-close-$launch"
+            $keyboardClose = [ordered]@{ launch = $launch; targetVerified = $false; eventsSent = 0
+                keyUpCleanupPassed = $false; chatClosed = $false; petAlive = $false }
+            $report.keyboardCloseAttempts += $keyboardClose
+            try { [OfflineSmokeNative]::CloseChatWithKeyboard($app.Id) }
+            finally {
+                $keyboardClose.targetVerified = [OfflineSmokeNative]::KeyboardTargetVerified
+                $keyboardClose.eventsSent = [OfflineSmokeNative]::KeyboardEventsSent
+                $keyboardClose.keyUpCleanupPassed = [OfflineSmokeNative]::KeyboardKeyUpCleanupPassed
+            }
+        } else {
+            [OfflineSmokeNative]::CloseWindow([OfflineSmokeNative]::FindWindow($app.Id, $surface.title), $app.Id)
+        }
         Wait-Until { [OfflineSmokeNative]::FindWindow($app.Id, $surface.title) -eq [IntPtr]::Zero } 10 'COMPANION_DID_NOT_CLOSE'
+        if ($surface.field -eq 'chatOpened') {
+            $keyboardClose.chatClosed = $true
+            $pet = [OfflineSmokeNative]::FindWindow($app.Id, 'Aemeath')
+            if ($app.HasExited -or $pet -eq [IntPtr]::Zero -or -not [OfflineSmokeNative]::Responding($pet)) { throw 'PET_LOST_AFTER_CHAT_CLOSE' }
+            $keyboardClose.petAlive = $true
+            $report.chatKeyboardCloseObserved = $report.keyboardCloseAttempts.Count -eq 2
+            $report.petAliveAfterKeyboardClose = $report.chatKeyboardCloseObserved
+        }
     }
     $report.stage = "quit-$launch"
     $quitStarted = [datetime]::UtcNow
@@ -573,6 +662,7 @@ try {
     try { $report.ownedFailureFacts = Get-OwnedFailureFacts } catch { } # Diagnostics cannot replace the original failure.
 } finally {
     $cleanupErrors = @()
+    if (-not [OfflineSmokeNative]::KeyboardKeyUpCleanupPassed) { $cleanupErrors += 'keyboard' }
     if ($job -ne [IntPtr]::Zero) {
         try {
             if (-not [OfflineSmokeNative]::TerminateJobObject($job, 99)) { $cleanupErrors += 'job' }

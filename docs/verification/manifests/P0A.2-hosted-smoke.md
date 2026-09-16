@@ -68,3 +68,20 @@ The following extension is specified before its executable checks are added:
 
 This extension uses the same process/safety lanes and does not claim Windows 10/11, accessibility,
 keyboard-entry, or the rest of Gate 0A has passed. It adds no production behavior or data-root seam.
+
+## Next portion: native window policies and keyboard close
+
+After the repaired-source restart run passes, extend only the same disposable-worker probe:
+
+- Read extended styles from the exact process-owned, visible/responding Pet HWND. Require native
+  layered, topmost, and tool-window flags, with click-through absent under the fixed fixture.
+  This records actual native window policy, not pixel transparency or full Windows 10/11 coverage.
+- Close Chat with real Alt+F4 only after exact foreground HWND/PID checks and refusal of already-held
+  modifiers or capture. Release only the injected keys on partial failure; preserve existing bounded
+  waits, job/process ownership, firewall, and profile guards. Require Chat to disappear while the
+  owned Pet remains alive and responsive. Settings can retain its existing close path.
+- Make missing/false native-policy and keyboard-close evidence fail the result checker. Run only
+  canned/compilation checks locally; real native input remains confined to the hosted worker.
+- Keep keyboard-only companion entry explicitly unqualified: the frozen specification records that
+  current gap, and Ctrl+F2 would activate recording. This portion neither enables voice nor claims
+  that programmatic focus or mouse-assisted opening fixes keyboard-only entry.

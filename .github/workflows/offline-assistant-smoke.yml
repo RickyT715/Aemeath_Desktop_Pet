@@ -63,6 +63,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineChatObservation.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineWindowInputContract.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeResult.ps1 -SelfTest
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/Test-OfflineProcessSmoke.ps1 -EvidenceDirectory artifacts/ci/offline-process-smoke *>&1 |
