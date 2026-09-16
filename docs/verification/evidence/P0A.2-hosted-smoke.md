@@ -1,7 +1,8 @@
 # P0A.2 hosted application evidence
 
 This is bounded disposable-worker evidence, not completion of P0A.2 or the Windows 10/11 matrix.
-The production application remains unchanged.
+The launch-only and baseline crash runs below used unchanged production. The narrowly approved
+repair is tracked separately and must not be called an unchanged-baseline pass.
 
 ## Pet, Chat, Settings, and Quit
 
@@ -60,3 +61,37 @@ narrows the failing boundary but does not yet distinguish temporary peer absence
 failure. Cleanup passed; reply/restart remain unproven. Its
 [required CI run 35042910191](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042910191)
 passed all five jobs and exact-source artifact validation.
+
+### Confirmed baseline application crash
+
+Source `fdb4dd627a0aeb8072c07e83deb6732a6784630d`,
+[hosted run 35043904177](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35043904177),
+establishes that the application exits after the one Send action, before cleanup terminates it:
+
+- Owned process exited with code `-532462766`; both Pet and Chat windows were absent.
+- A PID/time/executable-scoped .NET Runtime event recorded `System.InvalidOperationException`.
+- Sanitized framework frames include `System.Windows.Controls.ItemContainerGenerator.Verify`,
+  `VirtualizingStackPanel.MeasureChild`, and `VirtualizingStackPanel.MeasureOverrideImpl`.
+- The observation's COM HRESULT was `-2147418113` at `find-list`. It is downstream of the process
+  failure, not evidence that arbitrary UI Automation errors should be retried.
+- The seeded conversation and screenshot-off checks passed. No new turn was persisted; reply,
+  clean exit, and restart oracles did not pass. Cleanup passed.
+
+This is a real baseline defect encountered by the journey, not a successful assistant turn or a
+reason to weaken the assertions. The exact source-level trigger still needs a focused reproducer.
+On 2026-09-16 the user answered the narrow early-repair request with "continue until finish
+everything". This authorizes the chat-crash repair while preserving the historical baseline and
+the isolation controls; it does not declare Gate 0A complete or waive unrelated qualification.
+
+The separate [required CI run 35043904174](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35043904174)
+passed all five jobs for `fdb4dd6`; `Wait-ForCi.ps1` validated the exact-source artifacts and exited 0.
+Those passing build/contract/dependency checks do not override the failing real application journey.
+
+The candidate changes only the Chat window's collection-change view update: queue it at WPF
+`Loaded` dispatcher priority, ignore an unloaded window, and select the newest last item inside
+the callback. Message storage and ViewModel replacement behavior remain unchanged. The existing
+hosted journey supplies RED; its assertions remain unchanged for the repaired-source run. A
+focused real-XAML regression adds two seeded messages plus one immediate reply, checking ordered
+containers, readiness, and dispatcher failures. It uses a test-owned WPF Application and temporary
+persistence, never the product startup or the real user profile. Local validation is compile-only;
+the UI regression runs on the disposable hosted worker.

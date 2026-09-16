@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using AemeathDesktopPet.ViewModels;
 
 namespace AemeathDesktopPet.Views;
@@ -18,10 +19,16 @@ public partial class ChatWindow : Window
 
         _vm.Messages.CollectionChanged += (_, _) =>
         {
-            UpdateEmptyState();
-            // Auto-scroll to bottom
-            if (MessageList.Items.Count > 0)
-                MessageList.ScrollIntoView(MessageList.Items[^1]);
+            // Let collection notifications finish before scrolling can trigger WPF layout.
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                if (!IsLoaded)
+                    return;
+
+                UpdateEmptyState();
+                if (MessageList.Items.Count > 0)
+                    MessageList.ScrollIntoView(MessageList.Items[^1]);
+            }));
         };
 
         _vm.PropertyChanged += OnVmPropertyChanged;

@@ -48,11 +48,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Build the desktop assistant
+        id: build
         shell: pwsh
         run: |
-          dotnet restore src/AemeathDesktopPet/AemeathDesktopPet.csproj
+          dotnet restore AemeathDesktopPet.sln
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build src/AemeathDesktopPet/AemeathDesktopPet.csproj -c Release --no-restore
+          dotnet build AemeathDesktopPet.sln -c Release --no-restore
           exit $LASTEXITCODE
 
       - name: Run offline launch on this disposable worker
@@ -70,11 +71,21 @@ jobs:
           powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/verification/tests/Test-OfflineProcessSmokeResult.ps1 -ResultPath artifacts/ci/offline-process-smoke/offline-process-smoke.json
           exit $LASTEXITCODE
 
+      - name: Regress chat collection updates on this disposable worker
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          dotnet test tests/AemeathDesktopPet.Tests/AemeathDesktopPet.Tests.csproj -c Release --no-build --filter "FullyQualifiedName=AemeathDesktopPet.Tests.Views.ChatWindowTests.ImmediateReply_AfterSeededHistory_RendersOrderedMessagesAndRemainsReady" --logger "trx;LogFileName=chat-collection-regression.trx" --results-directory artifacts/ci/chat-collection-regression *>&1 |
+            Tee-Object artifacts/ci/chat-collection-regression.log
+          exit $LASTEXITCODE
+
       - name: Retain smoke results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: offline-assistant-smoke-${{ env.SOURCE_SHA }}
-          path: artifacts/ci/offline-process-smoke*
+          path: |
+            artifacts/ci/offline-process-smoke*
+            artifacts/ci/chat-collection-regression*
           if-no-files-found: error
           retention-days: 90

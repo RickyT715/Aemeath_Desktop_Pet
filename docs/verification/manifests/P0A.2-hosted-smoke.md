@@ -1,8 +1,11 @@
 # P0A.2 bounded hosted smoke
 
 Scope: the first process-smoke portion of P0A.2, not completion of P0A.2 or Gate 0A.
-Baseline production is unchanged from the P0A.1 delivery commit
-`be36a304b4da2beb302f69cef1a384d85027da2e`.
+Historical baseline production is preserved at the P0A.1 delivery commit
+`be36a304b4da2beb302f69cef1a384d85027da2e`. The user approved a narrow early chat-crash repair on
+2026-09-16 after the real baseline process failure at `fdb4dd6`. Repaired-source runs are reported
+separately from unchanged-baseline qualification; all existing isolation and behavioral oracles stay
+in force. The exception does not authorize unrelated production changes or complete Gate 0A.
 
 Before the first remote application launch, this packet fixes the following risks and oracles.
 The preparatory non-hosted refusal test has already had a RED/GREEN cycle; it is safety-tooling
