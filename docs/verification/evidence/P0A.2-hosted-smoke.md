@@ -51,3 +51,12 @@ error and sending the message once. No reply, persistence, or restart success is
 All five required jobs in
 [CI run 35042216238](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042216238)
 passed for that exact source, with downloaded artifacts validated by `Wait-ForCi.ps1`.
+
+The diagnostic run on `22fce104779da7ebf451bea17e2ba9ce029a4dab`,
+[35042910188](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042910188),
+again observed the seeded messages, then failed at `find-list` with
+`COMPANION_CONTROL_MISSING` after Send. It did not reproduce the earlier COM exception. This
+narrows the failing boundary but does not yet distinguish temporary peer absence from process
+failure. Cleanup passed; reply/restart remain unproven. Its
+[required CI run 35042910191](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042910191)
+passed all five jobs and exact-source artifact validation.

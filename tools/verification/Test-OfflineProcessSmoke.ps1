@@ -311,6 +311,56 @@ function Wait-Until([scriptblock]$Condition, [int]$Seconds, [string]$Failure) {
     } while ($timer.Elapsed.TotalSeconds -lt $Seconds)
     throw $Failure
 }
+function Read-ChatSnapshot {
+    if ($app.HasExited) { throw 'EARLY_PROCESS_EXIT' }
+    try { return [OfflineSmokeNative]::ReadChat($app.Id) }
+    catch {
+        $readError = $_.Exception.GetBaseException()
+        if ($readError.GetType() -ne [Exception] -or $readError.Message -cne 'COMPANION_CONTROL_MISSING') { throw }
+        if ($app.HasExited) { throw 'EARLY_PROCESS_EXIT' }
+        if ([OfflineSmokeNative]::FindWindow($app.Id, 'Chat with Aemeath') -eq [IntPtr]::Zero) { throw 'COMPANION_WINDOW_MISSING' }
+        return @() # Only this owned missing peer is pending; the caller's original deadline still applies.
+    }
+}
+function Get-OwnedFailureFacts {
+    $facts = [ordered]@{ exited = $null; exitCode = $null; petWindowPresent = $null; chatWindowPresent = $null
+        runtimeEventQuery = 'not-run'; runtimePidZeroAttributionUsed = $false; runtimeExceptionTypes = @()
+        runtimeProductMethods = @(); runtimeFrameworkMethods = @() }
+    if ($null -eq $app) { return [pscustomobject]$facts }
+    try {
+        [void]$app.WaitForExit(1000) # Bounded wait for an already-failing owned process, before cleanup can terminate it.
+        $facts.exited = $app.HasExited
+        if ($facts.exited) { $facts.exitCode = $app.ExitCode }
+    } catch { }
+    try {
+        $facts.petWindowPresent = [OfflineSmokeNative]::FindWindow($app.Id, 'Aemeath') -ne [IntPtr]::Zero
+        $facts.chatWindowPresent = [OfflineSmokeNative]::FindWindow($app.Id, 'Chat with Aemeath') -ne [IntPtr]::Zero
+    } catch { }
+    try {
+        $since = $app.StartTime.ToUniversalTime().ToString('o')
+        $query = "*[System[Provider[@Name='.NET Runtime'] and EventID=1026 and (Execution[@ProcessID='$($app.Id)'] or Execution[@ProcessID='0']) and TimeCreated[@SystemTime>='$since']]]"
+        $events = @(Get-WinEvent -LogName Application -FilterXPath $query -MaxEvents 3 -ErrorAction Stop)
+        $facts.runtimeEventQuery = 'queried'
+        foreach ($event in $events) {
+            if (($event.ProcessId -ne $app.Id -and $event.ProcessId -ne 0) -or $event.TimeCreated -lt $app.StartTime) { continue }
+            $message = $event.Message
+            if ($message -cnotmatch '(?m)^Application: AemeathDesktopPet\.exe\r?$') { continue }
+            # Classic runtime events may omit PID; exact basename/start time is scoped by the exclusive disposable-worker guard.
+            if ($event.ProcessId -eq 0) { $facts.runtimePidZeroAttributionUsed = $true }
+            $facts.runtimeExceptionTypes += @([regex]::Matches($message,
+                '(?m)^Exception Info: (System\.(?:InvalidOperationException|NullReferenceException|ArgumentException|ArgumentOutOfRangeException|IndexOutOfRangeException|ObjectDisposedException|StackOverflowException|AccessViolationException|Runtime\.InteropServices\.COMException))(?=:|\r?$)') |
+                ForEach-Object { $_.Groups[1].Value } | Select-Object -First 3)
+            $facts.runtimeProductMethods += @([regex]::Matches($message, '(?m)^\s+at (AemeathDesktopPet\.[A-Za-z0-9_.+<>]+)\(') |
+                ForEach-Object { $_.Groups[1].Value } | Select-Object -First 6)
+            $facts.runtimeFrameworkMethods += @([regex]::Matches($message, '(?m)^\s+at (System\.(?:Windows|Collections)\.[A-Za-z0-9_.+`]+)(?:<[^()\r\n]{0,256}>)?(\.[A-Za-z0-9_<>]+)?\(') |
+                ForEach-Object { $_.Groups[1].Value + $_.Groups[2].Value } | Select-Object -First 12)
+        }
+        $facts.runtimeExceptionTypes = @($facts.runtimeExceptionTypes | Select-Object -Unique -First 3)
+        $facts.runtimeProductMethods = @($facts.runtimeProductMethods | Select-Object -Unique -First 6)
+        $facts.runtimeFrameworkMethods = @($facts.runtimeFrameworkMethods | Select-Object -Unique -First 12)
+    } catch { $facts.runtimeEventQuery = if ($_.FullyQualifiedErrorId -like 'NoMatchingEventsFound*') { 'none' } else { 'unavailable' } }
+    return [pscustomobject]$facts
+}
 function Open-PetMenu([string]$ItemName) {
     $window = [OfflineSmokeNative]::FindWindow($app.Id, 'Aemeath')
     if ($window -eq [IntPtr]::Zero) { throw 'PET_WINDOW_MISSING' }
@@ -381,6 +431,7 @@ $report = [ordered]@{
     assistantReplyLength = 0; savedMessageCount = 0; savedTotalChats = 0
     failureExceptionType = $null; failureScriptLine = 0
     failureHResult = $null; lastChatReadOperation = $null; lastChatReadItemIndex = -1
+    ownedFailureFacts = $null
 }
 # PS5 emits a JSON array as one pipeline object; assignment preserves that array without nesting it.
 $seedMessages = $fixtureTexts['messages.json'] | ConvertFrom-Json
@@ -452,7 +503,7 @@ try {
             [OfflineSmokeNative]::ChatReadAttempts = 0
             try {
                 Wait-Until {
-                    $chatRead.items = @([OfflineSmokeNative]::ReadChat($app.Id))
+                    $chatRead.items = @(Read-ChatSnapshot)
                     $chatRead.items.Count -ge 2 -and $chatRead.items[0] -ceq $seedMessages[0].content -and
                         $chatRead.items[1] -ceq $seedMessages[1].content
                 } 15 'SEED_CHAT_NOT_OBSERVED'
@@ -471,7 +522,7 @@ try {
                 Wait-Until { [OfflineSmokeNative]::SendEnabled($app.Id) } 5 'SEND_NOT_READY'
                 [OfflineSmokeNative]::Send($app.Id)
                 $report.stage = 'offline-reply'
-                Wait-Until { $items = @([OfflineSmokeNative]::ReadChat($app.Id)); $items.Count -eq 4 -and
+                Wait-Until { $items = @(Read-ChatSnapshot); $items.Count -eq 4 -and
                     $items[2] -ceq $sentText -and -not [string]::IsNullOrWhiteSpace($items[3]) } 30 'OFFLINE_REPLY_MISSING'
                 [OfflineSmokeNative]::Draft($app.Id, 'OFFLINE_SMOKE_UNSENT_READY_DRAFT')
                 Wait-Until { [OfflineSmokeNative]::SendEnabled($app.Id) } 10 'CHAT_NOT_READY_AFTER_REPLY'
@@ -519,6 +570,7 @@ try {
     $report.failureHResult = $baseException.HResult
     $report.lastChatReadOperation = [OfflineSmokeNative]::ChatReadOperation
     $report.lastChatReadItemIndex = [OfflineSmokeNative]::ChatReadItemIndex
+    try { $report.ownedFailureFacts = Get-OwnedFailureFacts } catch { } # Diagnostics cannot replace the original failure.
 } finally {
     $cleanupErrors = @()
     if ($job -ne [IntPtr]::Zero) {

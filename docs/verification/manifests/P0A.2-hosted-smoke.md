@@ -36,8 +36,11 @@ source record, process summary, and bounded stdout log; it does not upload perso
 The workflow has read-only repository permissions and requires no provider credentials.
 
 Still required in P0A.2: restart continuity for config/position/stats/history, transparent/topmost
-real-boundary observation, and keyboard companion journeys on qualified disposable Windows 10/11.
-Hosted evidence is not a substitute for those lanes, and a setup refusal is not a product failure.
+real-boundary observation, and keyboard companion characterization on a disposable interactive
+Windows worker. The frozen specification records keyboard-only companion entry as a current gap;
+programmatic focus or mouse-assisted menu activation cannot be counted as closing that gap.
+D0.4 permits the hosted worker for this bounded step. The dedicated Windows 10/11 matrix remains
+required by P0A.8; hosted evidence does not replace it. A setup refusal is not a product failure.
 
 ## Next portion: offline conversation and restart continuity
 
