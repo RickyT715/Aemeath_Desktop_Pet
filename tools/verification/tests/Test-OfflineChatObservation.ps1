@@ -35,10 +35,15 @@ Add-Type -TypeDefinition @'
 using System;
 public static class OfflineSmokeNative {
     public static int Mode, ChatReadAttempts, ChatItemCount;
+    public static string ChatReadOperation = "not-started";
+    public static int ChatReadItemIndex = -1;
     public static int[] ChatItemNameLengths = new int[0], ChatTextCounts = new int[0], ChatTextLengths = new int[0];
     public static string[] ReadChat(int pid) {
         ChatReadAttempts++;
+        ChatReadOperation = "find-text"; ChatReadItemIndex = 1;
         if (Mode == 2) throw new InvalidOperationException("synthetic diagnostic CANARY_PATH must not be reported");
+        if (Mode >= 3) throw new System.Runtime.InteropServices.COMException("CANARY_PATH must not be reported",
+            Mode == 3 ? unchecked((int)0x80040201) : unchecked((int)0x80004005));
         if (Mode == 1 && ChatReadAttempts == 1) return new string[0];
         string[] result = { "OFFLINE_SMOKE_USER_SENTINEL_7C4A", "OFFLINE_SMOKE_ASSISTANT_SENTINEL_9D2F" };
         ChatItemCount = 2; ChatItemNameLengths = new int[] { 0, 0 }; ChatTextCounts = new int[] { 1, 1 };
@@ -48,9 +53,10 @@ public static class OfflineSmokeNative {
 }
 '@
 
-foreach ($mode in @(0, 1, 2)) {
+foreach ($mode in @(0, 1, 2, 3, 4)) {
     [OfflineSmokeNative]::Mode = $mode
-    $report = [ordered]@{ chatObservations = @(); failureCode = $null; failureExceptionType = $null; failureScriptLine = 0 }
+    $report = [ordered]@{ chatObservations = @(); failureCode = $null; failureExceptionType = $null; failureScriptLine = 0
+        failureHResult = $null; lastChatReadOperation = $null; lastChatReadItemIndex = -1 }
     $app = [pscustomobject]@{ Id = 123 }; $launch = 1
     . $loadSeed
     try { . $observe } catch { . $failureHandler }
@@ -58,12 +64,18 @@ foreach ($mode in @(0, 1, 2)) {
         throw 'OBSERVATION-REGRESSION: readiness finally lost diagnostics with the actual JSON fixture loader.'
     }
     $diagnostic = $report.chatObservations[0]
-    if ($mode -eq 2) {
+    if ($mode -ge 2) {
+        $expectedType = if ($mode -eq 2) { 'System.InvalidOperationException' } else { 'System.Runtime.InteropServices.COMException' }
         if ($report.failureCode -cne 'HOSTED_PROBE_EXCEPTION' -or
-            $report.failureExceptionType -cne 'System.InvalidOperationException' -or $report.failureScriptLine -le 0 -or
+            $report.failureExceptionType -cne $expectedType -or $report.failureScriptLine -le 0 -or $diagnostic.attempts -ne 1 -or
             $diagnostic.seedUserMatched -or $diagnostic.seedAssistantMatched -or
             ($report | ConvertTo-Json -Depth 5) -match 'CANARY_PATH') {
             throw 'OBSERVATION-REGRESSION: provider failure must keep safe metadata and failed observations.'
+        }
+        if ($mode -ge 3) {
+            $expectedHResult = if ($mode -eq 3) { -2147220991 } else { -2147467259 }
+            if ($report.failureHResult -ne $expectedHResult -or $report.lastChatReadOperation -cne 'find-text' -or
+                $report.lastChatReadItemIndex -ne 1) { throw 'OBSERVATION-REGRESSION: COM HRESULT/operation/index evidence missing.' }
         }
     } elseif ($report.failureCode -or $seedMessages.Count -ne 2 -or $observed.Count -ne 2 -or
         -not $diagnostic.seedUserMatched -or -not $diagnostic.seedAssistantMatched -or
@@ -80,4 +92,4 @@ $snapshot['messages'] = '[{},{},{},{}]' | ConvertFrom-Json
 [OfflineSmokeNative]::Mode = 0
 $nativeItems = @([OfflineSmokeNative]::ReadChat(123))
 if ($history.Count -ne 4 -or $nativeItems.Count -ne 2) { throw 'OBSERVATION-REGRESSION: persistence/native array boundary changed.' }
-Write-Output 'PASS: 3 canned observation cases plus persistence/native array counts; actual fixture loader/readiness/finally, no product or native calls.'
+Write-Output 'PASS: 5 canned observation cases including unhandled COM codes/diagnostics plus persistence/native array counts; no product or native calls.'

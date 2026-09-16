@@ -103,6 +103,8 @@ public static class OfflineSmokeNative {
     public static uint InputEventsSent;
     public static int OwnedUiaWindows, OwnedMenuItems;
     public static int ChatReadAttempts, ChatItemCount;
+    public static string ChatReadOperation = "not-started";
+    public static int ChatReadItemIndex = -1;
     public static int[] ChatItemNameLengths = new int[0], ChatTextCounts = new int[0], ChatTextLengths = new int[0];
     [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point point);
     [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
@@ -230,9 +232,13 @@ public static class OfflineSmokeNative {
         return control;
     }
     public static string[] ReadChat(int pid) {
+        ChatReadOperation = "dispatch"; ChatReadItemIndex = -1;
         return Uia(delegate {
             ChatReadAttempts++;
-            var items = Control(pid, "Chat with Aemeath", "MessageList").FindAll(TreeScope.Children,
+            ChatReadOperation = "find-list";
+            var list = Control(pid, "Chat with Aemeath", "MessageList");
+            ChatReadOperation = "find-items";
+            var items = list.FindAll(TreeScope.Children,
                 new AndCondition(new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
                     new PropertyCondition(AutomationElement.ProcessIdProperty, pid)));
             ChatItemCount = items.Count;
@@ -240,18 +246,25 @@ public static class OfflineSmokeNative {
             ChatItemNameLengths = new int[count]; ChatTextCounts = new int[count]; ChatTextLengths = new int[count];
             var result = new string[count];
             for (int index = 0; index < count; index++) {
+                ChatReadItemIndex = index; ChatReadOperation = "scroll-pattern";
                 var item = items[index];
                 object scroll;
-                if (item.TryGetCurrentPattern(ScrollItemPattern.Pattern, out scroll)) ((ScrollItemPattern)scroll).ScrollIntoView();
+                if (item.TryGetCurrentPattern(ScrollItemPattern.Pattern, out scroll)) {
+                    ChatReadOperation = "scroll-item"; ((ScrollItemPattern)scroll).ScrollIntoView();
+                }
+                ChatReadOperation = "item-name";
                 ChatItemNameLengths[index] = item.Current.Name.Length;
+                ChatReadOperation = "find-text";
                 var texts = item.FindAll(TreeScope.Descendants, new AndCondition(
                     new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Text),
                     new PropertyCondition(AutomationElement.ProcessIdProperty, pid)));
                 ChatTextCounts[index] = texts.Count;
                 var content = new StringBuilder();
+                ChatReadOperation = "text-name";
                 foreach (AutomationElement text in texts) content.Append(text.Current.Name);
                 result[index] = content.ToString(); ChatTextLengths[index] = result[index].Length;
             }
+            ChatReadOperation = "complete";
             return result;
         });
     }
@@ -367,6 +380,7 @@ $report = [ordered]@{
     secondPersistenceVerified = $false; sameExecutableVerified = $false
     assistantReplyLength = 0; savedMessageCount = 0; savedTotalChats = 0
     failureExceptionType = $null; failureScriptLine = 0
+    failureHResult = $null; lastChatReadOperation = $null; lastChatReadItemIndex = -1
 }
 # PS5 emits a JSON array as one pipeline object; assignment preserves that array without nesting it.
 $seedMessages = $fixtureTexts['messages.json'] | ConvertFrom-Json
@@ -456,6 +470,7 @@ try {
                 [OfflineSmokeNative]::Draft($app.Id, $sentText)
                 Wait-Until { [OfflineSmokeNative]::SendEnabled($app.Id) } 5 'SEND_NOT_READY'
                 [OfflineSmokeNative]::Send($app.Id)
+                $report.stage = 'offline-reply'
                 Wait-Until { $items = @([OfflineSmokeNative]::ReadChat($app.Id)); $items.Count -eq 4 -and
                     $items[2] -ceq $sentText -and -not [string]::IsNullOrWhiteSpace($items[3]) } 30 'OFFLINE_REPLY_MISSING'
                 [OfflineSmokeNative]::Draft($app.Id, 'OFFLINE_SMOKE_UNSENT_READY_DRAFT')
@@ -501,6 +516,9 @@ try {
     $report.failureCode = if ($code -cmatch '^[A-Z_]{3,80}$') { $code } else { 'HOSTED_PROBE_EXCEPTION' }
     $report.failureExceptionType = $baseException.GetType().FullName
     $report.failureScriptLine = $_.InvocationInfo.ScriptLineNumber
+    $report.failureHResult = $baseException.HResult
+    $report.lastChatReadOperation = [OfflineSmokeNative]::ChatReadOperation
+    $report.lastChatReadItemIndex = [OfflineSmokeNative]::ChatReadItemIndex
 } finally {
     $cleanupErrors = @()
     if ($job -ne [IntPtr]::Zero) {

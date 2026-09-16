@@ -39,3 +39,15 @@ also exposed an exception in its diagnostic path. A local Windows PowerShell 5 r
 the real fixture-loading expression identified an extra array wrapper: the two JSON messages
 became one outer element. That both invalidated the comparison and made diagnostic indexing fail.
 The correction unwraps the JSON result before use; no production persistence change is implied.
+
+On source `984184f8fbf0045b7c4f0ab127f3673b9ace85f2`,
+[run 35042216383](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042216383)
+observed both exact seeded messages in one read and verified that screenshot capture was off.
+The post-Send conversation read then raised `System.Runtime.InteropServices.COMException` at
+script line 459; cleanup passed. The report did not contain an HRESULT, so it does not establish
+whether the element became stale or a different UI Automation operation failed. The next probe
+records only the numeric HRESULT and fixed read-operation/index metadata, still propagating the
+error and sending the message once. No reply, persistence, or restart success is claimed.
+All five required jobs in
+[CI run 35042216238](https://github.com/RickyT715/Aemeath_Desktop_Pet/actions/runs/35042216238)
+passed for that exact source, with downloaded artifacts validated by `Wait-ForCi.ps1`.
